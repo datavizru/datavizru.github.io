@@ -1,33 +1,163 @@
-/* Автогенерация: node gen-fonts-manifest.mjs — не редактировать вручную */
+/* Автогенерация: python3 gen-fonts-manifest.py — не редактировать вручную */
 window.__CHART_FONTS_MANIFEST__ = {
   "fonts": [
     {
-      "family": "TT Norms Tochka Extended",
-      "label": "TT Norms Tochka Extended",
+      "family": "PermianSansTypeface",
+      "label": "PermianSansTypeface",
       "faces": [
         {
-          "src": "TT Norms Tochka Extended Bold.otf",
+          "src": "PermianSansTypeface-Bold.otf",
           "weight": 700,
           "style": "normal"
         },
         {
-          "src": "TT Norms Tochka Extended DemiBold.otf",
-          "weight": 600,
+          "src": "PermianSansTypeface-Italic.otf",
+          "weight": 400,
+          "style": "italic"
+        },
+        {
+          "src": "PermianSansTypeface.otf",
+          "weight": 400,
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "family": "PermianSerifTypeface",
+      "label": "PermianSerifTypeface",
+      "faces": [
+        {
+          "src": "PermianSerifTypeface-Bold.otf",
+          "weight": 700,
           "style": "normal"
         },
         {
-          "src": "TT Norms Tochka Extended Medium.otf",
+          "src": "PermianSerifTypeface-Italic.otf",
+          "weight": 400,
+          "style": "italic"
+        },
+        {
+          "src": "PermianSerifTypeface.otf",
+          "weight": 400,
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "family": "PermianSlabSerifTypeface",
+      "label": "PermianSlabSerifTypeface",
+      "faces": [
+        {
+          "src": "PermianSlabSerifTypeface-Bold.otf",
+          "weight": 700,
+          "style": "normal"
+        },
+        {
+          "src": "PermianSlabSerifTypeface-Italic.otf",
+          "weight": 400,
+          "style": "italic"
+        },
+        {
+          "src": "PermianSlabSerifTypeface.otf",
+          "weight": 400,
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "family": "pt root ui",
+      "label": "pt root ui",
+      "faces": [
+        {
+          "src": "pt-root-ui_bold.otf",
+          "weight": 700,
+          "style": "normal"
+        },
+        {
+          "src": "pt-root-ui_bold.ttf",
+          "weight": 700,
+          "style": "normal"
+        },
+        {
+          "src": "pt-root-ui_light.otf",
+          "weight": 300,
+          "style": "normal"
+        },
+        {
+          "src": "pt-root-ui_light.ttf",
+          "weight": 300,
+          "style": "normal"
+        },
+        {
+          "src": "pt-root-ui_medium.otf",
           "weight": 500,
           "style": "normal"
         },
         {
-          "src": "TT Norms Tochka Extended Normal.otf",
+          "src": "pt-root-ui_medium.ttf",
+          "weight": 500,
+          "style": "normal"
+        },
+        {
+          "src": "pt-root-ui_regular.otf",
           "weight": 400,
           "style": "normal"
         },
         {
-          "src": "TT Norms Tochka Extended Regular.otf",
+          "src": "pt-root-ui_regular.ttf",
           "weight": 400,
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "family": "pt root ui vf",
+      "label": "pt root ui vf",
+      "faces": [
+        {
+          "src": "pt-root-ui_vf.ttf",
+          "weight": 400,
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "family": "TildaSans",
+      "label": "TildaSans",
+      "faces": [
+        {
+          "src": "TildaSans-Black.woff",
+          "weight": 900,
+          "style": "normal"
+        },
+        {
+          "src": "TildaSans-Bold.woff",
+          "weight": 700,
+          "style": "normal"
+        },
+        {
+          "src": "TildaSans-ExtraBold.woff",
+          "weight": 800,
+          "style": "normal"
+        },
+        {
+          "src": "TildaSans-Light.woff",
+          "weight": 300,
+          "style": "normal"
+        },
+        {
+          "src": "TildaSans-Medium.woff",
+          "weight": 500,
+          "style": "normal"
+        },
+        {
+          "src": "TildaSans-Regular.woff",
+          "weight": 400,
+          "style": "normal"
+        },
+        {
+          "src": "TildaSans-Semibold.woff",
+          "weight": 600,
           "style": "normal"
         }
       ]

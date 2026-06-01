@@ -501,7 +501,7 @@
       <div class="section" id="localFontsSection">
         <p class="title">Локальные шрифты</p>
         <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;">
-          Положите файлы в <code>Fonts/</code> и выполните <code>node gen-fonts-manifest.mjs</code> (или «Обновить» при локальном сервере).
+          Положите файлы в <code>Fonts/</code> и выполните <code>python3 gen-fonts-manifest.py</code>, затем обновите страницу (Cmd+Shift+R). Кнопка «Обновить» — при локальном сервере.
           При открытии страницы шрифты подключаются автоматически.
         </p>
         <div class="row" style="gap:6px;flex-wrap:wrap;">
@@ -3101,11 +3101,29 @@
     }
     if (names.size) try { localStorage.setItem(FONTS_DIR_KEY, JSON.stringify([...names])); } catch (e) {}
   }
+  function manifestSourceFilenames(){
+    const data = window.__CHART_FONTS_MANIFEST__;
+    if (!data) return null;
+    const list = Array.isArray(data) ? data : (data.fonts || []);
+    const names = new Set();
+    for (const item of list) {
+      for (const f of item.faces || []) {
+        const src = f.src || f.file || f.path;
+        if (src) names.add(String(src).split("/").pop());
+      }
+    }
+    return names;
+  }
   function loadLocalFontsFromStoredFileList(){
     try {
       const names = JSON.parse(localStorage.getItem(FONTS_DIR_KEY) || "[]");
       if (!Array.isArray(names) || !names.length) return [];
-      return groupFilesIntoFamilies(names.map(name => ({ name, url: resolveFontAssetUrl(name) })));
+      const allowed = manifestSourceFilenames();
+      const filtered = allowed
+        ? names.filter(n => allowed.has(String(n).split("/").pop()))
+        : names;
+      if (!filtered.length) return [];
+      return groupFilesIntoFamilies(filtered.map(name => ({ name, url: resolveFontAssetUrl(name) })));
     } catch (e) { return []; }
   }
   function loadLocalFontsFromEmbeddedManifest(){
@@ -3148,15 +3166,18 @@
   }
   async function collectLocalFontEntries(){
     await loadFontsManifestScript();
-    const chunks = [
-      loadLocalFontsFromEmbeddedManifest(),
-      loadLocalFontsFromStoredFileList()
-    ];
+    const fromEmbedded = loadLocalFontsFromEmbeddedManifest();
+    const chunks = [fromEmbedded];
+    // Кэш localStorage — только если манифеста нет; иначе там остаются удалённые с диска шрифты
+    if (!fromEmbedded.length) chunks.push(loadLocalFontsFromStoredFileList());
     if (location.protocol !== "file:") {
-      chunks.push(await loadLocalFontsFromManifest());
-      chunks.push(await loadLocalFontsFromDirectoryListing());
+      const fromJson = await loadLocalFontsFromManifest();
+      if (fromJson.length) chunks.push(fromJson);
+      else chunks.push(await loadLocalFontsFromDirectoryListing());
     }
-    return mergeFontEntries(chunks.flat());
+    const merged = mergeFontEntries(chunks.flat());
+    if (fromEmbedded.length) saveFontsFileList(merged);
+    return merged;
   }
   async function loadLocalFontsFromFolder(opts = {}){
     const replace = opts.replace !== false;
@@ -3189,7 +3210,7 @@
     const el = document.getElementById("localFontsStatus");
     if (!el || silent) return;
     if (!count) {
-      el.textContent = "Шрифты в Fonts/ не найдены. Добавьте файлы и выполните: node gen-fonts-manifest.mjs";
+      el.textContent = "Шрифты в Fonts/ не найдены. Добавьте файлы и выполните: python3 gen-fonts-manifest.py";
       return;
     }
     const names = LOCAL_FONT_OPTIONS.map(([, l]) => l).join(", ");
