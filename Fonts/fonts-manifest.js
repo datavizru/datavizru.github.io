@@ -2,6 +2,63 @@
 window.__CHART_FONTS_MANIFEST__ = {
   "fonts": [
     {
+      "family": "HSESans",
+      "label": "HSESans",
+      "faces": [
+        {
+          "src": "HSESans-Black.otf",
+          "weight": 900,
+          "style": "normal"
+        },
+        {
+          "src": "HSESans-Bold.otf",
+          "weight": 700,
+          "style": "normal"
+        },
+        {
+          "src": "HSESans-Italic.otf",
+          "weight": 400,
+          "style": "italic"
+        },
+        {
+          "src": "HSESans-Regular.otf",
+          "weight": 400,
+          "style": "normal"
+        },
+        {
+          "src": "HSESans-SemiBold.otf",
+          "weight": 600,
+          "style": "normal"
+        },
+        {
+          "src": "HSESans-Thin.otf",
+          "weight": 100,
+          "style": "normal"
+        }
+      ]
+    },
+    {
+      "family": "HSESlab",
+      "label": "HSESlab",
+      "faces": [
+        {
+          "src": "HSESlab-Black.otf",
+          "weight": 900,
+          "style": "normal"
+        },
+        {
+          "src": "HSESlab-Italic.otf",
+          "weight": 400,
+          "style": "italic"
+        },
+        {
+          "src": "HSESlab-Regular.otf",
+          "weight": 400,
+          "style": "normal"
+        }
+      ]
+    },
+    {
       "family": "PermianSansTypeface",
       "label": "PermianSansTypeface",
       "faces": [
