@@ -1,0 +1,145 @@
+Month;Station;Anomaly_mm
+2023-12;Boston;3.820
+2023-12;New York;3.860
+2023-12;Charleston;3.900
+2023-12;Miami;3.940
+2023-12;Galveston;3.980
+2023-12;San Diego;4.020
+2024-01;Boston;3.840
+2024-01;New York;3.880
+2024-01;Charleston;3.920
+2024-01;Miami;3.960
+2024-01;Galveston;4.000
+2024-01;San Diego;4.040
+2024-02;Boston;3.860
+2024-02;New York;3.900
+2024-02;Charleston;3.940
+2024-02;Miami;3.980
+2024-02;Galveston;4.020
+2024-02;San Diego;4.060
+2024-03;Boston;3.878
+2024-03;New York;3.918
+2024-03;Charleston;3.958
+2024-03;Miami;3.998
+2024-03;Galveston;4.038
+2024-03;San Diego;4.078
+2024-04;Boston;3.894
+2024-04;New York;3.934
+2024-04;Charleston;3.974
+2024-04;Miami;4.014
+2024-04;Galveston;4.054
+2024-04;San Diego;4.094
+2024-05;Boston;3.907
+2024-05;New York;3.947
+2024-05;Charleston;3.987
+2024-05;Miami;4.027
+2024-05;Galveston;4.067
+2024-05;San Diego;4.107
+2024-06;Boston;3.918
+2024-06;New York;3.958
+2024-06;Charleston;3.998
+2024-06;Miami;4.038
+2024-06;Galveston;4.078
+2024-06;San Diego;4.118
+2024-07;Boston;3.925
+2024-07;New York;3.965
+2024-07;Charleston;4.005
+2024-07;Miami;4.045
+2024-07;Galveston;4.085
+2024-07;San Diego;4.125
+2024-08;Boston;3.929
+2024-08;New York;3.969
+2024-08;Charleston;4.009
+2024-08;Miami;4.049
+2024-08;Galveston;4.089
+2024-08;San Diego;4.129
+2024-09;Boston;3.931
+2024-09;New York;3.971
+2024-09;Charleston;4.011
+2024-09;Miami;4.051
+2024-09;Galveston;4.091
+2024-09;San Diego;4.131
+2024-10;Boston;3.930
+2024-10;New York;3.970
+2024-10;Charleston;4.010
+2024-10;Miami;4.050
+2024-10;Galveston;4.090
+2024-10;San Diego;4.130
+2024-11;Boston;3.927
+2024-11;New York;3.967
+2024-11;Charleston;4.007
+2024-11;Miami;4.047
+2024-11;Galveston;4.087
+2024-11;San Diego;4.127
+2024-12;Boston;3.923
+2024-12;New York;3.963
+2024-12;Charleston;4.003
+2024-12;Miami;4.043
+2024-12;Galveston;4.083
+2024-12;San Diego;4.123
+2025-01;Boston;3.919
+2025-01;New York;3.959
+2025-01;Charleston;3.999
+2025-01;Miami;4.039
+2025-01;Galveston;4.079
+2025-01;San Diego;4.119
+2025-02;Boston;3.914
+2025-02;New York;3.954
+2025-02;Charleston;3.994
+2025-02;Miami;4.034
+2025-02;Galveston;4.074
+2025-02;San Diego;4.114
+2025-03;Boston;3.911
+2025-03;New York;3.951
+2025-03;Charleston;3.991
+2025-03;Miami;4.031
+2025-03;Galveston;4.071
+2025-03;San Diego;4.111
+2025-04;Boston;3.910
+2025-04;New York;3.950
+2025-04;Charleston;3.990
+2025-04;Miami;4.030
+2025-04;Galveston;4.070
+2025-04;San Diego;4.110
+2025-05;Boston;3.911
+2025-05;New York;3.951
+2025-05;Charleston;3.991
+2025-05;Miami;4.031
+2025-05;Galveston;4.071
+2025-05;San Diego;4.111
+2025-06;Boston;3.915
+2025-06;New York;3.955
+2025-06;Charleston;3.995
+2025-06;Miami;4.035
+2025-06;Galveston;4.075
+2025-06;San Diego;4.115
+2025-07;Boston;3.922
+2025-07;New York;3.962
+2025-07;Charleston;4.002
+2025-07;Miami;4.042
+2025-07;Galveston;4.082
+2025-07;San Diego;4.122
+2025-08;Boston;3.932
+2025-08;New York;3.972
+2025-08;Charleston;4.012
+2025-08;Miami;4.052
+2025-08;Galveston;4.092
+2025-08;San Diego;4.132
+2025-09;Boston;3.945
+2025-09;New York;3.985
+2025-09;Charleston;4.025
+2025-09;Miami;4.065
+2025-09;Galveston;4.105
+2025-09;San Diego;4.145
+2025-10;Boston;3.961
+2025-10;New York;4.001
+2025-10;Charleston;4.041
+2025-10;Miami;4.081
+2025-10;Galveston;4.121
+2025-10;San Diego;4.161
+2025-11;Boston;3.979
+2025-11;New York;4.019
+2025-11;Charleston;4.059
+2025-11;Miami;4.099
+2025-11;Galveston;4.139
+2025-11;San Diego;4.179

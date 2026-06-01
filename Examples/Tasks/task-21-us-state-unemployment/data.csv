@@ -1,0 +1,101 @@
+Month;State;Unemployment_pct
+2025-01;California;3.8
+2025-01;Texas;3.3
+2025-01;Florida;3.4
+2025-01;New York;3.4
+2025-01;Pennsylvania;3.5
+2025-01;Illinois;3.6
+2025-01;Ohio;3.7
+2025-01;Georgia;3.8
+2025-01;North Carolina;3.8
+2025-01;Michigan;3.9
+2025-02;California;3.8
+2025-02;Texas;3.3
+2025-02;Florida;3.4
+2025-02;New York;3.5
+2025-02;Pennsylvania;3.6
+2025-02;Illinois;3.6
+2025-02;Ohio;3.7
+2025-02;Georgia;3.8
+2025-02;North Carolina;3.9
+2025-02;Michigan;4.0
+2025-03;California;3.9
+2025-03;Texas;3.4
+2025-03;Florida;3.4
+2025-03;New York;3.5
+2025-03;Pennsylvania;3.6
+2025-03;Illinois;3.7
+2025-03;Ohio;3.8
+2025-03;Georgia;3.8
+2025-03;North Carolina;3.9
+2025-03;Michigan;4.0
+2025-04;California;3.9
+2025-04;Texas;3.4
+2025-04;Florida;3.5
+2025-04;New York;3.6
+2025-04;Pennsylvania;3.6
+2025-04;Illinois;3.7
+2025-04;Ohio;3.8
+2025-04;Georgia;3.9
+2025-04;North Carolina;4.0
+2025-04;Michigan;4.0
+2025-05;California;4.0
+2025-05;Texas;3.4
+2025-05;Florida;3.5
+2025-05;New York;3.6
+2025-05;Pennsylvania;3.7
+2025-05;Illinois;3.8
+2025-05;Ohio;3.8
+2025-05;Georgia;3.9
+2025-05;North Carolina;4.0
+2025-05;Michigan;4.1
+2025-06;California;4.0
+2025-06;Texas;3.5
+2025-06;Florida;3.6
+2025-06;New York;3.6
+2025-06;Pennsylvania;3.7
+2025-06;Illinois;3.8
+2025-06;Ohio;3.9
+2025-06;Georgia;4.0
+2025-06;North Carolina;4.0
+2025-06;Michigan;4.1
+2025-07;California;4.0
+2025-07;Texas;3.5
+2025-07;Florida;3.6
+2025-07;New York;3.7
+2025-07;Pennsylvania;3.8
+2025-07;Illinois;3.8
+2025-07;Ohio;3.9
+2025-07;Georgia;4.0
+2025-07;North Carolina;4.1
+2025-07;Michigan;4.2
+2025-08;California;4.1
+2025-08;Texas;3.6
+2025-08;Florida;3.6
+2025-08;New York;3.7
+2025-08;Pennsylvania;3.8
+2025-08;Illinois;3.9
+2025-08;Ohio;4.0
+2025-08;Georgia;4.0
+2025-08;North Carolina;4.1
+2025-08;Michigan;4.2
+2025-09;California;4.1
+2025-09;Texas;3.6
+2025-09;Florida;3.7
+2025-09;New York;3.8
+2025-09;Pennsylvania;3.8
+2025-09;Illinois;3.9
+2025-09;Ohio;4.0
+2025-09;Georgia;4.1
+2025-09;North Carolina;4.2
+2025-09;Michigan;4.2
+2025-10;California;4.2
+2025-10;Texas;3.6
+2025-10;Florida;3.7
+2025-10;New York;3.8
+2025-10;Pennsylvania;3.9
+2025-10;Illinois;4.0
+2025-10;Ohio;4.0
+2025-10;Georgia;4.1
+2025-10;North Carolina;4.2
+2025-10;Michigan;4.3

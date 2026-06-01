@@ -1,0 +1,38 @@
+{
+  "app": "make-your-chart-template",
+  "version": 1,
+  "size": { "width": 640, "height": 640 },
+  "style": {
+    "markColor": "#5c7cfa",
+    "backgroundColor": "#1e1e1e",
+    "scheme": "dark2",
+    "strokeWidth": 2,
+    "showLegend": true,
+    "showPoints": false,
+    "text": {
+      "title":      { "font": "system-ui, sans-serif", "size": 18, "color": "#f1f1ef", "bold": true,  "italic": false },
+      "subtitle":   { "font": "system-ui, sans-serif", "size": 13, "color": "#a8a8a2", "bold": false, "italic": false },
+      "axisTitleX": { "font": "system-ui, sans-serif", "size": 12, "color": "#c9c9c4", "bold": false, "italic": false },
+      "axisTitleY": { "font": "system-ui, sans-serif", "size": 12, "color": "#c9c9c4", "bold": false, "italic": false },
+      "axisLabelX": { "font": "system-ui, sans-serif", "size": 11, "color": "#b3b3ae", "bold": false, "italic": false },
+      "axisLabelY": { "font": "system-ui, sans-serif", "size": 11, "color": "#b3b3ae", "bold": false, "italic": false },
+      "legend":     { "font": "system-ui, sans-serif", "size": 11, "color": "#e8e8e4", "bold": false, "italic": false },
+      "comment":    { "font": "system-ui, sans-serif", "size": 12, "color": "#a8a8a2", "bold": false, "italic": true },
+      "footer":     { "font": "system-ui, sans-serif", "size": 11, "color": "#85857f", "bold": false, "italic": false }
+    },
+    "axes": {
+      "x": {
+        "line":   { "show": true,  "color": "#4a4a47", "width": 1 },
+        "ticks":  { "show": true,  "auto": true, "width": 1, "length": 4, "step": null },
+        "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
+        "grid":   { "show": false, "color": "#333331", "width": 1 }
+      },
+      "y": {
+        "line":   { "show": false, "color": "#4a4a47", "width": 1 },
+        "ticks":  { "show": false, "auto": true, "width": 1, "length": 4, "step": null },
+        "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
+        "grid":   { "show": true,  "color": "#333331", "width": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "app": "make-your-chart-template",
+  "version": 1,
+  "size": { "width": 640, "height": 640 },
+  "style": {
+    "markColor": "#222222",
+    "backgroundColor": "#ffffff",
+    "scheme": "category10",
+    "strokeWidth": 1.5,
+    "showLegend": true,
+    "showPoints": false,
+    "text": {
+      "title":      { "font": "'Times New Roman', sans-serif", "size": 20, "color": "#111111", "bold": true,  "italic": false },
+      "subtitle":   { "font": "Georgia, sans-serif",            "size": 13, "color": "#555555", "bold": false, "italic": true  },
+      "axisTitleX": { "font": "Georgia, sans-serif",            "size": 12, "color": "#333333", "bold": false, "italic": false },
+      "axisTitleY": { "font": "Georgia, sans-serif",            "size": 12, "color": "#333333", "bold": false, "italic": false },
+      "axisLabelX": { "font": "Georgia, sans-serif",            "size": 11, "color": "#444444", "bold": false, "italic": false },
+      "axisLabelY": { "font": "Georgia, sans-serif",            "size": 11, "color": "#444444", "bold": false, "italic": false },
+      "legend":     { "font": "Georgia, sans-serif",            "size": 11, "color": "#222222", "bold": false, "italic": false },
+      "comment":    { "font": "Georgia, sans-serif",            "size": 12, "color": "#555555", "bold": false, "italic": true  },
+      "footer":     { "font": "Georgia, sans-serif",            "size": 10, "color": "#888888", "bold": false, "italic": false }
+    },
+    "axes": {
+      "x": {
+        "line":   { "show": true,  "color": "#222222", "width": 1 },
+        "ticks":  { "show": true,  "auto": true, "width": 1, "length": 5, "step": null },
+        "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
+        "grid":   { "show": false, "color": "#e0e0e0", "width": 1 }
+      },
+      "y": {
+        "line":   { "show": true,  "color": "#222222", "width": 1 },
+        "ticks":  { "show": true,  "auto": true, "width": 1, "length": 5, "step": null },
+        "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
+        "grid":   { "show": true,  "color": "#e6e6e6", "width": 1 }
+      }
+    }
+  }
+}

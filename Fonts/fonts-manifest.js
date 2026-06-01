@@ -1,0 +1,36 @@
+/* Автогенерация: node gen-fonts-manifest.mjs — не редактировать вручную */
+window.__CHART_FONTS_MANIFEST__ = {
+  "fonts": [
+    {
+      "family": "TT Norms Tochka Extended",
+      "label": "TT Norms Tochka Extended",
+      "faces": [
+        {
+          "src": "TT Norms Tochka Extended Bold.otf",
+          "weight": 700,
+          "style": "normal"
+        },
+        {
+          "src": "TT Norms Tochka Extended DemiBold.otf",
+          "weight": 600,
+          "style": "normal"
+        },
+        {
+          "src": "TT Norms Tochka Extended Medium.otf",
+          "weight": 500,
+          "style": "normal"
+        },
+        {
+          "src": "TT Norms Tochka Extended Normal.otf",
+          "weight": 400,
+          "style": "normal"
+        },
+        {
+          "src": "TT Norms Tochka Extended Regular.otf",
+          "weight": 400,
+          "style": "normal"
+        }
+      ]
+    }
+  ]
+};
