@@ -1306,6 +1306,40 @@
   function isBarChart(t){ return t === "bar" || t === "barh" || isBarStack(t); }
   function usesCategoryGap(t){ return isBarChart(t) || isLollipop(t); }
   function isHeatmap(t){ return t === "heatmap"; }
+  // Ручной диапазон числовой оси: scale.clip не режет сегменты линии — нужен mark.clip.
+  function quantAxisRangeActive(ch){
+    const rg = state.style.axes[ch]?.range;
+    if (!rg || !ch) return false;
+    const hasMin = rg.min != null && rg.min !== "" && !isNaN(+rg.min);
+    const hasMax = rg.max != null && rg.max !== "" && !isNaN(+rg.max);
+    return hasMin || hasMax;
+  }
+  function valueAxisChannel(){
+    const t = state.chartType;
+    if (isBarH(t) || isLollipopH(t)) return "x";
+    if (isHeatmap(t)) return null;
+    return "y";
+  }
+  function plotMarkClip(){
+    const ch = valueAxisChannel();
+    if (ch) return quantAxisRangeActive(ch);
+    if (state.chartType === "point") {
+      const vis = pointVisualXYFields();
+      return (isQuantitative(vis.x) && quantAxisRangeActive("x"))
+          || (isQuantitative(vis.y) && quantAxisRangeActive("y"));
+    }
+    return false;
+  }
+  function withPlotClip(mark){
+    if (!plotMarkClip() || !mark) return mark;
+    return { ...mark, clip: true };
+  }
+  function clipLayerMark(layer){
+    if (!plotMarkClip() || !layer?.mark) return layer;
+    const mk = layer.mark;
+    if (typeof mk === "string") return { ...layer, mark: { type: mk, clip: true } };
+    return { ...layer, mark: { ...mk, clip: true } };
+  }
   // Для тепловой карты: сетка осей по умолчанию выключена (при первом выборе типа).
   function applyHeatmapAxisDefaults(){
     state.style.axes.x.grid.show = false;
@@ -1473,22 +1507,22 @@
     if (t==="bar" || t==="barStack" || t==="barStackNorm") {
       const m = { type:"bar", color:s.markColor, fillOpacity:mo, tooltip:true };
       if (barW != null) m.width = barW;
-      return m;
+      return withPlotClip(m);
     }
     if (t==="barh" || t==="barhStack" || t==="barhStackNorm") {
       const m = { type:"bar", orient:"horizontal", color:s.markColor, fillOpacity:mo, tooltip:true };
       if (barW != null) m.width = barW;
-      return m;
+      return withPlotClip(m);
     }
     if (isLineFamily(t)) {
       const m = { type:"line", color:s.markColor, strokeWidth:s.strokeWidth, opacity:mo, tooltip:true };
       if (t === "lineStepBefore") m.interpolate = "step-before";
       else if (t === "lineStepAfter") m.interpolate = "step-after";
-      return m;
+      return withPlotClip(m);
     }
-    if (t==="area")  return { type:"area", color:s.markColor, fillOpacity:s.areaOpacity, line:{color:s.markColor, strokeWidth:s.strokeWidth, opacity:mo}, tooltip:true };
-    if (t==="point") return { type:"point", filled:true, color:s.markColor, size:s.pointSize, strokeWidth:s.strokeWidth, fillOpacity:mo, tooltip:true };
-    if (isLollipop(t)) return { type:"point", filled:true, color:s.markColor, size: lollipopHeadVegaSize() || lollipopHeadAreaFromDiameter(10), tooltip:true };
+    if (t==="area")  return withPlotClip({ type:"area", color:s.markColor, fillOpacity:s.areaOpacity, line:{color:s.markColor, strokeWidth:s.strokeWidth, opacity:mo}, tooltip:true });
+    if (t==="point") return withPlotClip({ type:"point", filled:true, color:s.markColor, size:s.pointSize, strokeWidth:s.strokeWidth, fillOpacity:mo, tooltip:true });
+    if (isLollipop(t)) return withPlotClip({ type:"point", filled:true, color:s.markColor, size: lollipopHeadVegaSize() || lollipopHeadAreaFromDiameter(10), tooltip:true });
     if (isHeatmap(t)) return { type:"rect", opacity: mo, tooltip:true };
   }
 
@@ -1545,25 +1579,25 @@
     const layers = [];
     if (stemW > 0) {
       layers.push({
-        mark: {
+        mark: withPlotClip({
           type: "rule", strokeWidth: stemW, opacity: mo, tooltip: true,
           ...(colorEnc ? {} : { stroke: withAlpha(s.markColor, mo) })
-        },
+        }),
         encoding: stemEnc
       });
     }
     if (headD > 0) {
       layers.push({
-        mark: {
+        mark: withPlotClip({
           type: "point", filled: true, size: headVegaSize, opacity: mo, tooltip: true,
           ...(colorEnc ? {} : { color: s.markColor, fill: withAlpha(s.markColor, mo) })
-        },
+        }),
         encoding: headEnc
       });
     }
     if (!layers.length) {
       layers.push({
-        mark: { type: "point", opacity: 0, size: 1, tooltip: true },
+        mark: withPlotClip({ type: "point", opacity: 0, size: 1, tooltip: true }),
         encoding: headEnc
       });
     }
@@ -1922,9 +1956,14 @@
       const hasMin = rg.min != null && rg.min !== "" && !isNaN(+rg.min);
       const hasMax = rg.max != null && rg.max !== "" && !isNaN(+rg.max);
       if (!hasMin && !hasMax) continue;
-      const sc = { ...(enc[ch].scale || {}) };
-      if (hasMin) sc.domainMin = +rg.min;
-      if (hasMax) sc.domainMax = +rg.max;
+      const sc = { ...(enc[ch].scale || {}), nice: false, clip: true };
+      if (hasMin && hasMax) {
+        sc.domain = [+rg.min, +rg.max];
+        sc.zero = false;
+      } else {
+        if (hasMin) { sc.domainMin = +rg.min; sc.zero = false; }
+        if (hasMax) sc.domainMax = +rg.max;
+      }
       enc[ch] = { ...enc[ch], scale: sc };
     }
     // Шаг засечек/подписей — на уровне кодировки соответствующей оси.
@@ -2626,13 +2665,13 @@
     const chartMarks = isLollipop(state.chartType)
       ? lollipopChartLayers()
       : [{ mark: markDef(), encoding: encodingDef() }];
-    const subLayers = [...projLayers, ...chartMarks, ...labelLayers];
+    const subLayers = [...projLayers, ...chartMarks, ...labelLayers].map(clipLayerMark);
     if (subLayers.length > 1) chartLayer.layer = subLayers;
     else {
       chartLayer.mark = subLayers[0].mark;
       chartLayer.encoding = subLayers[0].encoding;
     }
-    chartLayer.view = { ...plotAreaViewProps(), clip: false };
+    chartLayer.view = plotAreaViewProps();
 
     const legend = legendRow();
     const hasLegend = !!legend;
@@ -4152,6 +4191,11 @@
         if (/^style\.text\.[^.]+\.(size|italic)$/.test(path)) await ensureSpecFonts();
         if (path === "style.barGap.mode") syncBarSizeUI();
         if (path?.startsWith("style.barGap.")) { render(); return; }
+        if (/^style\.axes\.[xy]\.range\.(min|max)$/.test(path)) {
+          plotW = plotH = 0;
+          render({ immediate: true });
+          return;
+        }
         render();
       });
     });
