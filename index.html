@@ -1062,7 +1062,7 @@
       ticks:  { show: true,  width: 1, length: 5, step: null },
       labels: { show: true,  padding: 2, step: null, angle: 0 },
       grid:   { show: true,  color: "#ededeb", width: 1, opacity: 1 },
-      range:  { auto: true, min: null, max: null }
+      range:  { min: null, max: null }
     };
   }
   function pointProjectionDefault(color){
@@ -1914,15 +1914,18 @@
         enc[chan] = { ...enc[chan], scale: { ...(enc[chan].scale || {}), paddingInner: pad, paddingOuter: pad / 2 } };
       }
     }
-    // Диапазон оси значений (мин/макс) для количественных каналов.
+    // Диапазон оси значений: пустые мин/макс — авто (Vega), иначе domainMin/domainMax.
     for (const ch of ["x", "y"]) {
       if (!enc[ch] || enc[ch].type !== "quantitative") continue;
       const rg = state.style.axes[ch]?.range;
-      if (!rg || rg.auto) continue;
+      if (!rg) continue;
+      const hasMin = rg.min != null && rg.min !== "" && !isNaN(+rg.min);
+      const hasMax = rg.max != null && rg.max !== "" && !isNaN(+rg.max);
+      if (!hasMin && !hasMax) continue;
       const sc = { ...(enc[ch].scale || {}) };
-      if (rg.min != null && rg.min !== "") sc.domainMin = +rg.min;
-      if (rg.max != null && rg.max !== "") sc.domainMax = +rg.max;
-      if ("domainMin" in sc || "domainMax" in sc) enc[ch] = { ...enc[ch], scale: sc };
+      if (hasMin) sc.domainMin = +rg.min;
+      if (hasMax) sc.domainMax = +rg.max;
+      enc[ch] = { ...enc[ch], scale: sc };
     }
     // Шаг засечек/подписей — на уровне кодировки соответствующей оси.
     const sx = axisStepObj("x"), sy = axisStepObj("y");
@@ -3897,7 +3900,7 @@
       <div class="row"><label>Цвет</label><input type="color" data-path="${a}.grid.color" data-type="text" /><input type="number" class="op" title="Прозрачность" data-path="${a}.grid.opacity" data-type="num" min="0" max="1" step="0.05" /></div>
       <div class="row"><label>Толщина</label><input type="number" data-path="${a}.grid.width" data-type="num" min="0" max="8" step="0.5" /></div>
       ${sub("Диапазон значений (для числовой оси)")}
-      <div class="row"><label>Авто</label>${sw(a+".range.auto")}</div>
+      <p class="panel-note">Пустые минимум и максимум — шкала по данным автоматически.</p>
       <div class="row"><label>Минимум</label><input type="number" data-path="${a}.range.min" data-type="numOrNull" step="any" placeholder="авто" /></div>
       <div class="row"><label>Максимум</label><input type="number" data-path="${a}.range.max" data-type="numOrNull" step="any" placeholder="авто" /></div>
     `;
