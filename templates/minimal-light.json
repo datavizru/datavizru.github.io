@@ -3,36 +3,64 @@
   "version": 1,
   "size": { "width": 640, "height": 640 },
   "style": {
-    "markColor": "#4c6ef5",
+    "markColor": "#111111",
     "backgroundColor": "#ffffff",
-    "scheme": "tableau10",
-    "strokeWidth": 2,
-    "showLegend": true,
+    "scheme": "dark2",
+    "strokeWidth": 1.25,
+    "pointSize": 36,
+    "areaOpacity": 0.28,
+    "lollipopStemWidth": 1.25,
+    "lollipopHeadDiameter": 8,
+    "showLegend": false,
     "showPoints": false,
+    "markOpacity": 1,
+    "bgOpacity": 1,
+    "legendMarkerSize": 8,
+    "colorMode": "scheme",
+    "barGap": { "unit": "percent", "value": 4 },
+    "plotArea": {
+      "fillEnabled": false,
+      "borderEnabled": false
+    },
+    "padding": {
+      "chart": { "top": 30, "right": 30, "bottom": 30, "left": 30 },
+      "title": { "top": 0, "between": 2, "bottom": 6 },
+      "legend": { "top": 2, "bottom": 4 },
+      "comment": { "top": 6, "bottom": 0 },
+      "footer": { "top": 4, "bottom": 2 }
+    },
     "text": {
-      "title":      { "font": "system-ui, sans-serif", "size": 18, "color": "#2b2b29", "bold": true,  "italic": false },
-      "subtitle":   { "font": "system-ui, sans-serif", "size": 13, "color": "#8a8a85", "bold": false, "italic": false },
-      "axisTitleX": { "font": "system-ui, sans-serif", "size": 12, "color": "#5a5a55", "bold": false, "italic": false },
-      "axisTitleY": { "font": "system-ui, sans-serif", "size": 12, "color": "#5a5a55", "bold": false, "italic": false },
-      "axisLabelX": { "font": "system-ui, sans-serif", "size": 11, "color": "#6a6a64", "bold": false, "italic": false },
-      "axisLabelY": { "font": "system-ui, sans-serif", "size": 11, "color": "#6a6a64", "bold": false, "italic": false },
-      "legend":     { "font": "system-ui, sans-serif", "size": 11, "color": "#2b2b29", "bold": false, "italic": false },
-      "comment":    { "font": "system-ui, sans-serif", "size": 12, "color": "#8a8a85", "bold": false, "italic": true },
-      "footer":     { "font": "system-ui, sans-serif", "size": 11, "color": "#b3b3ae", "bold": false, "italic": false }
+      "title":      { "font": "'Inter', sans-serif", "size": 15, "color": "#111111", "bold": true,  "italic": false },
+      "subtitle":   { "font": "'Inter', sans-serif", "size": 11, "color": "#666666", "bold": false, "italic": false },
+      "axisTitleX": { "font": "'Inter', sans-serif", "size": 10, "color": "#444444", "bold": false, "italic": false },
+      "axisTitleY": { "font": "'Inter', sans-serif", "size": 10, "color": "#444444", "bold": false, "italic": false },
+      "axisLabelX": { "font": "'Inter', sans-serif", "size": 9,  "color": "#555555", "bold": false, "italic": false },
+      "axisLabelY": { "font": "'Inter', sans-serif", "size": 9,  "color": "#555555", "bold": false, "italic": false },
+      "legendLabel":{ "font": "'Inter', sans-serif", "size": 9,  "color": "#333333", "bold": false, "italic": false },
+      "comment":    { "font": "'Inter', sans-serif", "size": 10, "color": "#666666", "bold": false, "italic": false },
+      "footer":     { "font": "'Inter', sans-serif", "size": 9,  "color": "#999999", "bold": false, "italic": false },
+      "valueLabel": { "font": "'Inter', sans-serif", "size": 9,  "color": "#333333", "bold": false, "italic": false },
+      "endName":    { "font": "'Inter', sans-serif", "size": 10, "color": "#111111", "bold": false, "italic": false },
+      "endValue":   { "font": "'Inter', sans-serif", "size": 9,  "color": "#555555", "bold": false, "italic": false }
     },
     "axes": {
       "x": {
-        "line":   { "show": true,  "color": "#d0d7de", "width": 1 },
-        "ticks":  { "show": true,  "auto": true, "width": 1, "length": 4, "step": null },
-        "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
-        "grid":   { "show": false, "color": "#ededeb", "width": 1 }
+        "line":   { "show": true,  "color": "#111111", "width": 0.5, "opacity": 1 },
+        "ticks":  { "show": false, "auto": true, "width": 0.5, "length": 0, "step": null },
+        "labels": { "show": true,  "padding": 5, "step": null, "angle": 0 },
+        "grid":   { "show": false, "color": "#e8e8e8", "width": 0.5, "opacity": 0.6 }
       },
       "y": {
-        "line":   { "show": false, "color": "#d0d7de", "width": 1 },
-        "ticks":  { "show": false, "auto": true, "width": 1, "length": 4, "step": null },
-        "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
-        "grid":   { "show": true,  "color": "#ededeb", "width": 1 }
+        "line":   { "show": false, "color": "#cccccc", "width": 0.5, "opacity": 1 },
+        "ticks":  { "show": false, "auto": true, "width": 0.5, "length": 0, "step": null },
+        "labels": { "show": true,  "padding": 3, "step": null, "angle": 0 },
+        "grid":   { "show": false, "color": "#e8e8e8", "width": 0.5, "opacity": 0.6 }
       }
+    },
+    "valueLabels": { "show": false },
+    "endMarkers": {
+      "showName": true,
+      "showValue": true
     }
   }
 }

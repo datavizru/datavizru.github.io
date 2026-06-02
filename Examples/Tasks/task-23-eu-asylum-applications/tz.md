@@ -10,16 +10,16 @@ Single-period ranking across countries. Use bars or lollipops; annotate top thre
 
 | Country | Applications_k |
 | --- | --- |
-| Germany | 50.0 |
-| France | 39.2 |
-| Italy | 36.4 |
-| Spain | 33.6 |
-| Greece | 30.8 |
-| Netherlands | 28.0 |
-| Austria | 25.2 |
-| Poland | 19.4 |
-| Sweden | 16.6 |
-| Belgium | 13.8 |
+| Germany | 44.9 |
+| France | 25.6 |
+| Italy | 27.7 |
+| Spain | 22.0 |
+| Greece | 18.6 |
+| Netherlands | 18.8 |
+| Austria | 18.8 |
+| Poland | 14.3 |
+| Sweden | 11.3 |
+| Belgium | 12.5 |
 
 **CSV settings:** field delimiter — semicolon (`;`); decimal separator — period (`.`). File: `data.csv` (10 rows).
 

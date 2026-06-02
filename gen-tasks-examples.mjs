@@ -121,6 +121,77 @@ function buildCsv(task) {
   return lines.join("\n") + "\n";
 }
 
+// --- Реалистичный шум (воспроизводимый по seed) ---
+
+function hashSeed(...parts) {
+  let h = 2166136261;
+  for (const p of parts) {
+    const s = String(p);
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function rng(...parts) {
+  const next = mulberry32(hashSeed(...parts));
+  return {
+    uniform: (a, b) => a + (b - a) * next(),
+    gauss: (mu = 0, sigma = 1) => {
+      const u1 = Math.max(next(), 1e-10);
+      const u2 = next();
+      return mu + sigma * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    },
+    walk: (start, stepSigma, steps) => {
+      let v = start;
+      const out = [v];
+      for (let i = 1; i < steps; i++) {
+        v += (next() - 0.48) * stepSigma;
+        out.push(v);
+      }
+      return out;
+    }
+  };
+}
+
+function fmtNum(v, decimals, decimal = ".") {
+  const s = Number(v).toFixed(decimals);
+  return decimal === "," ? s.replace(".", ",") : s;
+}
+
+function clamp(v, lo, hi) {
+  return Math.min(hi, Math.max(lo, v));
+}
+
+/** Ранжированный срез: плавный тренд + шум, без арифметической прогрессии. */
+function rankedSlice(labels, start, spread, seedKey, fmt) {
+  return labels.map((label, i) => {
+    const r = rng(seedKey, label);
+    const trend = start + (spread * i) / Math.max(1, labels.length - 1);
+    const wobble = r.gauss(0, spread * 0.045);
+    return [label, fmt(trend + wobble)];
+  });
+}
+
+/** Значения по словарю баз + шум (сохраняет редакционный рейтинг). */
+function mapWithBase(labels, bases, sigma, seedKey, fmt) {
+  return labels.map(label => {
+    const r = rng(seedKey, label);
+    const base = bases[label] != null ? bases[label] : bases._default ?? 0;
+    return [label, fmt(base + r.gauss(0, sigma))];
+  });
+}
+
 // --- Данные с множеством рядов ---
 
 const FUEL_SERIES = ["АИ-92", "АИ-95", "ДТ"];
@@ -129,8 +200,12 @@ const fuelRows = seriesGrid(
   FUEL_SERIES,
   (m, s) => {
     const i = MONTHS_ISO.indexOf(m);
-    const base = s === "АИ-92" ? 52 : s === "АИ-95" ? 56 : 58;
-    return (base + i * 0.35 + (s === "ДТ" ? 1.2 : 0)).toFixed(2);
+    const r = rng("fuel", s, m);
+    const base = s === "АИ-92" ? 51.4 : s === "АИ-95" ? 55.3 : 57.6;
+    const trend = i * (s === "ДТ" ? 0.41 : 0.33);
+    const seasonal = Math.sin((i + (s === "ДТ" ? 0.8 : 0)) * 0.62) * 0.28;
+    const v = base + trend + seasonal + r.gauss(0, 0.16);
+    return fmtNum(clamp(v, 49.5, 64), 2, ".");
   }
 );
 
@@ -143,8 +218,11 @@ const wageRows = seriesGrid(
   INDUSTRIES,
   (m, s) => {
     const i = MONTHS_ISO.indexOf(m);
-    const b = 42000 + INDUSTRIES.indexOf(s) * 2800;
-    return Math.round(b + i * 450 + ((INDUSTRIES.indexOf(s) * 3 + i) % 5) * 120);
+    const si = INDUSTRIES.indexOf(s);
+    const r = rng("wage", s, m);
+    const b = 41800 + si * 2750 + (s === "IT и связь" ? 22000 : s === "Госуправление" ? -8000 : 0);
+    const drift = i * (420 + si * 18);
+    return Math.round(b + drift + r.gauss(0, 680));
   }
 );
 
@@ -162,27 +240,40 @@ const days30 = Array.from({ length: 30 }, (_, d) => {
   const dt = new Date(2025, 10, 1 + d);
   return dt.toISOString().slice(0, 10);
 });
+const pm25Walks = Object.fromEntries(
+  POLLUTION_CITIES.map(city => {
+    const r = rng("pm25-walk", city);
+    return [city, r.walk(22 + POLLUTION_CITIES.indexOf(city) * 2.1, 4.2, days30.length)];
+  })
+);
 const pm25Rows = seriesGrid(
   days30,
   POLLUTION_CITIES,
   (day, city) => {
     const d = days30.indexOf(day);
     const c = POLLUTION_CITIES.indexOf(city);
-    return Math.max(8, Math.round(28 + c * 1.8 + Math.sin((d + c) / 4) * 12 + (d % 7) * 2));
+    const r = rng("pm25", city, day);
+    const base = pm25Walks[city][d];
+    const weather = Math.sin((d + c * 0.7) / 5.5) * 5;
+    return Math.round(clamp(base + weather + r.gauss(0, 3.8), 9, 78));
   }
 );
 
 const PRODUCT_LINES = [
   "Молочные", "Выпечка", "Напитки", "Заморозка", "Бакалея", "Снеки", "Детское", "Гигиена"
 ];
+const retailQuarters = ["2024-Q1", "2024-Q2", "2024-Q3", "2024-Q4", "2025-Q1", "2025-Q2", "2025-Q3", "2025-Q4"];
 const retailRows = seriesGrid(
-  ["2024-Q1", "2024-Q2", "2024-Q3", "2024-Q4", "2025-Q1", "2025-Q2", "2025-Q3", "2025-Q4"],
+  retailQuarters,
   PRODUCT_LINES,
   (q, line) => {
-    const qi = ["2024-Q1", "2024-Q2", "2024-Q3", "2024-Q4", "2025-Q1", "2025-Q2", "2025-Q3", "2025-Q4"].indexOf(q);
+    const qi = retailQuarters.indexOf(q);
     const li = PRODUCT_LINES.indexOf(line);
-    const v = 85 + li * 12 + qi * 4 + (li + qi) % 3 * 7;
-    return v.toFixed(1).replace(".", ",");
+    const r = rng("retail", line, q);
+    const base = 82 + li * 11.5 + qi * 3.6;
+    const bump = line === "Снеки" ? qi * 0.9 : line === "Молочные" ? -qi * 0.25 : 0;
+    const v = base + bump + r.gauss(0, 2.4);
+    return fmtNum(clamp(v, 70, 210), 1, ",");
   }
 );
 
@@ -196,7 +287,10 @@ const tariffRows = heatmapGrid(
   (reg, mon) => {
     const r = HEAT_REGIONS.indexOf(reg);
     const m = heatMonths.indexOf(mon);
-    return (4.2 + r * 0.15 + (m > 5 ? 0.8 : 0) + m * 0.05).toFixed(1);
+    const noise = rng("tariff", reg, mon).gauss(0, 0.07);
+    const winter = m <= 2 || m >= 10 ? 0.35 + r * 0.04 : 0;
+    const v = 4.15 + r * 0.14 + m * 0.048 + winter + noise;
+    return fmtNum(clamp(v, 3.8, 6.2), 1, ".");
   }
 );
 
@@ -206,7 +300,11 @@ for (const m of MONTHS_ISO) {
   const i = MONTHS_ISO.indexOf(m);
   const row = [m];
   for (let c = 0; c < EXPORT_COUNTRIES.length; c++) {
-    row.push((8 + c * 1.2 + i * 0.45 + (c + i) % 4).toFixed(1).replace(".", ","));
+    const country = EXPORT_COUNTRIES[c];
+    const r = rng("export", country, m);
+    const asiaBoost = (country === "Китай" || country === "Казахстан") && i >= 6 ? 2.4 : 0;
+    const base = 7.8 + c * 1.15 + i * 0.42 + asiaBoost;
+    row.push(fmtNum(clamp(base + r.gauss(0, 0.55), 5, 22), 1, ","));
   }
   exportRows.push(row);
 }
@@ -219,7 +317,10 @@ const orviRows = seriesGrid(
   (w, age) => {
     const wi = weeks12.indexOf(w);
     const ai = AGE_GROUPS.indexOf(age);
-    return Math.round(12 + wi * 2 + ai * 3 + Math.sin(wi / 2) * 8 + (wi === 7 ? 18 : 0));
+    const r = rng("orvi", age, w);
+    const epidemic = 14 + Math.sin((wi - 4.2) / 2.1) * 11 + Math.exp(-Math.pow(wi - 7.5, 2) / 8) * 6;
+    const ageBias = ai * 2.8 + (age === "0–14" ? 4 : age === "60+" ? -2 : 0);
+    return Math.round(clamp(epidemic + ageBias + r.gauss(0, 2.6), 8, 58));
   }
 );
 
@@ -243,10 +344,11 @@ for (const q of HOUSING_QUARTERS) {
   for (const city of HOUSING_CITIES) {
     const qi = HOUSING_QUARTERS.indexOf(q);
     const ci = HOUSING_CITIES.indexOf(city);
-    const base = [320, 210, 145, 118, 125, 132][ci];
-    const v = base + qi * 4 + ci * 2;
-    const sec = v.toFixed(1).replace(".", ",");
-    const neu = (v * 0.91).toFixed(1).replace(".", ",");
+    const r = rng("housing", city, q);
+    const base = [318, 208, 143, 116, 124, 131][ci];
+    const v = base + qi * 3.7 + r.gauss(0, 2.8);
+    const sec = fmtNum(clamp(v, 95, 380), 1, ",");
+    const neu = fmtNum(clamp(v * (0.905 + r.uniform(-0.02, 0.02)), 88, 350), 1, ",");
     housingRows.push([q, city, "Вторичка", sec]);
     housingRows.push([q, city, "Новострой", neu]);
   }
@@ -259,10 +361,147 @@ const ipcRows = seriesGrid(
   (mon, comp) => {
     const m = MONTHS_RU.indexOf(mon);
     const c = IPC_COMPONENTS.indexOf(comp);
-    const v = 0.3 + m * 0.05 + c * 0.08 + (m > 4 ? 0.15 : 0);
-    return v.toFixed(1).replace(".", ",");
+    const r = rng("ipc", comp, mon);
+    const foodSpike = comp === "Продукты" && m >= 4 && m <= 6 ? 0.35 : 0;
+    const v = 0.32 + m * 0.042 + c * 0.075 + foodSpike + r.gauss(0, 0.06);
+    return fmtNum(clamp(v, 0.15, 1.45), 1, ",");
   }
 );
+
+// --- Одномерные срезы (регионы, города, рейтинги) ---
+
+const REGIONS_WAIT = [
+  "Москва", "Санкт-Петербург", "Центр", "Северо-Запад", "Юг", "Поволжье",
+  "Урал", "Сибирь", "Дальний Восток", "Крым", "Северный Кавказ"
+];
+const waitRows = mapWithBase(
+  REGIONS_WAIT,
+  {
+    Москва: 7.5, "Санкт-Петербург": 8.2, Центр: 9.1, "Северо-Запад": 9.8, Юг: 14.3,
+    Поволжье: 13.0, Урал: 15.7, Сибирь: 18.4, "Дальний Восток": 24.0, Крым: 12.1,
+    "Северный Кавказ": 11.6
+  },
+  0.55,
+  "wait",
+  v => fmtNum(clamp(v, 6.5, 26), 1, ",")
+);
+
+const HEAT_CITIES = [
+  "Мурманск", "Архангельск", "Москва", "Казань", "Самара", "Ростов-на-Дону",
+  "Краснодар", "Сочи", "Волгоград", "Новосибирск", "Иркутск"
+];
+const heatAnomalyRows = mapWithBase(
+  HEAT_CITIES,
+  {
+    Мурманск: 0.3, Архангельск: 0.9, Москва: 1.4, Казань: 1.6, Самара: 1.9,
+    "Ростов-на-Дону": 2.1, Краснодар: 2.4, Сочи: 2.5, Волгоград: 2.0, Новосибирск: 1.2, Иркутск: 0.8
+  },
+  0.12,
+  "heat-anom",
+  v => fmtNum(clamp(v, -0.2, 2.8), 1, ".")
+);
+
+const dtpRows = mapWithBase(
+  REGIONS_DEATHS,
+  {
+    Москва: 3.6, "СПб": 3.8, "Московская обл.": 4.1, "Краснодарский край": 5.2,
+    "Свердловская обл.": 5.8, "Респ. Татарстан": 4.9, "Новосибирская обл.": 6.1,
+    "Ростовская обл.": 6.4, Башкортостан: 5.5, "Приморский край": 11.2,
+    "Самарская обл.": 6.0, "Красноярский край": 7.2
+  },
+  0.35,
+  "dtp",
+  v => fmtNum(clamp(v, 2.5, 12.5), 1, ",")
+);
+
+const BUDGET_LINES = [
+  "Образование", "Здравоохранение", "ЖКХ", "Дороги", "Культура",
+  "Безопасность", "Соцподдержка", "Администрирование", "Прочее"
+];
+const budgetRows = mapWithBase(
+  BUDGET_LINES,
+  {
+    Образование: 18.4, Здравоохранение: 14.2, ЖКХ: 9.8, Дороги: 4.1, Культура: 2.6,
+    Безопасность: 3.5, Соцподдержка: 6.9, Администрирование: 5.0, Прочее: 3.2
+  },
+  0.25,
+  "budget",
+  v => fmtNum(clamp(v, 1.8, 19.5), 1, ".")
+);
+
+const MEDIA_SOURCES = [
+  "Телевидение", "Telegram", "YouTube", "Сайты СМИ", "VK", "Радио",
+  "Печатные СМИ", "Друзья и родственники"
+];
+const mediaTrustRows = mapWithBase(
+  MEDIA_SOURCES,
+  {
+    Телевидение: 28, Telegram: 34, YouTube: 31, "Сайты СМИ": 36, VK: 27, Радио: 22,
+    "Печатные СМИ": 19, "Друзья и родственники": 41
+  },
+  1.2,
+  "media",
+  v => fmtNum(clamp(v, 15, 44), 0, ".")
+);
+
+const WIND_SITES = [
+  "Степной", "Прибрежный", "Холмовой", "Речной", "Полевой", "Горный",
+  "Северный", "Восточный", "Западный", "Южный"
+];
+const windRows = mapWithBase(
+  WIND_SITES,
+  {
+    Степной: 1240, Прибрежный: 980, Холмовой: 755, Речной: 621, Полевой: 410,
+    Горный: 185, Северный: 540, Восточный: 612, Западный: 701, Южный: 891
+  },
+  28,
+  "wind",
+  v => fmtNum(clamp(v, 75, 1280), 1, ".")
+);
+
+const MIGRANT_SECTORS = [
+  "Строительство", "Логистика", "Общепит", "Торговля", "Сельхоз", "Уборка",
+  "Производство", "Такси", "IT-аутсорс", "Прочее"
+];
+const migrantRows = mapWithBase(
+  MIGRANT_SECTORS,
+  {
+    Строительство: 142, Логистика: 98, Общепит: 76, Торговля: 88, Сельхоз: 34,
+    Уборка: 52, Производство: 61, Такси: 47, "IT-аутсорс": 12, Прочее: 29
+  },
+  4.5,
+  "migrant",
+  v => fmtNum(Math.round(clamp(v, 10, 155)), 0, ".")
+);
+
+const uniRows = UNIVERSITIES.map((u, i) => {
+  const r = rng("uni", u);
+  const v = 91.8 - i * 1.32 + r.gauss(0, 0.9);
+  return [u, fmtNum(clamp(v, 58, 94), 0, ",")];
+});
+
+const WATER_REGIONS = [
+  "Москва", "СПб", "Центр", "СЗ", "Юг", "Кавказ", "Поволжье", "Урал",
+  "Сибирь", "ДВ", "Тыва", "Якутия"
+];
+const waterRows = mapWithBase(
+  WATER_REGIONS,
+  {
+    Москва: 1.2, СПб: 1.5, Центр: 3.8, СЗ: 4.1, Юг: 8.4, Кавказ: 21.0, Поволжье: 9.2,
+    Урал: 7.5, Сибирь: 12.3, ДВ: 11.8, Тыва: 23.0, Якутия: 18.4
+  },
+  0.45,
+  "water",
+  v => fmtNum(clamp(v, 0.8, 25), 1, ",")
+);
+
+const FX_PAIRS = ["USD", "EUR", "CNY", "GBP", "TRY", "KZT", "BYN"];
+const fxBase = { USD: 92.1, EUR: 99.4, CNY: 12.72, GBP: 117.6, TRY: 2.84, KZT: 0.19, BYN: 28.05 };
+const fxRows = FX_PAIRS.map(code => {
+  const r = rng("fx", code);
+  const v = fxBase[code] + r.gauss(0, fxBase[code] * 0.012);
+  return [code, fmtNum(clamp(v, 0.12, 130), 2, ",")];
+});
 
 const TASKS_RU = [
   {
@@ -290,12 +529,7 @@ const TASKS_RU = [
     sources: "Минздрав, открытая панель записи к врачу; медиана по первичным обращениям.",
     csv: { delimiter: ";", decimal: "," },
     headers: ["Регион", "Дней_ожидания"],
-    rows: [
-      ["Москва", "7,5"], ["Санкт-Петербург", "8,2"], ["Центр", "9,1"],
-      ["Северо-Запад", "9,8"], ["Юг", "14,3"], ["Поволжье", "13,0"],
-      ["Урал", "15,7"], ["Сибирь", "18,4"], ["Дальний Восток", "24,0"],
-      ["Крым", "12,1"], ["Северный Кавказ", "11,6"]
-    ]
+    rows: waitRows
   },
   {
     dir: "task-03-zhara-po-gorodam",
@@ -308,12 +542,7 @@ const TASKS_RU = [
     sources: "Росгидромет; норма 1991–2020; городские метеостанции.",
     csv: { delimiter: ",", decimal: "." },
     headers: ["Город", "Аномалия_С"],
-    rows: [
-      ["Мурманск", "0.3"], ["Архангельск", "0.9"], ["Москва", "1.4"],
-      ["Казань", "1.6"], ["Самара", "1.9"], ["Ростов-на-Дону", "2.1"],
-      ["Краснодар", "2.4"], ["Сочи", "2.5"], ["Волгоград", "2.0"],
-      ["Новосибирск", "1.2"], ["Иркутск", "0.8"]
-    ]
+    rows: heatAnomalyRows
   },
   {
     dir: "task-04-dtp-po-regionam",
@@ -326,10 +555,7 @@ const TASKS_RU = [
     sources: "ГИБДД, статистическая форма 1-ДТП; население — оценка на 01.10.2025.",
     csv: { delimiter: ";", decimal: "," },
     headers: ["Регион", "Погибшие_на_100k"],
-    rows: REGIONS_DEATHS.map((r, i) => [
-      r,
-      (4.2 + (i % 5) * 0.9 + (i > 8 ? 2.1 : 0) + (i === 10 ? 1.5 : 0)).toFixed(1).replace(".", ",")
-    ])
+    rows: dtpRows
   },
   {
     dir: "task-05-byudzhet-municipalitet",
@@ -342,11 +568,7 @@ const TASKS_RU = [
     sources: "Открытый бюджет municipality N; исполнение на 01.12.2025.",
     csv: { delimiter: ",", decimal: "." },
     headers: ["Статья", "Млрд_руб"],
-    rows: [
-      ["Образование", "18.4"], ["Здравоохранение", "14.2"], ["ЖКХ", "9.8"],
-      ["Дороги", "4.1"], ["Культура", "2.6"], ["Безопасность", "3.5"],
-      ["Соцподдержка", "6.9"], ["Администрирование", "5.0"], ["Прочее", "3.2"]
-    ]
+    rows: budgetRows
   },
   {
     dir: "task-06-zarplaty-po-otraslyam",
@@ -379,10 +601,14 @@ const TASKS_RU = [
       (mon, topic) => {
         const m = MONTHS_RU.indexOf(mon);
         const t = HOTLINE_REASONS.indexOf(topic);
-        let v = 180 + t * 22 + m * 8;
-        if (topic === "ЖКХ и коммуналка") v += m >= 9 ? 1200 : m <= 1 ? 800 : 200;
-        if (topic === "Дороги и транспорт" && m >= 5 && m <= 8) v += 400;
-        return String(Math.round(v));
+        const r = rng("hotline", topic, mon);
+        let v = 175 + t * 21 + m * 7 + r.gauss(0, 38);
+        if (topic === "ЖКХ и коммуналка") {
+          const seasonal = m >= 9 ? 1050 + r.gauss(0, 120) : m <= 1 ? 720 + r.gauss(0, 90) : 180;
+          v += seasonal;
+        }
+        if (topic === "Дороги и транспорт" && m >= 5 && m <= 8) v += 360 + r.gauss(0, 55);
+        return String(Math.round(clamp(v, 40, 6200)));
       }
     ),
     seriesCount: HOTLINE_REASONS.length
@@ -440,11 +666,7 @@ const TASKS_RU = [
     sources: "CATI, n=1 800, 18+; город 100k+; полевые работы 09–11.2025.",
     csv: { delimiter: ",", decimal: "." },
     headers: ["Источник", "Доверие_%"],
-    rows: [
-      ["Телевидение", "28"], ["Telegram", "34"], ["YouTube", "31"],
-      ["Сайты СМИ", "36"], ["VK", "27"], ["Радио", "22"],
-      ["Печатные СМИ", "19"], ["Друзья и родственники", "41"]
-    ]
+    rows: mediaTrustRows
   },
   {
     dir: "task-12-vetryaki-vyработka",
@@ -457,12 +679,7 @@ const TASKS_RU = [
     sources: "АО «Сетевая ветро»; SCADA, часовые суммы.",
     csv: { delimiter: ";", decimal: "." },
     headers: ["Площадка", "МВтч"],
-    rows: [
-      ["Степной", "1240.5"], ["Прибрежный", "980.0"], ["Холмовой", "755.3"],
-      ["Речной", "620.8"], ["Полевой", "410.0"], ["Горный", "88.2"],
-      ["Северный", "540.0"], ["Восточный", "612.4"], ["Западный", "701.1"],
-      ["Южный", "890.6"]
-    ]
+    rows: windRows
   },
   {
     dir: "task-13-migranty-trud",
@@ -475,11 +692,7 @@ const TASKS_RU = [
     sources: "МВД; реестр патентов, агрегат по ОКВЭД работодателя.",
     csv: { delimiter: ",", decimal: "." },
     headers: ["Отрасль", "Патенты_тыс"],
-    rows: [
-      ["Строительство", "142"], ["Логистика", "98"], ["Общепит", "76"],
-      ["Торговля", "88"], ["Сельхоз", "34"], ["Уборка", "52"],
-      ["Производство", "61"], ["Такси", "47"], ["IT-аутсорс", "12"], ["Прочее", "29"]
-    ]
+    rows: migrantRows
   },
   {
     dir: "task-14-shkoly-rejting",
@@ -492,7 +705,7 @@ const TASKS_RU = [
     sources: "Мониторинг занятости выпускников; индекс нормирован, методика v3.",
     csv: { delimiter: ";", decimal: "," },
     headers: ["ВУЗ", "Индекс"],
-    rows: UNIVERSITIES.map((u, i) => [u, String(92 - i * 1.4 - (i % 3))])
+    rows: uniRows
   },
   {
     dir: "task-15-pm25-megapoly",
@@ -561,11 +774,7 @@ const TASKS_RU = [
     sources: "Микроперепись 2025; агрегат по субъектам РФ.",
     csv: { delimiter: ";", decimal: "," },
     headers: ["Регион", "Без_водопровода_%"],
-    rows: [
-      ["Москва", "1,2"], ["СПб", "1,5"], ["Центр", "3,8"], ["СЗ", "4,1"],
-      ["Юг", "8,4"], ["Кавказ", "21,0"], ["Поволжье", "9,2"], ["Урал", "7,5"],
-      ["Сибирь", "12,3"], ["ДВ", "11,8"], ["Тыва", "23,0"], ["Якутия", "18,4"]
-    ]
+    rows: waterRows
   },
   {
     dir: "task-20-kurs-rublya",
@@ -578,10 +787,7 @@ const TASKS_RU = [
     sources: "Банк России; официальные курсы на 15:00 МСК.",
     csv: { delimiter: ";", decimal: "," },
     headers: ["Валюта", "Курс_руб"],
-    rows: [
-      ["USD", "92,45"], ["EUR", "99,80"], ["CNY", "12,78"],
-      ["GBP", "118,20"], ["TRY", "2,87"], ["KZT", "0,19"], ["BYN", "28,10"]
-    ]
+    rows: fxRows
   }
 ];
 
@@ -597,7 +803,10 @@ const usUnemploymentRows = seriesGrid(
   (m, st) => {
     const i = MONTHS_ISO.indexOf(m);
     const s = US_STATES_UNEMP.indexOf(st);
-    return (3.2 + s * 0.08 + i * 0.04 + (s === 0 ? 0.6 : 0)).toFixed(1);
+    const r = rng("us-unemp", st, m);
+    const base = 3.15 + s * 0.075 + (st === "California" ? 0.55 : st === "Michigan" ? 0.85 : 0);
+    const v = base - i * 0.028 + r.gauss(0, 0.12);
+    return fmtNum(clamp(v, 2.4, 5.8), 1, ".");
   }
 );
 
@@ -610,7 +819,10 @@ const ukEnergyRows = seriesGrid(
   (m, sup) => {
     const i = MONTHS_ISO.indexOf(m);
     const s = UK_SUPPLIERS.indexOf(sup);
-    return (142 + s * 3.5 + i * 1.8 + (i > 8 ? 12 : 0)).toFixed(2);
+    const r = rng("uk-energy", sup, m);
+    const winter = i >= 9 ? 11 + r.gauss(0, 2.5) : 0;
+    const v = 140 + s * 3.4 + i * 1.75 + winter + r.gauss(0, 2.2);
+    return fmtNum(clamp(v, 128, 198), 2, ".");
   }
 );
 
@@ -632,7 +844,10 @@ const layoffRows = seriesGrid(
   (q, firm) => {
     const qi = layoffQuarters.indexOf(q);
     const fi = TECH_FIRMS.indexOf(firm);
-    return String(Math.round(800 + fi * 120 + qi * 90 + ((fi + qi) % 4) * 200));
+    const r = rng("layoff", firm, q);
+    const cycle = qi === 3 ? 2800 + r.gauss(0, 320) : qi >= 6 ? 1400 - (qi - 6) * 180 : 900;
+    const v = cycle + fi * 95 + r.gauss(0, 140);
+    return String(Math.round(clamp(v, 120, 5200)));
   }
 );
 
@@ -645,7 +860,10 @@ const subwayRows = seriesGrid(
   (m, line) => {
     const i = MONTHS_ISO.indexOf(m);
     const l = SUBWAY_LINES.indexOf(line);
-    return String(Math.round(4200 + l * 180 + i * 35 + (i > 5 && i < 9 ? -200 : 0)));
+    const r = rng("subway", line, m);
+    const summer = i > 5 && i < 9 ? -165 + r.gauss(0, 45) : 0;
+    const v = 4180 + l * 175 + i * 32 + summer + r.gauss(0, 85);
+    return String(Math.round(clamp(v, 3600, 6200)));
   }
 );
 
@@ -657,8 +875,11 @@ const gridMixRows = heatmapGrid(
   (state, src) => {
     const s = usStatesGrid.indexOf(state);
     const r = GRID_SOURCES.indexOf(src);
-    const base = r === 0 ? 18 : r === 1 ? 32 : r === 2 ? 12 : r === 3 ? 14 : 8;
-    return (base + s * 0.9 - r * 1.1).toFixed(1);
+    const noise = rng("grid", state, src).gauss(0, 1.4);
+    const base = r === 0 ? 17.5 : r === 1 ? 31 : r === 2 ? 11.5 : r === 3 ? 13.5 : 7.5;
+    const stateAdj = state === "WA" && src >= 3 ? 6 : state === "PA" && r === 0 ? 8 : 0;
+    const v = base + s * 0.85 - r * 1.05 + stateAdj + noise;
+    return fmtNum(clamp(v, 4, 52), 1, ".");
   }
 );
 
@@ -670,15 +891,75 @@ const seaLevelMonths = Array.from({ length: 24 }, (_, i) => {
   d.setMonth(d.getMonth() + i);
   return d.toISOString().slice(0, 7);
 });
+const seaWalks = Object.fromEntries(
+  SEA_STATIONS.map(st => [st, rng("sea-walk", st).walk(3.78 + SEA_STATIONS.indexOf(st) * 0.035, 0.012, seaLevelMonths.length)])
+);
 const seaLevelRows = seriesGrid(
   seaLevelMonths,
   SEA_STATIONS,
   (mon, st) => {
     const i = seaLevelMonths.indexOf(mon);
     const s = SEA_STATIONS.indexOf(st);
-    return (3.82 + s * 0.04 + i * 0.008 + Math.sin(i / 4) * 0.05).toFixed(3);
+    const r = rng("sea", st, mon);
+    const gulf = st === "Galveston" ? i * 0.011 : 0;
+    const v = seaWalks[st][i] + gulf + r.gauss(0, 0.018);
+    return fmtNum(clamp(v, 3.6, 4.25), 3, ".");
   }
 );
+
+const asylumRows = mapWithBase(
+  ASYLUM_COUNTRIES,
+  {
+    Germany: 42, France: 28, Italy: 26, Spain: 22, Greece: 20, Netherlands: 18,
+    Austria: 16, Poland: 14, Sweden: 12, Belgium: 11
+  },
+  1.4,
+  "asylum",
+  v => fmtNum(clamp(v, 6, 46), 1, ".")
+);
+
+const TEXAS_RESERVOIRS = [
+  "Travis", "Buchanan", "Canyon", "Amistad", "Falcon", "Livingston", "Texoma", "Meadows"
+];
+const reservoirRows = mapWithBase(
+  TEXAS_RESERVOIRS,
+  {
+    Travis: 37.2, Buchanan: 38.5, Canyon: 42.1, Amistad: 61.4, Falcon: 45.8,
+    Livingston: 52.3, Texoma: 48.9, Meadows: 55.0
+  },
+  1.1,
+  "reservoir",
+  v => fmtNum(clamp(v, 34, 64), 1, ".")
+);
+
+const NHS_TRUSTS = [
+  "Norfolk & Waveney", "Black Country", "Cornwall", "Somerset", "Leeds", "Bristol",
+  "Manchester", "Guy's & St Thomas'", "Imperial", "Royal Free"
+];
+const nhsRows = mapWithBase(
+  NHS_TRUSTS,
+  {
+    "Norfolk & Waveney": 24.6, "Black Country": 23.1, Cornwall: 21.8, Somerset: 20.4,
+    Leeds: 17.2, Bristol: 16.5, Manchester: 13.1, "Guy's & St Thomas'": 12.4,
+    Imperial: 11.9, "Royal Free": 11.2
+  },
+  0.55,
+  "nhs",
+  v => fmtNum(clamp(v, 10.5, 26), 1, ".")
+);
+
+const OPIOID_STATES = [
+  "West Virginia", "Ohio", "Pennsylvania", "Kentucky", "Tennessee", "Florida",
+  "California", "New York", "Texas", "Massachusetts", "Arizona", "Colorado"
+];
+const opioidRows = OPIOID_STATES.map(st => {
+  const r = rng("opioid", st);
+  const base = st === "West Virginia" ? 56 : st === "California" ? 12.5 : 22 + OPIOID_STATES.indexOf(st) * 1.8;
+  const rate2024 = base + r.gauss(0, 1.8);
+  const drop = r.uniform(0.8, 4.2);
+  const rate2025 = rate2024 - drop + r.gauss(0, 0.6);
+  return [st, fmtNum(clamp(rate2024, 10, 62), 1, "."), fmtNum(clamp(rate2025, 9, 58), 1, ".")];
+});
 
 const TASKS_EN = [
   {
@@ -723,10 +1004,7 @@ const TASKS_EN = [
     sources: "Eurostat migr_asyappctza; Q3 2025, rounded teaching figures.",
     csv: { delimiter: ";", decimal: "." },
     headers: ["Country", "Applications_k"],
-    rows: ASYLUM_COUNTRIES.map((c, i) => [
-      c,
-      (42 - i * 2.8 + (i === 0 ? 8 : 0) + (i > 6 ? -3 : 0)).toFixed(1)
-    ])
+    rows: asylumRows
   },
   {
     dir: "task-24-texas-reservoir-levels",
@@ -740,11 +1018,7 @@ const TASKS_EN = [
     sources: "Texas Water Development Board; conservation storage, 18 Nov 2025.",
     csv: { delimiter: ",", decimal: "." },
     headers: ["Reservoir", "Storage_pct"],
-    rows: [
-      ["Travis", "37.2"], ["Buchanan", "38.5"], ["Canyon", "42.1"],
-      ["Amistad", "61.4"], ["Falcon", "45.8"], ["Livingston", "52.3"],
-      ["Texoma", "48.9"], ["Meadows", "55.0"]
-    ]
+    rows: reservoirRows
   },
   {
     dir: "task-25-tech-layoffs-tracker",
@@ -788,12 +1062,7 @@ const TASKS_EN = [
     sources: "CDC WONDER provisional overdose deaths; state-level rates.",
     csv: { delimiter: ",", decimal: "." },
     headers: ["State", "Rate_2024", "Rate_2025_YTD"],
-    rows: [
-      ["West Virginia", "58.1", "52.3"], ["Ohio", "41.2", "34.4"], ["Pennsylvania", "38.5", "35.1"],
-      ["Kentucky", "45.0", "42.8"], ["Tennessee", "36.2", "33.5"], ["Florida", "28.4", "26.9"],
-      ["California", "12.8", "12.1"], ["New York", "18.6", "17.2"], ["Texas", "14.1", "13.8"],
-      ["Massachusetts", "32.0", "29.4"], ["Arizona", "24.5", "23.0"], ["Colorado", "19.8", "18.6"]
-    ]
+    rows: opioidRows
   },
   {
     dir: "task-28-us-grid-mix-by-state",
@@ -822,12 +1091,7 @@ const TASKS_EN = [
     sources: "NHS England RTT statistics; median wait, admitted patients.",
     csv: { delimiter: ",", decimal: "." },
     headers: ["Trust", "Median_wait_weeks"],
-    rows: [
-      ["Norfolk & Waveney", "24.6"], ["Black Country", "23.1"], ["Cornwall", "21.8"],
-      ["Somerset", "20.4"], ["Leeds", "17.2"], ["Bristol", "16.5"],
-      ["Manchester", "13.1"], ["Guy's & St Thomas'", "12.4"], ["Imperial", "11.9"],
-      ["Royal Free", "11.2"]
-    ]
+    rows: nhsRows
   },
   {
     dir: "task-30-sea-level-tide-gauges",

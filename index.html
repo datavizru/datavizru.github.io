@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Сделай свою диаграмму</title>
+  <title>Визуализируй свои данные</title>
+  <link rel="icon" href="./logo.svg" type="image/svg+xml" />
 
   <!-- Шрифт интерфейса -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -81,11 +82,12 @@
       border-bottom:1px solid var(--border);
     }
     .header .logo {
-      width:18px; height:18px; border-radius:5px;
-      background:linear-gradient(135deg,var(--accent),#7048e8);
+      width:24px; height:24px; flex:none; display:block;
+      border-radius:6px;
     }
     .header h1 {
       font-size:14px; font-weight:600; letter-spacing:-0.01em; margin:0;
+      line-height:1.2;
     }
     .header .sp { flex:1; }
 
@@ -96,7 +98,10 @@
       padding:6px 0 24px;
     }
     .left  { grid-area:left;  border-right:1px solid var(--border); }
-    .right { grid-area:right; border-left:1px solid var(--border); }
+    .right {
+      grid-area:right; border-left:1px solid var(--border);
+      scroll-padding-top:calc(var(--right-panel-sticky-h, 88px) + 8px);
+    }
     .right-panel-jump {
       position: sticky; top: 0; z-index: 4;
       background: var(--panel);
@@ -104,6 +109,9 @@
       box-shadow: 0 1px 0 var(--border-2);
     }
     .right-panel-jump select { width: 100%; }
+    .side.right > .section:not(.right-panel-jump) {
+      scroll-margin-top: var(--right-panel-sticky-h, 80px);
+    }
     .heatmap-stop-row { display:flex; align-items:center; gap:6px; margin:6px 0; }
     .heatmap-stop-row input[type=number] { width:80px; flex:none; }
     .heatmap-stop-row input[type=color] { width:40px; flex:none; padding:2px; height:var(--ctrl-h); }
@@ -115,6 +123,95 @@
     .section > .title {
       font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
       color:var(--muted); margin:0 0 10px;
+    }
+
+    /* Иерархия подписей в боковых панелях */
+    .side.left,
+    .side.right {
+      --panel-hier-section: color-mix(in srgb, var(--text) 80%, transparent);
+      --panel-hier-sub: color-mix(in srgb, var(--text) 70%, transparent);
+      --panel-hier-field: color-mix(in srgb, var(--text) 50%, transparent);
+    }
+    .side.left .section > .title,
+    .side.right .section > .title {
+      font-weight:700;
+      color:var(--panel-hier-section);
+    }
+    .side.left .panel-sub,
+    .side.right .panel-sub {
+      font-size:11px; font-weight:700; color:var(--panel-hier-sub);
+      margin:12px 0 6px; letter-spacing:0.01em;
+    }
+    .side.left .panel-sub--gap,
+    .side.right .panel-sub--gap { margin:12px 0 8px; }
+    .side.left .panel-note,
+    .side.right .panel-note {
+      font-size:11px; font-weight:400; color:var(--panel-hier-field);
+      line-height:1.45; margin:0 0 8px;
+    }
+    .side.left .text-char-hint {
+      font-size:11px; font-weight:400; color:var(--panel-hier-field);
+      line-height:1.45; margin:0 0 8px;
+    }
+    .side.left .file-name { color:var(--panel-hier-field); }
+    .side.left .panel-field-label,
+    .side.right .panel-field-label,
+    .side.left .field > label,
+    .side.right .field > label,
+    .side.left .row > label,
+    .side.right .row > label {
+      font-weight:400;
+      color:var(--panel-hier-field);
+    }
+    .side.left .field > label,
+    .side.right .field > label {
+      display:block; font-size:12px; margin:0 0 4px; letter-spacing:0.01em;
+    }
+    .side.left .row > label,
+    .side.right .row > label { flex:1; font-size:12.5px; }
+    .side.left .panel-field-label,
+    .side.right .panel-field-label { flex:1; font-size:11px; }
+
+    /* Сворачивание разделов и подразделов */
+    .side.left .panel-section-head,
+    .side.right .panel-section-head,
+    .side.left .panel-group-head,
+    .side.right .panel-group-head {
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+      width:100%; padding:0; border:none; background:transparent; cursor:pointer; text-align:left;
+    }
+    .side.left .panel-section-head,
+    .side.right .panel-section-head {
+      margin:0 0 10px;
+      font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase;
+      color:var(--panel-hier-section);
+    }
+    .side.left .section[data-collapsed] > .panel-section-head,
+    .side.right .section[data-collapsed] > .panel-section-head { margin-bottom:0; }
+    .side.left .section[data-collapsed] > .section-body,
+    .side.right .section[data-collapsed] > .section-body { display:none; }
+    .side.left .panel-group-head,
+    .side.right .panel-group-head {
+      margin:12px 0 6px;
+      font-size:11px; font-weight:700; color:var(--panel-hier-sub); letter-spacing:0.01em;
+    }
+    .side.left .panel-group-head--gap,
+    .side.right .panel-group-head--gap { margin:12px 0 8px; }
+    .side.left .panel-group[data-collapsed] > .panel-group-head,
+    .side.right .panel-group[data-collapsed] > .panel-group-head { margin-bottom:0; }
+    .side.left .panel-group[data-collapsed] > .panel-group-body,
+    .side.right .panel-group[data-collapsed] > .panel-group-body { display:none; }
+    .side.left .panel-chevron,
+    .side.right .panel-chevron {
+      flex:none; width:7px; height:7px; opacity:0.55;
+      border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor;
+      transform:rotate(45deg); transition:transform 0.15s ease;
+    }
+    .side.left .section[data-collapsed] .panel-section-head .panel-chevron,
+    .side.right .section[data-collapsed] .panel-section-head .panel-chevron,
+    .side.left .panel-group[data-collapsed] .panel-group-head .panel-chevron,
+    .side.right .panel-group[data-collapsed] .panel-group-head .panel-chevron {
+      transform:rotate(-45deg);
     }
 
     /* строки контролов */
@@ -210,14 +307,16 @@
     .viewport {
       position:relative; transform-origin:center center; will-change:transform;
     }
-    /* Сетка документа (как Grid в Figma) — поверх фрейма, не блокирует клики */
+    /* Сетка документа — только поверх фрейма, от левого верхнего угла */
     .doc-grid {
-      position:absolute; left:50%; top:50%; width:400vmax; height:400vmax;
-      margin:-200vmax 0 0 -200vmax; pointer-events:none; z-index:2;
+      position:absolute; left:0; top:0; margin:0;
+      pointer-events:none; z-index:2;
       background-position:0 0;
+      background-repeat:repeat;
+      box-sizing:border-box;
     }
     .stage {
-      position:relative; z-index:1;
+      position:relative; z-index:1; display:inline-block; overflow:hidden;
       background:transparent; border-radius:0; padding:0; font-size:0; line-height:0;
     }
     #viz, #viz canvas, #viz svg { display:block; }
@@ -270,15 +369,15 @@
 
     <!-- ░░ ХЕДЕР ░░ -->
     <header class="header">
-      <div class="logo"></div>
-      <h1>сделай свою диаграмму</h1>
+      <img class="logo" src="./logo.svg" width="24" height="24" alt="" />
+      <h1>Визуализируй свои данные</h1>
       <div class="sp"></div>
     </header>
 
     <!-- ░░ ЛЕВАЯ ПАНЕЛЬ ░░ -->
     <aside class="side left">
 
-      <div class="section">
+      <div class="section" id="leftSec-chart-type">
         <p class="title">Тип диаграммы</p>
         <div class="field">
           <label for="chartType">Вид графика</label>
@@ -301,19 +400,20 @@
         </div>
       </div>
 
-      <div class="section">
+      <div class="section" id="leftSec-data">
         <p class="title">Данные</p>
         <div class="field">
           <label>Набор для предпросмотра</label>
           <select id="dataset"></select>
         </div>
+        <p class="panel-sub panel-sub--gap">Сопоставление полей</p>
         <div class="row" style="gap:8px;">
           <div style="flex:1;">
-            <label id="fieldXLabel" style="display:block;font-size:11px;color:var(--muted);margin:0 0 4px;">Ось X / категория</label>
+            <label id="fieldXLabel" class="panel-field-label" style="display:block;margin:0 0 4px;">Ось X / категория</label>
             <select id="fieldX"></select>
           </div>
           <div style="flex:1;">
-            <label id="fieldYLabel" style="display:block;font-size:11px;color:var(--muted);margin:0 0 4px;">Ось Y / значение</label>
+            <label id="fieldYLabel" class="panel-field-label" style="display:block;margin:0 0 4px;">Ось Y / значение</label>
             <select id="fieldY"></select>
           </div>
         </div>
@@ -329,9 +429,10 @@
           <label>Подпись точки (имя)</label>
           <select id="fieldPointLabel"></select>
         </div>
-        <div class="row" style="gap:8px; margin-top:4px;">
+        <p class="panel-sub panel-sub--gap">Файл CSV</p>
+        <div class="row" style="gap:8px;">
           <div style="flex:1;">
-            <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 4px;">Разделитель полей</label>
+            <label class="panel-field-label" style="display:block;margin:0 0 4px;">Разделитель полей</label>
             <select id="csvDelimiter">
               <option value=",">Запятая (,)</option>
               <option value=";">Точка с запятой (;)</option>
@@ -340,7 +441,7 @@
             </select>
           </div>
           <div style="flex:1;">
-            <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 4px;">Дес. разделитель</label>
+            <label class="panel-field-label" style="display:block;margin:0 0 4px;">Дес. разделитель</label>
             <select id="csvDecimal">
               <option value=".">Точка (1.25)</option>
               <option value=",">Запятая (1,25)</option>
@@ -352,29 +453,32 @@
         <div class="file-name" id="csvName"></div>
       </div>
 
-      <div class="section">
+      <div class="section" id="leftSec-text">
         <p class="title">Текст</p>
         <ul class="text-char-hint" id="textCharHint"></ul>
         <div class="text-char-btns" id="textCharBtns"></div>
+        <p class="panel-sub panel-sub--gap">Заголовок и подзаголовок</p>
         <div class="field"><label>Заголовок</label><input type="text" id="title" class="text-input" /></div>
         <div class="field"><label>Подзаголовок</label><input type="text" id="subtitle" class="text-input" /></div>
+        <p class="panel-sub panel-sub--gap">Заголовки осей</p>
         <div class="row" style="gap:8px;align-items:flex-end;">
           <div style="flex:1;min-width:0;">
-            <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 4px;">Заголовок оси X</label>
+            <label class="panel-field-label" style="display:block;margin:0 0 4px;">Заголовок оси X</label>
             <input type="text" id="axisTitleX" class="text-input" placeholder="пусто — без подписи" />
           </div>
           <div style="flex:1;min-width:0;">
-            <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 4px;">Заголовок оси Y</label>
+            <label class="panel-field-label" style="display:block;margin:0 0 4px;">Заголовок оси Y</label>
             <input type="text" id="axisTitleY" class="text-input" placeholder="пусто — без подписи" />
           </div>
           <button type="button" class="btn icon" id="btnResetAxisTitles" title="Сбросить: подставить имена столбцов X и Y" style="flex:none;margin-bottom:0;">↺</button>
         </div>
+        <p class="panel-sub panel-sub--gap">Подписи внизу</p>
         <div class="field"><label>Комментарий под диаграммой</label><textarea id="comment" class="text-input" placeholder="Необязательно"></textarea></div>
         <div class="field"><label>Футер · копирайт</label><input type="text" id="footCopy" class="text-input" /></div>
         <div class="field"><label>Футер · источники</label><input type="text" id="footSrc" class="text-input" /></div>
       </div>
 
-      <div class="section">
+      <div class="section" id="leftSec-export">
         <p class="title">Экспорт</p>
         <div class="btn-grid-3">
           <button class="btn" id="png2">PNG 2×</button>
@@ -383,7 +487,7 @@
         </div>
       </div>
 
-      <div class="section">
+      <div class="section" id="leftSec-project">
         <p class="title">Проект</p>
         <div class="btn-grid">
           <button class="btn primary" id="saveJson">Сохранить</button>
@@ -403,8 +507,10 @@
         <button id="zoomReset" title="Сбросить до 100%">⟲</button>
       </div>
       <div class="viewport">
-        <div class="stage"><div id="viz"></div></div>
-        <div id="docGrid" class="doc-grid" aria-hidden="true"></div>
+        <div class="stage">
+          <div id="docGrid" class="doc-grid" aria-hidden="true"></div>
+          <div id="viz"></div>
+        </div>
       </div>
     </main>
 
@@ -412,7 +518,7 @@
     <aside class="side right">
 
       <div class="section right-panel-jump" id="rightPanelJumpSection">
-        <label for="rightPanelJump" style="display:block;font-size:11px;color:var(--muted);margin:0 0 6px;letter-spacing:0.01em;">Раздел панели</label>
+        <label for="rightPanelJump" class="panel-field-label" style="display:block;margin:0 0 6px;">Раздел панели</label>
         <select id="rightPanelJump" title="Быстрый переход к разделу оформления">
           <option value="">— перейти к разделу —</option>
         </select>
@@ -434,7 +540,7 @@
 
       <div class="section" id="rightSec-workspace-bg">
         <p class="title">Фон холста</p>
-        <p style="font-size:11px;color:var(--muted);margin:0 0 8px;">Заливка области позади фрейма диаграммы (не входит в экспорт).</p>
+        <p class="panel-note">Заливка области позади фрейма диаграммы (не входит в экспорт).</p>
         <div class="row"><label>Цвет</label>
           <input type="color" id="workspaceBgColor" />
           <input type="number" class="op" id="workspaceBgOpacity" title="Прозрачность" min="0" max="1" step="0.05" />
@@ -488,24 +594,24 @@
 
       <div class="section" id="rightSec-text-padding">
         <p class="title">Отступы текстов</p>
-        <p style="font-size:11px;color:var(--muted);margin:0 0 8px;">Заголовок и подзаголовок</p>
+        <p class="panel-sub panel-sub--gap">Заголовок и подзаголовок</p>
         <div class="row"><label>Верхний отступ, px</label><input type="number" id="padTitleTop" min="-200" max="200" step="1" /></div>
         <div class="row"><label>Отступ между, px</label><input type="number" id="padTitleBetween" min="-200" max="200" step="1" /></div>
         <div class="row"><label>Нижний отступ, px</label><input type="number" id="padTitleBottom" min="-200" max="200" step="1" /></div>
-        <p style="font-size:11px;color:var(--muted);margin:12px 0 8px;">Легенда</p>
+        <p class="panel-sub panel-sub--gap">Легенда</p>
         <div class="row"><label>Сверху, px</label><input type="number" id="padLegendTop" min="-200" max="200" step="1" /></div>
         <div class="row"><label>Снизу, px</label><input type="number" id="padLegendBottom" min="-200" max="200" step="1" /></div>
-        <p style="font-size:11px;color:var(--muted);margin:12px 0 8px;">Комментарий</p>
+        <p class="panel-sub panel-sub--gap">Комментарий</p>
         <div class="row"><label>Сверху, px</label><input type="number" id="padCommentTop" min="-200" max="200" step="1" /></div>
         <div class="row"><label>Снизу, px</label><input type="number" id="padCommentBottom" min="-200" max="200" step="1" /></div>
-        <p style="font-size:11px;color:var(--muted);margin:12px 0 8px;">Футер</p>
+        <p class="panel-sub panel-sub--gap">Футер</p>
         <div class="row"><label>Сверху, px</label><input type="number" id="padFooterTop" min="-200" max="200" step="1" /></div>
         <div class="row"><label>Снизу, px</label><input type="number" id="padFooterBottom" min="-200" max="200" step="1" /></div>
       </div>
 
       <div class="section" id="localFontsSection">
         <p class="title">Локальные шрифты</p>
-        <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;">
+        <p class="panel-note">
           Положите файлы в <code>Fonts/</code> и выполните <code>python3 gen-fonts-manifest.py</code>, затем обновите страницу (Cmd+Shift+R). Кнопка «Обновить» — при локальном сервере.
           При открытии страницы шрифты подключаются автоматически.
         </p>
@@ -519,6 +625,10 @@
 
       <div class="section" id="rightSec-text-styles">
         <p class="title">Надписи</p>
+        <div class="field" style="margin-bottom:10px;">
+          <label>Шрифт всех надписей</label>
+          <select id="allTextsFont" title="Один шрифт для заголовка, осей, легенды, подписей и футера"></select>
+        </div>
         <div id="textStyles"></div>
       </div>
 
@@ -546,7 +656,7 @@
           <select id="heatmapScheme"></select>
         </div>
         <div id="heatmapStopsPanel" style="display:none;">
-          <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;">
+          <p class="panel-note">
             Начальное, промежуточные и конечное значения с цветом. Нужно минимум 2 точки.
           </p>
           <p id="heatmapDataRange" class="file-name" style="margin:0 0 8px;"></p>
@@ -556,10 +666,10 @@
             <button type="button" class="btn" id="heatmapStopsFromData">Из данных (min–max)</button>
           </div>
         </div>
-        <p style="font-size:11px;color:var(--muted);margin:12px 0 8px;">Легенда шкалы</p>
+        <p class="panel-sub panel-sub--gap">Легенда шкалы</p>
         <div class="row"><label>Ширина градиента, px</label><input type="number" data-path="style.heatmap.legendGradientLength" data-type="num" min="40" max="800" step="10" /></div>
         <div class="row"><label>Заголовок легенды</label><span class="switch"><input type="checkbox" data-path="style.heatmap.legendTitleShow" data-type="bool" /><span class="track"></span></span></div>
-        <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;">Текст заголовка — из «Заголовок оси Y» в блоке «Текст».</p>
+        <p class="panel-note">Текст заголовка — из «Заголовок оси Y» в блоке «Текст».</p>
       </div>
 
       <div class="section" id="rightSec-colors">
@@ -582,13 +692,22 @@
 
       <div class="section" id="rightSec-shapes">
         <p class="title">Формы</p>
-        <div class="field" id="barGapRow"><label>Зазор между столбиками</label>
-          <div class="row" style="gap:8px;">
+        <div class="field" id="barGapRow">
+          <label>Столбики и линейки</label>
+          <select data-path="style.barGap.mode" data-type="text" id="barGapMode">
+            <option value="gap">Зазор между</option>
+            <option value="fixed">Фиксированная ширина</option>
+          </select>
+          <div id="barGapModeGap" class="row" style="gap:8px;margin-top:6px;">
             <select data-path="style.barGap.unit" data-type="text" style="flex:1;">
               <option value="percent">%</option>
               <option value="pixels">px</option>
             </select>
-            <input type="number" data-path="style.barGap.value" data-type="num" min="0" max="500" step="1" />
+            <input type="number" data-path="style.barGap.value" data-type="num" min="0" max="500" step="1" title="Зазор между столбиками" />
+          </div>
+          <div id="barGapModeFixed" class="row" style="margin-top:6px;display:none;">
+            <label style="flex:1;">Ширина, px</label>
+            <input type="number" data-path="style.barGap.fixedWidth" data-type="num" min="1" max="200" step="1" />
           </div>
         </div>
         <div id="lollipopShapeRows" style="display:none;">
@@ -602,12 +721,12 @@
 
       <div class="section" id="pointProjectionsSection" style="display:none;">
         <p class="title">Проекции на оси</p>
-        <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;">Линии от точки до нуля на выбранной оси (начало отсчёта). Оси можно включать по отдельности.</p>
-        <p id="pointProjLabelX" style="font-size:11px;color:var(--muted);margin:0 0 6px;font-weight:500;">На ось X — вертикальные</p>
+        <p class="panel-note">Линии от точки до нуля на выбранной оси (начало отсчёта). Оси можно включать по отдельности.</p>
+        <p id="pointProjLabelX" class="panel-sub">На ось X — вертикальные</p>
         <div class="row"><label>Показывать</label><span class="switch"><input type="checkbox" data-path="style.pointProjections.x.show" data-type="bool" /><span class="track"></span></span></div>
         <div class="row"><label>Цвет</label><input type="color" data-path="style.pointProjections.x.color" data-type="text" /><input type="number" class="op" title="Прозрачность" data-path="style.pointProjections.x.opacity" data-type="num" min="0" max="1" step="0.05" /></div>
         <div class="row"><label>Толщина, px</label><input type="number" data-path="style.pointProjections.x.width" data-type="num" min="0.5" max="10" step="0.5" /></div>
-        <p id="pointProjLabelY" style="font-size:11px;color:var(--muted);margin:12px 0 6px;font-weight:500;">На ось Y — горизонтальные</p>
+        <p id="pointProjLabelY" class="panel-sub">На ось Y — горизонтальные</p>
         <div class="row"><label>Показывать</label><span class="switch"><input type="checkbox" data-path="style.pointProjections.y.show" data-type="bool" /><span class="track"></span></span></div>
         <div class="row"><label>Цвет</label><input type="color" data-path="style.pointProjections.y.color" data-type="text" /><input type="number" class="op" title="Прозрачность" data-path="style.pointProjections.y.opacity" data-type="num" min="0" max="1" step="0.05" /></div>
         <div class="row"><label>Толщина, px</label><input type="number" data-path="style.pointProjections.y.width" data-type="num" min="0.5" max="10" step="0.5" /></div>
@@ -616,12 +735,12 @@
       <div class="section" id="rightSec-value-labels">
         <p class="title">Подписи значений</p>
         <div class="row"><label>Показывать</label><span class="switch"><input type="checkbox" data-path="style.valueLabels.show" data-type="bool" /><span class="track"></span></span></div>
-        <p id="valueLabelsPointHint" style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;display:none;">
+        <p id="valueLabelsPointHint" class="panel-note" style="display:none;">
           Точечная: строки подписи друг над другом (имя → ряд → X → Y). Оформление каждой строки — в разделе «Надписи».
         </p>
         <div id="valueLabelsPointOpts" style="display:none;margin-bottom:8px;">
           <div class="row"><label>Только значения</label><span class="switch"><input type="checkbox" data-path="style.valueLabels.point.valuesOnly" data-type="bool" /><span class="track"></span></span></div>
-          <p style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;">Выключено: «название оси: значение». Включено: только число.</p>
+          <p class="panel-note">Выключено: «название оси: значение». Включено: только число.</p>
           <div class="row"><label>Имя точки</label><span class="switch"><input type="checkbox" data-path="style.valueLabels.point.showName" data-type="bool" /><span class="track"></span></span></div>
           <div class="row"><label>Ряд</label><span class="switch"><input type="checkbox" data-path="style.valueLabels.point.showSeries" data-type="bool" /><span class="track"></span></span></div>
           <div class="row"><label>Значение X</label><span class="switch"><input type="checkbox" data-path="style.valueLabels.point.showX" data-type="bool" /><span class="track"></span></span></div>
@@ -637,7 +756,7 @@
         </div>
         <div class="row"><label>Сдвиг по горизонтали, px</label><input type="number" data-path="style.valueLabels.offsetX" data-type="num" min="-100" max="100" step="1" /></div>
         <div class="row"><label>Сдвиг по вертикали, px</label><input type="number" data-path="style.valueLabels.offsetY" data-type="num" min="-100" max="100" step="1" /></div>
-        <p style="font-size:11px;color:var(--muted);margin:12px 0 6px;">Числовой формат значений</p>
+        <p class="panel-sub">Числовой формат значений</p>
         <div class="field"><label>Дробная часть</label>
           <select data-path="style.valueLabels.numberFormat.decimal" data-type="text">
             <option value=",">Запятая (1,25)</option>
@@ -645,10 +764,10 @@
           </select>
         </div>
         <div class="row"><label>Разделитель разрядов</label><span class="switch"><input type="checkbox" data-path="style.valueLabels.numberFormat.grouping" data-type="bool" /><span class="track"></span></span></div>
-        <p id="valueLabelsHeatmapHint" style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;display:none;">
+        <p id="valueLabelsHeatmapHint" class="panel-note" style="display:none;">
           Тепловая карта: подписи значений всегда по центру ячейки.
         </p>
-        <p id="valueLabelsGroupingHint" style="font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.45;">
+        <p id="valueLabelsGroupingHint" class="panel-note">
           Влияет на подписи значений и числовые подписи осей. При запятой в дробной части — пробел между разрядами; при точке — запятая.
         </p>
         <div class="field"><label>Префикс</label><input type="text" data-path="style.valueLabels.numberFormat.prefix" data-type="text" placeholder="например $ или ~" /></div>
@@ -661,7 +780,7 @@
       </div>
 
       <div class="section" id="rightSec-end-markers">
-        <p class="title">Концевые маркеры (линии / области)</p>
+        <p class="title">Концевые маркеры линий</p>
         <div id="endMarkers"></div>
       </div>
 
@@ -684,26 +803,16 @@
   </div>
 
   <script>
-  const APP_VERSION = "0.0.1 (alpha)";
+  const APP_VERSION = "0.0.2";
+  function appSiteMetaLine(){
+    return `© 2026 · Алексей Новичков · v${APP_VERSION} (alpha) · MIT`;
+  }
   function appFooterCopyrightLine(){
-    return `© ${new Date().getFullYear()} Алексей Новичков · v${APP_VERSION} · MIT`;
+    return "© Визуаллизируй свои данные. 2026";
   }
   function renderAppMetaFooter(){
     const el = document.getElementById("appMeta");
-    if (!el) return;
-    el.textContent = "";
-    const parts = appFooterCopyrightLine().split(" · ");
-    parts.forEach((part, i) => {
-      if (i) el.appendChild(document.createTextNode(" · "));
-      if (part === "MIT") {
-        const a = document.createElement("a");
-        a.href = "./LICENSE";
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.textContent = "MIT";
-        el.appendChild(a);
-      } else el.appendChild(document.createTextNode(part));
-    });
+    if (el) el.textContent = appSiteMetaLine();
   }
   renderAppMetaFooter();
 
@@ -821,7 +930,7 @@
     csv: { delimiter: ",", decimal: "." },
     fields: { x:"Месяц", y:"Продажи", series:"", pointLabel:"", pointSwapAxes: false },
     texts: {
-      title: "Сделай свою диаграмму",
+      title: "Визуализируй свои данные",
       subtitle: "Подзаголовок диаграммы",
       axisTitleX: "",
       axisTitleY: "",
@@ -859,7 +968,7 @@
       },
       markOpacity: 1, bgOpacity: 1, legendMarkerSize: 11,
       // Зазор между столбиками/линейками: в процентах от шага или в пикселях.
-      barGap: { unit: "percent", value: 10 },
+      barGap: { mode: "gap", unit: "percent", value: 10, fixedWidth: 24 },
       // Раскраска рядов: схема или свои цвета по каждому ряду.
       colorMode: "scheme", seriesColors: {}, seriesOpacity: {},
       heatmap: {
@@ -900,7 +1009,7 @@
       // Заливка и рамка области построения (внутри осей).
       plotArea: plotAreaDefault(),
       padding: {
-        chart: { top: 12, right: 16, bottom: 12, left: 16 },
+        chart: { top: 30, right: 30, bottom: 30, left: 30 },
         title: { top: 0, between: 4, bottom: 12 },
         legend: { top: 6, bottom: 10 },
         comment: { top: 12, bottom: 0 },
@@ -994,7 +1103,7 @@
     if (vl.offset != null && vl.offsetY == null) vl.offsetY = vl.offset;
     if (vl.offsetX == null) vl.offsetX = 0;
     if (vl.offsetY == null) vl.offsetY = 0;
-    out.barGap = { ...base.barGap, ...(loaded.barGap || {}) };
+    out.barGap = normalizeBarGap(base.barGap, loaded.barGap);
     out.plotArea = { ...base.plotArea, ...(loaded.plotArea || {}) };
     const hm = loaded.heatmap || {};
     const baseStops = base.heatmap?.stops || [];
@@ -1173,11 +1282,17 @@
     return v.every(r => {
       const raw = r[field];
       if (raw === "" || raw == null) return true;
+      if (typeof raw === "number") return true;
       const s = String(raw).trim();
-      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return false;
-      const n = parseFloat(s);
-      return !isNaN(n) && isFinite(n);
+      // ISO-даты и периоды вроде 2025-01 не считаем числовым полем (parseFloat("2025-01") === 2025).
+      if (/^\d{4}-\d{2}(-\d{2})?([ T].*)?$/i.test(s)) return false;
+      return looksLikePureNumber(s);
     });
+  }
+  function looksLikePureNumber(s){
+    const t = String(s).trim().replace(/\s/g, "");
+    if (!t) return false;
+    return /^-?\d+([.,]\d+)?$/.test(t) || /^-?\d{1,3}([.,]\d{3})+([.,]\d+)?$/.test(t);
   }
 
   /* ════════════════════════ СПЕЦИФИКАЦИЯ VEGA-LITE ════════════════════════ */
@@ -1354,8 +1469,17 @@
 
   function markDef(){
     const s = state.style, t = state.chartType, mo = s.markOpacity;
-    if (t==="bar" || t==="barStack" || t==="barStackNorm") return { type:"bar", color:s.markColor, fillOpacity:mo, tooltip:true };
-    if (t==="barh" || t==="barhStack" || t==="barhStackNorm") return { type:"bar", orient:"horizontal", color:s.markColor, fillOpacity:mo, tooltip:true };
+    const barW = barFixedMarkWidth();
+    if (t==="bar" || t==="barStack" || t==="barStackNorm") {
+      const m = { type:"bar", color:s.markColor, fillOpacity:mo, tooltip:true };
+      if (barW != null) m.width = barW;
+      return m;
+    }
+    if (t==="barh" || t==="barhStack" || t==="barhStackNorm") {
+      const m = { type:"bar", orient:"horizontal", color:s.markColor, fillOpacity:mo, tooltip:true };
+      if (barW != null) m.width = barW;
+      return m;
+    }
     if (isLineFamily(t)) {
       const m = { type:"line", color:s.markColor, strokeWidth:s.strokeWidth, opacity:mo, tooltip:true };
       if (t === "lineStepBefore") m.interpolate = "step-before";
@@ -1605,7 +1729,7 @@
   function textMarkFromStyle(T){
     return {
       type: "text", clip: false, align: "center", baseline: "bottom",
-      font: T.font, fontSize: T.size, color: withAlpha(T.color, T.opacity),
+      font: chartFontFamily(T.font), fontSize: T.size, color: withAlpha(T.color, T.opacity),
       fontWeight: tw(T), fontStyle: T.italic ? "italic" : "normal"
     };
   }
@@ -1702,13 +1826,33 @@
 
   // paddingInner band-шкалы: проценты → доля шага напрямую; пиксели →
   // приблизительно через число категорий и текущую ширину области построения.
+  function normalizeBarGap(base, loaded){
+    const bg = { ...base, ...(loaded || {}) };
+    const mode = bg.mode === "fixed" ? "fixed" : "gap";
+    const unit = bg.unit === "pixels" ? "pixels" : "percent";
+    let value = bg.value != null ? +bg.value : base.value;
+    if (isNaN(value) || value < 0) value = base.value;
+    let fixedWidth = bg.fixedWidth != null ? +bg.fixedWidth : base.fixedWidth;
+    if (isNaN(fixedWidth) || fixedWidth < 1) fixedWidth = base.fixedWidth;
+    fixedWidth = Math.min(200, fixedWidth);
+    return { mode, unit, value, fixedWidth };
+  }
+  function barFixedMarkWidth(){
+    const bg = state.style.barGap;
+    if (!bg || bg.mode !== "fixed") return null;
+    const w = +bg.fixedWidth;
+    return isNaN(w) || w < 1 ? null : Math.min(200, w);
+  }
   function barPaddingInner(){
     const bg = state.style.barGap;
-    if (!bg) return null;
+    if (!bg || bg.mode === "fixed") return null;
     const clamp = v => Math.min(0.95, Math.max(0, v));
     if (bg.unit === "percent") return clamp((bg.value || 0) / 100);
+    const t = state.chartType;
     const count = Math.max(1, axisCategories(state.fields.x).length);
-    const range = plotW > 0 ? plotW : frameContentW;
+    const range = (isBarH(t) || isLollipopH(t))
+      ? (plotH > 0 ? plotH : Math.max(MIN_CHART_HEIGHT, 200))
+      : (plotW > 0 ? plotW : frameContentW);
     return clamp(((bg.value || 0) * count) / Math.max(1, range));
   }
 
@@ -1762,11 +1906,11 @@
       // Порядок слоёв накопления = как у Vega-Lite (descending по полю ряда).
       if (stackOn) enc.order = { field: series, type: "nominal", sort: "descending" };
     }
-    // Зазор между столбиками/линейками через paddingInner band-шкалы.
-    if (usesCategoryGap(t) && !isBarStack(t)) {
+    // Зазор между столбиками/линейками (paddingInner) или фиксированная ширина (mark.width).
+    if (isBarChart(t) && !isLollipop(t)) {
       const pad = barPaddingInner();
-      const chan = (isBarH(t) || isLollipopH(t)) ? "y" : "x";
-      if (pad != null && enc[chan] && enc[chan].type === "nominal") {
+      const chan = isBarH(t) ? "y" : "x";
+      if (pad != null && enc[chan] && enc[chan].type === "nominal" && !isBarStack(t)) {
         enc[chan] = { ...enc[chan], scale: { ...(enc[chan].scale || {}), paddingInner: pad, paddingOuter: pad / 2 } };
       }
     }
@@ -1879,7 +2023,7 @@
     const showLabels = !!vl.show;
     const xType = isQuantitative(x) ? "quantitative" : "nominal";
     const baseText = {
-      type: "text", font: T.font, fontSize: T.size, color: withAlpha(T.color, T.opacity),
+      type: "text", font: chartFontFamily(T.font), fontSize: T.size, color: withAlpha(T.color, T.opacity),
       fontWeight: tw(T), fontStyle: T.italic ? "italic" : "normal",
       lineHeight: lineHeightPx(T.size, T.lineHeight)
     };
@@ -2055,7 +2199,7 @@
 
     const textMark = (Tk, isLeft, dx, dy) => ({
       type: "text", align: isLeft ? "right" : "left", baseline: "middle",
-      font: Tk.font, fontSize: Tk.size, color: withAlpha(Tk.color, Tk.opacity),
+      font: chartFontFamily(Tk.font), fontSize: Tk.size, color: withAlpha(Tk.color, Tk.opacity),
       fontWeight: tw(Tk), fontStyle: Tk.italic ? "italic" : "normal",
       lineHeight: lineHeightPx(Tk.size, Tk.lineHeight),
       dx: (isLeft ? -1 : 1) * dx, dy
@@ -2215,9 +2359,9 @@
       ticks: a.ticks.show, tickColor: lineCol, tickWidth: a.ticks.width, tickSize: a.ticks.length,
       grid: a.grid.show, gridColor: withAlpha(a.grid.color, a.grid.opacity), gridWidth: a.grid.width,
       labels: a.labels.show, labelPadding: a.labels.padding, labelAngle: a.labels.angle,
-      labelColor: withAlpha(lab.color, lab.opacity), labelFont: lab.font, labelFontSize: lab.size,
+      labelColor: withAlpha(lab.color, lab.opacity), labelFont: chartFontFamily(lab.font), labelFontSize: lab.size,
       labelFontWeight: tw(lab), labelFontStyle: fs(lab.italic),
-      titleColor: withAlpha(ttl.color, ttl.opacity), titleFont: ttl.font, titleFontSize: ttl.size,
+      titleColor: withAlpha(ttl.color, ttl.opacity), titleFont: chartFontFamily(ttl.font), titleFontSize: ttl.size,
       titleFontWeight: tw(ttl), titleFontStyle: fs(ttl.italic),
       // Ось Y: titlePadding — единственная правка к стандарту Vega (угол и центр — по умолчанию).
       titlePadding: axisTitleGap(which)
@@ -2225,14 +2369,11 @@
     return cfg;
   }
 
-  // «Шаг» = прореживание: показываем каждую N-ю засечку/подпись, остальные
-  // пропускаем. Задаётся НА УРОВНЕ КОДИРОВКИ (в config Vega-Lite свойство
-  // values игнорируется). Шаг подписей приоритетнее шага засечек.
+  // Шаг подписей засечек: каждая N-я подпись (и соответствующая засечка).
   // 1 или пусто — показывать все.
   function axisStepObj(which){
     const a = state.style.axes[which];
     let skip = null;
-    if (a.ticks.step != null && a.ticks.step > 0) skip = Math.round(a.ticks.step);
     if (a.labels.step != null && a.labels.step > 0) skip = Math.round(a.labels.step);
     if (skip == null || skip <= 1) return null;
     const af = axisField(which);
@@ -2279,9 +2420,9 @@
         symbolSize: Math.pow(Math.max(2, s.legendMarkerSize || 11), 2),
         symbolStrokeWidth: isLineFamily(state.chartType) ? Math.max(2, s.strokeWidth) : 0,
         rowPadding: 4,
-        labelFont: ll.font, labelFontSize: ll.size, labelColor: withAlpha(ll.color, ll.opacity),
+        labelFont: chartFontFamily(ll.font), labelFontSize: ll.size, labelColor: withAlpha(ll.color, ll.opacity),
         labelFontWeight: tw(ll), labelFontStyle: fs(ll.italic),
-        titleFont: ll.font, titleFontSize: ll.size, titleColor: withAlpha(ll.color, ll.opacity),
+        titleFont: chartFontFamily(ll.font), titleFontSize: ll.size, titleColor: withAlpha(ll.color, ll.opacity),
         titleFontWeight: tw(ll), titleFontStyle: fs(ll.italic),
         ...(isHeatmap(state.chartType) ? {
           gradientLength: heatmapLegendGradientLength(),
@@ -2352,7 +2493,7 @@
       width: rowW,
       data:{ values:[{}] },
       mark:{ type:"text", text:wrapped, align, baseline:"top", x, y:padTop,
-             font:opts.font || SYSTEM_FONT, fontSize:opts.size, color:withAlpha(opts.color, opts.opacity),
+             font:chartFontFamily(opts.font || SYSTEM_FONT), fontSize:opts.size, color:withAlpha(opts.color, opts.opacity),
              fontWeight: opts.weight != null ? opts.weight : regularWeightFor(opts.font || SYSTEM_FONT),
              fontStyle:opts.italic?"italic":"normal", lineHeight: lhPx },
       view:{ stroke:null }
@@ -2563,6 +2704,10 @@
     if (q) return q[1];
     return s.split(",")[0].trim().replace(/^['"]|['"]$/g, "");
   }
+  // Vega/SVG: одно имя семейства; полный CSS stack храним в state для UI и canvas.
+  function chartFontFamily(fontCss){
+    return primaryFamily(fontCss) || primaryFamily(SYSTEM_FONT) || "system-ui";
+  }
   function fontLoadSpec(fam, size, weight, italic){
     return `${italic ? "italic " : ""}${weight} ${size}px ${fam}`;
   }
@@ -2673,6 +2818,7 @@
     const run = async () => {
       if (gen !== renderGen) return;
       try {
+        applyDocGrid();
         await ensureSpecFonts();
         if (gen !== renderGen) return;
         if (fontRefresh) {
@@ -2712,6 +2858,7 @@
           textShiftX += dS;
         }
         setStatus(`Готово · ${labelType()} · ${state.size.width}×${state.size.height}`);
+        applyDocGrid();
       } catch(e){ setStatus("Ошибка: " + e.message); console.error(e); }
     };
     if (delay === 0) run();
@@ -2754,34 +2901,140 @@
   }
 
   /* ════════════════════════ СОХРАНЕНИЕ / ЗАГРУЗКА ПРОЕКТА ════════════════════════ */
+  function cloneState(obj){
+    return JSON.parse(JSON.stringify(obj));
+  }
+  function flushStateFromUI(){
+    document.querySelectorAll("[data-path]").forEach(el => {
+      const path = el.dataset.path, type = el.dataset.type;
+      if (!path) return;
+      let v;
+      if (el.type === "checkbox" || type === "bool") v = el.checked;
+      else if (type === "num") { v = parseFloat(el.value); if (isNaN(v)) return; }
+      else if (type === "numOrNull") {
+        v = el.value.trim() === "" ? null : parseFloat(el.value);
+        if (v != null && isNaN(v)) return;
+      } else v = el.value;
+      setPath(state, path, v);
+    });
+    for (const [id, path, type] of BINDINGS){
+      const el = document.getElementById(id);
+      if (!el) continue;
+      let v = type === "bool" ? el.checked : (type === "num" ? parseFloat(el.value) : el.value);
+      if (type === "num" && isNaN(v)) continue;
+      setPath(state, path, v);
+    }
+  }
+  function hasCsvProjectData(src){
+    if (!src) return false;
+    return (Array.isArray(src.csvValues) && src.csvValues.length > 0)
+      || (typeof src.csvRawText === "string" && src.csvRawText.trim().length > 0);
+  }
+  function projectDataSlice(src){
+    return {
+      dataset: src.dataset,
+      fields: src.fields,
+      csv: src.csv,
+      csvFileName: src.csvFileName || "",
+      csvRawText: src.csvRawText ?? null,
+      csvValues: src.csvValues ?? null
+    };
+  }
+  function buildProjectPayload(){
+    flushStateFromUI();
+    const s = cloneState(state);
+    if (hasCsvProjectData(s)) s.dataset = "__csv__";
+    return {
+      app: "make-your-chart",
+      version: 3,
+      savedAt: new Date().toISOString(),
+      state: s,
+      data: projectDataSlice(s)
+    };
+  }
   function saveProject(){
-    const payload = { app:"make-your-chart", version:1, savedAt:new Date().toISOString(), state };
+    const payload = buildProjectPayload();
     downloadBlob(JSON.stringify(payload, null, 2), "chart-project.json", "application/json");
-    setStatus("Проект сохранён в JSON");
+    const n = payload.data.csvValues?.length;
+    setStatus(n
+      ? `Проект сохранён (${n} строк CSV в файле)`
+      : "Проект сохранён в JSON");
+  }
+  function restoreProjectData(loaded){
+    if (!hasCsvProjectData(loaded)) return false;
+    state.csv = { ...defaultState().csv, ...(loaded.csv || {}) };
+    state.csvFileName = loaded.csvFileName || "";
+    if (loaded.fields) state.fields = { ...defaultState().fields, ...loaded.fields };
+    const hasValues = Array.isArray(loaded.csvValues) && loaded.csvValues.length > 0;
+    if (hasValues) {
+      state.csvValues = loaded.csvValues;
+      if (typeof loaded.csvRawText === "string") state.csvRawText = loaded.csvRawText;
+      state.dataset = "__csv__";
+      refreshDatasetSelect();
+      refreshFieldSelects();
+      syncAxisTitlesFromFields(true);
+      updateCsvNameLabel();
+      return true;
+    }
+    if (typeof loaded.csvRawText === "string" && loaded.csvRawText.trim()) {
+      state.csvRawText = loaded.csvRawText;
+      try {
+        const { rows } = parseCsvText(state.csvRawText, { autoDelimiter: false });
+        state.csvValues = rows;
+        state.dataset = "__csv__";
+        refreshDatasetSelect();
+        refreshFieldSelects();
+        syncAxisTitlesFromFields(true);
+        updateCsvNameLabel();
+        return true;
+      } catch (e) {
+        setStatus("Не удалось прочитать CSV из проекта: " + e.message);
+        state.csvValues = null;
+        return false;
+      }
+    }
+    return false;
   }
   function loadProject(file){
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result);
-        const loaded = parsed.state || parsed;
+        const loaded = { ...(parsed.state || parsed), ...(parsed.data || {}) };
         const base = defaultState();
+        const styleSrc = loaded.style || (loaded.text || loaded.axes ? loaded : null);
         state = {
-          ...base, ...loaded,
+          ...base,
+          chartType: loaded.chartType ?? base.chartType,
+          dataset: loaded.dataset ?? base.dataset,
+          csvValues: null,
+          csvRawText: null,
+          csvFileName: "",
           fields: {...base.fields, ...(loaded.fields||{})},
           texts:  {...base.texts,  ...(loaded.texts||{})},
           size:   {...base.size,   ...(loaded.size||{})},
           workspaceBg: { ...base.workspaceBg, ...(loaded.workspaceBg || {}) },
           docGrid: { ...base.docGrid, ...(loaded.docGrid || {}) },
-          style:  migrateStyle(loaded.style),
+          style: migrateStyle(styleSrc),
           csv:    {...base.csv,    ...(loaded.csv||{})}
         };
-        plotW = plotH = 0; textShiftX = 0; legendBodyH = 0; legendBodyW = 0;   // пересчитать раскладку под размер проекта
-        if (state.csvRawText) reparseCsvIfLoaded();
-        refreshDatasetSelect(); refreshFieldSelects();
+        plotW = plotH = 0; textShiftX = 0; legendBodyH = 0; legendBodyW = 0;
+        if (!restoreProjectData(loaded)) {
+          state.dataset = loaded.dataset ?? base.dataset;
+          refreshDatasetSelect();
+          refreshFieldSelects();
+        }
         syncAxisTitlesFromFields(true);
+        buildTextStyles();
+        buildAxes();
+        buildHeatmapStopsUI();
         applyStateToControls();
-        render(); setStatus("Проект загружен из JSON");
+        syncChartTypeUI();
+        render();
+        const n = state.csvValues?.length;
+        setStatus(n
+          ? `Проект загружен · ${n} строк CSV${state.csvFileName ? " · " + state.csvFileName : ""}`
+          : "Проект загружен из JSON");
       } catch(e){ setStatus("Не удалось прочитать JSON: " + e.message); }
     };
     reader.readAsText(file);
@@ -2805,26 +3058,86 @@
     return val;
   }
 
-  function parseCsvText(text){
-    const { delimiter, decimal } = state.csv;
-    let src = text;
-    if (decimal === ",") {
-      // Десятичная запятая — это запятая МЕЖДУ цифрами (1,5). Меняем её на
-      // точку прямо в тексте до разбора: так она не конфликтует с разделителем
-      // полей (в т.ч. если разделитель — тоже запятая), а числа распознаются.
-      src = src.replace(/(\d)\s*,\s*(\d)/g, "$1.$2");
+  function stripCsvBom(text){
+    return String(text || "").replace(/^\uFEFF/, "");
+  }
+  function splitCsvLine(line, delimiter){
+    const out = [];
+    let cur = "", inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = false;
+        } else cur += ch;
+      } else if (ch === '"') inQ = true;
+      else if (ch === delimiter) { out.push(cur); cur = ""; }
+      else cur += ch;
     }
-    const rows = vega.read(src, { type: "csv", delimiter, parse: false });
-    if (!rows.length) throw new Error("пустой файл");
-    // Имена колонок: Vega-Lite трактует «.» и «[» «]» как доступ к вложенным
-    // полям, поэтому такие символы в заголовках ломают визуализацию — чистим.
-    const keyMap = sanitizeKeys(Object.keys(rows[0]));
-    return rows.map(row => {
+    out.push(cur);
+    return out.map(s => s.trim());
+  }
+  function detectCsvDelimiter(headerLine){
+    const candidates = [";", "\t", "|", ","];
+    let best = ",", bestN = 0;
+    for (const d of candidates) {
+      const n = splitCsvLine(headerLine, d).length;
+      if (n > bestN) { bestN = n; best = d; }
+    }
+    return bestN > 1 ? best : ",";
+  }
+  function preprocessCsvDecimals(text, decimal){
+    if (decimal !== ",") return text;
+    return text.replace(/(\d)\s*,\s*(\d)/g, "$1.$2");
+  }
+  function parseDelimitedRows(text, delimiter){
+    const lines = stripCsvBom(text).split(/\r?\n/).filter(l => l.trim() !== "");
+    if (!lines.length) return [];
+    const header = splitCsvLine(lines[0], delimiter);
+    if (header.length < 2) throw new Error("нужно не меньше двух столбцов");
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cells = splitCsvLine(lines[i], delimiter);
+      if (!cells.some(c => c !== "")) continue;
+      const row = {};
+      header.forEach((h, j) => { row[h] = cells[j] != null ? cells[j] : ""; });
+      rows.push(row);
+    }
+    return rows;
+  }
+  function vegaCsvReadFormat(delimiter){
+    if (delimiter === ",") return { type: "csv", parse: false };
+    if (delimiter === "\t") return { type: "tsv", parse: false };
+    return { type: "dsv", delimiter, parse: false };
+  }
+  function readCsvRows(src, delimiter){
+    try {
+      const rows = vega.read(src, vegaCsvReadFormat(delimiter));
+      if (rows?.length) return rows;
+    } catch (e) { /* fallback ниже */ }
+    return parseDelimitedRows(src, delimiter);
+  }
+  function parseCsvText(text, opts){
+    opts = opts || {};
+    let src = stripCsvBom(text);
+    const decimal = opts.decimal != null ? opts.decimal : state.csv.decimal;
+    let delimiter = opts.delimiter != null ? opts.delimiter : state.csv.delimiter;
+    const firstLine = src.split(/\r?\n/).find(l => l.trim() !== "") || "";
+    if (opts.autoDelimiter !== false && firstLine)
+      delimiter = detectCsvDelimiter(firstLine);
+    src = preprocessCsvDecimals(src, decimal);
+    const rawRows = readCsvRows(src, delimiter);
+    if (!rawRows.length) throw new Error("пустой файл");
+    const keyMap = sanitizeKeys(Object.keys(rawRows[0]));
+    const cellDec = decimal === "," ? "." : decimal;
+    const rows = rawRows.map(row => {
       const out = {};
       for (const [k, v] of Object.entries(row))
-        out[keyMap[k] || k] = normalizeCsvCell(v, ".");
+        out[keyMap[k] || k] = normalizeCsvCell(v, cellDec);
       return out;
     });
+    return { rows, delimiter };
   }
   // Безопасные имена колонок (без «.», «[», «]»), с устранением дублей.
   function sanitizeKeys(keys){
@@ -2838,27 +3151,39 @@
     return map;
   }
 
-  function applyCsvRows(rows, fileName){
+  function updateCsvNameLabel(){
+    const el = $("#csvName");
+    if (!el) return;
+    if (!state.csvValues?.length) { el.textContent = ""; return; }
+    const d = CSV_DELIM_LABELS[state.csv.delimiter] || state.csv.delimiter;
+    const dec = state.csv.decimal === "," ? "запятая" : "точка";
+    el.textContent = state.csvFileName
+      ? `${state.csvFileName} · ${state.csvValues.length} строк · «${d}» · ${dec}`
+      : `${state.csvValues.length} строк · «${d}» · ${dec}`;
+  }
+
+  function applyCsvRows(rows, fileName, opts = {}){
     state.csvValues = rows;
     state.dataset = "__csv__";
     refreshDatasetSelect();
-    const cols = Object.keys(rows[0]);
-    state.fields = autoMapFields(cols);
+    const cols = Object.keys(rows[0] || {});
+    if (!opts.keepFields && cols.length) {
+      state.fields = autoMapFields(cols);
+      syncAxisTitlesFromFields(false);
+    }
     refreshFieldSelects();
-    syncAxisTitlesFromFields(false);
-    const d = CSV_DELIM_LABELS[state.csv.delimiter] || state.csv.delimiter;
-    const dec = state.csv.decimal === "," ? "запятая" : "точка";
-    $("#csvName").textContent = fileName
-      ? `${fileName} · ${rows.length} строк · «${d}» · ${dec}`
-      : "";
-    render();
+    updateCsvNameLabel();
+    if (opts.render !== false) render();
   }
 
   function reparseCsvIfLoaded(){
     if (!state.csvRawText) return;
     try {
-      const rows = parseCsvText(state.csvRawText);
-      applyCsvRows(rows, state.csvFileName);
+      const { rows, delimiter } = parseCsvText(state.csvRawText, { autoDelimiter: false });
+      state.csv.delimiter = delimiter;
+      const delimEl = document.getElementById("csvDelimiter");
+      if (delimEl) delimEl.value = delimiter;
+      applyCsvRows(rows, state.csvFileName, { keepFields: true });
       setStatus("CSV перечитан с новыми настройками");
     } catch(e){ setStatus("Ошибка CSV: " + e.message); }
   }
@@ -2869,12 +3194,15 @@
       try {
         state.csvRawText = reader.result;
         state.csvFileName = file.name;
-        const rows = parseCsvText(state.csvRawText);
+        const { rows, delimiter } = parseCsvText(state.csvRawText, { autoDelimiter: true });
+        state.csv.delimiter = delimiter;
+        const delimEl = document.getElementById("csvDelimiter");
+        if (delimEl) delimEl.value = delimiter;
         applyCsvRows(rows, file.name);
         setStatus("CSV загружен");
       } catch(e){ setStatus("Ошибка CSV: " + e.message); }
     };
-    reader.readAsText(file);
+    reader.readAsText(file, "UTF-8");
   }
 
   /* ── Палитры Vega (d3-scale-chromatic) ── */
@@ -3426,6 +3754,60 @@
   function syncAllWeightDropdowns(){ TEXTS.forEach(t => syncWeightDropdown(t.key)); }
   function syncAllBoldButtons(){ TEXTS.forEach(t => syncBoldButton(t.key)); }
 
+  function visibleTextKeys(){
+    const isPt = state.chartType === "point";
+    return TEXTS.filter(t => !t.pointOnly || isPt).map(t => t.key);
+  }
+  function commonAllTextsFont(){
+    const fonts = [...new Set(visibleTextKeys().map(k => state.style.text[k]?.font).filter(Boolean))];
+    return fonts.length === 1 ? fonts[0] : "";
+  }
+  function applyFontToAllTexts(font){
+    for (const key of Object.keys(state.style.text)) {
+      const t = state.style.text[key];
+      if (!t) continue;
+      t.font = font;
+      const fw = fontWeightsFor(font);
+      t.weight = nearestWeight(t.weight != null ? t.weight : 400, fw);
+      t.bold = isBoldWeight(font, t.weight);
+    }
+    syncAllTextsFontSelect();
+  }
+  function initAllTextsFontOptions(){
+    const sel = document.getElementById("allTextsFont");
+    if (!sel) return;
+    const cur = commonAllTextsFont();
+    sel.innerHTML = fontOptionsHTML();
+    if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+    else if (state.style.text.title?.font && [...sel.options].some(o => o.value === state.style.text.title.font))
+      sel.value = state.style.text.title.font;
+  }
+  function syncAllTextsFontSelect(){
+    const sel = document.getElementById("allTextsFont");
+    if (!sel) return;
+    const common = commonAllTextsFont();
+    if (common && [...sel.options].some(o => o.value === common)) sel.value = common;
+  }
+  function bindAllTextsFont(){
+    const sel = document.getElementById("allTextsFont");
+    if (!sel || sel._bound) return;
+    sel._bound = true;
+    sel.addEventListener("change", async () => {
+      const font = sel.value;
+      if (!font) return;
+      applyFontToAllTexts(font);
+      document.querySelectorAll("[data-path$='.font'][data-type='text']").forEach(el => {
+        if (el.id === "allTextsFont") return;
+        el.value = font;
+      });
+      refreshFontSelects();
+      syncAllWeightDropdowns();
+      syncAllBoldButtons();
+      await ensureSpecFonts();
+      render({ immediate: true, fontRefresh: true });
+    });
+  }
+
   /* ── Генерация правой панели: оформление надписей ── */
   function textStyleRow(key, label){
     const b = `style.text.${key}`;
@@ -3444,7 +3826,7 @@
         <select data-path="${b}.weight" data-type="num" data-weight-for="${key}" title="Начертание" style="flex:1;">${weightOptionsHTML(fontWeightsFor(def.font))}</select>
       </div>
       <div class="row" style="margin:6px 0 0;gap:6px;">
-        <span style="font-size:11px;color:var(--muted);flex:1;">Интерлиньяж</span>
+        <span class="panel-field-label">Интерлиньяж</span>
         <input type="number" data-path="${b}.lineHeight.value" data-type="num" min="0" max="500" step="1" style="width:56px;" title="Значение" />
         <select data-path="${b}.lineHeight.unit" data-type="text" style="width:52px;flex:none;">
           <option value="percent">%</option>
@@ -3457,16 +3839,19 @@
     const isPt = state.chartType === "point";
     document.getElementById("textStyles").innerHTML =
       TEXTS.filter(t => !t.pointOnly || isPt).map(t => textStyleRow(t.key, t.label)).join("");
+    initAllTextsFontOptions();
+    bindAllTextsFont();
     bindGeneric();
     syncAllWeightDropdowns();
     syncAllBoldButtons();
+    syncAllTextsFontSelect();
   }
 
   /* ── Генерация правой панели: настройки оси ── */
   function axisBlock(which){
     const a = `style.axes.${which}`;
     const sw = path => `<span class="switch"><input type="checkbox" data-path="${path}" data-type="bool" /><span class="track"></span></span>`;
-    const sub = txt => `<p style="font-size:11px;color:var(--muted);margin:12px 0 6px;">${txt}</p>`;
+    const sub = txt => `<p class="panel-sub">${txt}</p>`;
     const posFld = which === "x"
       ? `<div class="field"><label>Расположение</label>
           <select data-path="${a}.position" data-type="text">
@@ -3488,7 +3873,7 @@
               <option value="right">Справа</option>
             </select></div>` : ""}
       <div class="row"><label>До подписей засечек, px</label><input type="number" data-path="${a}.title.gap" data-type="num" min="0" max="120" step="1" /></div>
-      <p style="font-size:11px;color:var(--muted);margin:12px 0 6px;">Линия оси</p>
+      <p class="panel-sub">Линия оси</p>
       <div class="row"><label>Показывать</label>${sw(a+".line.show")}</div>
       <div class="row"><label>Цвет</label><input type="color" data-path="${a}.line.color" data-type="text" /><input type="number" class="op" title="Прозрачность" data-path="${a}.line.opacity" data-type="num" min="0" max="1" step="0.05" /></div>
       <div class="row"><label>Толщина</label><input type="number" data-path="${a}.line.width" data-type="num" min="0" max="8" step="0.5" /></div>
@@ -3497,11 +3882,10 @@
       <div class="row"><label>Авто-расстановка</label>${sw(a+".ticks.auto")}</div>
       <div class="row"><label>Толщина</label><input type="number" data-path="${a}.ticks.width" data-type="num" min="0" max="8" step="0.5" /></div>
       <div class="row"><label>Длина</label><input type="number" data-path="${a}.ticks.length" data-type="num" min="0" max="40" step="1" /></div>
-      <div class="row"><label>Шаг (каждая N-я)</label><input type="number" data-path="${a}.ticks.step" data-type="numOrNull" min="1" step="1" placeholder="все" /></div>
       ${sub("Подписи засечек")}
       <div class="row"><label>Показывать</label>${sw(a+".labels.show")}</div>
       <div class="row"><label>Отступ от засечки</label><input type="number" data-path="${a}.labels.padding" data-type="num" min="0" max="40" step="1" /></div>
-      <div class="row"><label>Шаг (каждая N-я)</label><input type="number" data-path="${a}.labels.step" data-type="numOrNull" min="1" step="1" placeholder="как у засечек" /></div>
+      <div class="row"><label>Шаг (каждая N-я)</label><input type="number" data-path="${a}.labels.step" data-type="numOrNull" min="1" step="1" placeholder="все" /></div>
       <div class="field"><label>Ориентация</label>
         <select data-path="${a}.labels.angle" data-type="num">
           <option value="0">Горизонтально</option>
@@ -3522,6 +3906,8 @@
   function buildAxes(){
     document.getElementById("axisX").innerHTML = axisBlock("x");
     document.getElementById("axisY").innerHTML = axisBlock("y");
+    refreshPanelSubGroups(document.getElementById("axisX"));
+    refreshPanelSubGroups(document.getElementById("axisY"));
   }
 
   /* ── Генерация правой панели: концевые маркеры ── */
@@ -3529,7 +3915,7 @@
   function endMarkerSide(side, label){
     const b = `style.endMarkers.${side}`;
     return `
-      <p style="font-size:11px;color:var(--muted);margin:10px 0 6px;">${label}</p>
+      <p class="panel-sub">${label}</p>
       <div class="row"><label>Показывать</label>${emSwitch(b + ".show")}</div>
       <div class="row"><label>Маркер</label>${emSwitch(b + ".marker")}</div>
       <div class="row"><label>Диаметр маркера, px</label><input type="number" data-path="${b}.markerSize" data-type="num" min="0" max="40" step="1" /></div>
@@ -3541,7 +3927,7 @@
   function endMarkerLabelCfg(key, label){
     const b = `style.endMarkers.${key}`;
     return `
-      <p style="font-size:11px;color:var(--muted);margin:10px 0 6px;">${label} — смещение от маркера</p>
+      <p class="panel-sub">${label} — смещение от маркера</p>
       <div class="row"><label>По горизонтали, px</label><input type="number" data-path="${b}.dx" data-type="num" min="-200" max="200" step="1" /></div>
       <div class="row"><label>По вертикали, px</label><input type="number" data-path="${b}.dy" data-type="num" min="-200" max="200" step="1" /></div>
     `;
@@ -3552,9 +3938,10 @@
       + `<div class="row"><label>Подпись значения</label>${emSwitch("style.endMarkers.showValue")}</div>`
       + endMarkerLabelCfg("name", "Подпись ряда")
       + endMarkerLabelCfg("value", "Подпись значения")
-      + `<p style="font-size:11px;color:var(--muted);margin:10px 0 0;">Шрифт, размер, цвет и начертание — в разделе «Надписи» (Концевая подпись — ряд / значение).</p>`
+      + `<p class="panel-note" style="margin-top:10px;">Шрифт, размер, цвет и начертание — в разделе «Надписи» (Концевая подпись — ряд / значение).</p>`
       + endMarkerSide("left", "Слева (начало линии)")
       + endMarkerSide("right", "Справа (конец линии)");
+    refreshPanelSubGroups(document.getElementById("endMarkers"));
   }
 
   /* ── Свои цвета рядов ── */
@@ -3568,10 +3955,10 @@
     const so = state.style.seriesOpacity || (state.style.seriesOpacity = {});
     const vals = series ? seriesOrder(series) : [];
     if (!vals.length){
-      cont.innerHTML = `<p style="font-size:11px;color:var(--muted);margin:6px 0 0;">Цвет линии задаётся полем «Цвет элементов». Для отдельной раскраски выберите поле ряда в разделе «Данные».</p>`;
+      cont.innerHTML = `<p class="panel-note" style="margin-top:6px;">Цвет линии задаётся полем «Цвет элементов». Для отдельной раскраски выберите поле ряда в разделе «Данные».</p>`;
       return;
     }
-    cont.innerHTML = `<p style="font-size:11px;color:var(--muted);margin:10px 0 6px;">Цвета рядов</p>` + vals.map(v => {
+    cont.innerHTML = `<p class="panel-sub">Цвета рядов</p>` + vals.map(v => {
       const key = String(v), safe = esc(key);
       const c = sc[key] || state.style.markColor, op = so[key] ?? 1;
       return `<div class="row"><label>${safe}</label>`
@@ -3585,6 +3972,7 @@
       const v = parseFloat(inp.value); if (isNaN(v)) return;
       state.style.seriesOpacity[inp.dataset.key] = v; render();
     }));
+    refreshPanelSubGroups(cont);
   }
   function syncColorUI(){
     const custom = state.style.colorMode === "custom";
@@ -3728,6 +4116,7 @@
     });
     syncAllWeightDropdowns();
     syncAllBoldButtons();
+    syncBarSizeUI();
   }
   function bindGeneric(){
     document.querySelectorAll("[data-path]").forEach(el => {
@@ -3744,6 +4133,7 @@
         const fm = path.match(/^style\.text\.([^.]+)\.font$/);
         if (fm) {
           syncWeightDropdown(fm[1]);
+          syncAllTextsFontSelect();
           await preloadTextFonts(fm[1]);
           render({ immediate: true, fontRefresh: true });
           return;
@@ -3758,6 +4148,8 @@
           return;
         }
         if (/^style\.text\.[^.]+\.(size|italic)$/.test(path)) await ensureSpecFonts();
+        if (path === "style.barGap.mode") syncBarSizeUI();
+        if (path?.startsWith("style.barGap.")) { render(); return; }
         render();
       });
     });
@@ -3800,7 +4192,9 @@
     };
     plotW = plotH = 0; textShiftX = 0; legendBodyH = 0; legendBodyW = 0;   // пересчитать раскладку под новый размер
     applyStateToControls();
-    render();
+    initAllTextsFontOptions();
+    syncAllTextsFontSelect();
+    render({ fontRefresh: true });
   }
   function saveTemplate(){
     const payload = { app:"make-your-chart-template", version:1, savedAt:new Date().toISOString(),
@@ -3819,53 +4213,52 @@
   // Встроенные шаблоны — доступны всегда, даже при открытии файлом (file://).
   const BUILTIN_TEMPLATES = {
     "minimal-light": { name: "Минимал (светлый)", style: {
-      markColor:"#4c6ef5", backgroundColor:"#ffffff", scheme:"tableau10", strokeWidth:2,
-      text:{
-        title:{font:"system-ui, sans-serif",size:18,color:"#2b2b29",bold:true,italic:false},
-        subtitle:{font:"system-ui, sans-serif",size:13,color:"#8a8a85",bold:false,italic:false},
-        axisTitleX:{font:"system-ui, sans-serif",size:12,color:"#5a5a55"},
-        axisTitleY:{font:"system-ui, sans-serif",size:12,color:"#5a5a55"},
-        axisLabelX:{font:"system-ui, sans-serif",size:11,color:"#6a6a64"},
-        axisLabelY:{font:"system-ui, sans-serif",size:11,color:"#6a6a64"},
-        legend:{font:"system-ui, sans-serif",size:11,color:"#2b2b29"},
-        comment:{font:"system-ui, sans-serif",size:12,color:"#8a8a85",italic:true},
-        footer:{font:"system-ui, sans-serif",size:11,color:"#b3b3ae"}
+      markColor:"#111111", backgroundColor:"#ffffff", scheme:"dark2", strokeWidth:1.25,
+      pointSize:36, areaOpacity:0.28, lollipopStemWidth:1.25, lollipopHeadDiameter:8,
+      showLegend:false, showPoints:false, legendMarkerSize:8,
+      barGap:{ unit:"percent", value:4 },
+      plotArea:{ fillEnabled:false, borderEnabled:false },
+      padding:{
+        chart:{ top:30, right:30, bottom:30, left:30 },
+        title:{ top:0, between:2, bottom:6 },
+        legend:{ top:2, bottom:4 },
+        comment:{ top:6, bottom:0 },
+        footer:{ top:4, bottom:2 }
       },
-      axes:{
-        x:{line:{show:true,color:"#d0d7de",width:1},ticks:{show:true,auto:true,width:1,length:4},labels:{show:true,padding:4,angle:0},grid:{show:false,color:"#ededeb",width:1}},
-        y:{line:{show:false,color:"#d0d7de",width:1},ticks:{show:false,auto:true,width:1,length:4},labels:{show:true,padding:4,angle:0},grid:{show:true,color:"#ededeb",width:1}}
-      }
-    }},
-    "dark": { name: "Тёмный", style: {
-      markColor:"#5c7cfa", backgroundColor:"#1e1e1e", scheme:"dark2", strokeWidth:2,
       text:{
-        title:{font:"system-ui, sans-serif",size:18,color:"#f1f1ef",bold:true,italic:false},
-        subtitle:{font:"system-ui, sans-serif",size:13,color:"#a8a8a2"},
-        axisTitleX:{font:"system-ui, sans-serif",size:12,color:"#c9c9c4"},
-        axisTitleY:{font:"system-ui, sans-serif",size:12,color:"#c9c9c4"},
-        axisLabelX:{font:"system-ui, sans-serif",size:11,color:"#b3b3ae"},
-        axisLabelY:{font:"system-ui, sans-serif",size:11,color:"#b3b3ae"},
-        legend:{font:"system-ui, sans-serif",size:11,color:"#e8e8e4"},
-        comment:{font:"system-ui, sans-serif",size:12,color:"#a8a8a2",italic:true},
-        footer:{font:"system-ui, sans-serif",size:11,color:"#85857f"}
+        title:{font:"'Inter', sans-serif",size:15,color:"#111111",bold:true,italic:false},
+        subtitle:{font:"'Inter', sans-serif",size:11,color:"#666666",bold:false,italic:false},
+        axisTitleX:{font:"'Inter', sans-serif",size:10,color:"#444444"},
+        axisTitleY:{font:"'Inter', sans-serif",size:10,color:"#444444"},
+        axisLabelX:{font:"'Inter', sans-serif",size:9,color:"#555555"},
+        axisLabelY:{font:"'Inter', sans-serif",size:9,color:"#555555"},
+        legendLabel:{font:"'Inter', sans-serif",size:9,color:"#333333"},
+        comment:{font:"'Inter', sans-serif",size:10,color:"#666666",italic:false},
+        footer:{font:"'Inter', sans-serif",size:9,color:"#999999"},
+        valueLabel:{font:"'Inter', sans-serif",size:9,color:"#333333"},
+        endName:{font:"'Inter', sans-serif",size:10,color:"#111111",bold:false},
+        endValue:{font:"'Inter', sans-serif",size:9,color:"#555555"}
       },
+      valueLabels:{ show:false },
+      endMarkers:{ showName:true, showValue:true },
       axes:{
-        x:{line:{show:true,color:"#4a4a47",width:1},ticks:{show:true,auto:true,width:1,length:4},labels:{show:true,padding:4,angle:0},grid:{show:false,color:"#333331",width:1}},
-        y:{line:{show:false,color:"#4a4a47",width:1},ticks:{show:false,auto:true,width:1,length:4},labels:{show:true,padding:4,angle:0},grid:{show:true,color:"#333331",width:1}}
+        x:{line:{show:true,color:"#111111",width:0.5},ticks:{show:false,auto:true,width:0.5,length:0},labels:{show:true,padding:5,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}},
+        y:{line:{show:false,color:"#cccccc",width:0.5},ticks:{show:false,auto:true,width:0.5,length:0},labels:{show:true,padding:3,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}}
       }
     }},
     "newspaper": { name: "Газетный (Times)", style: {
       markColor:"#222222", backgroundColor:"#ffffff", scheme:"category10", strokeWidth:1.5,
+      padding:{ chart:{ top:30, right:30, bottom:30, left:30 } },
       text:{
         title:{font:"'Times New Roman', sans-serif",size:20,color:"#111111",bold:true,italic:false},
-        subtitle:{font:"Georgia, sans-serif",size:13,color:"#555555",italic:true},
-        axisTitleX:{font:"Georgia, sans-serif",size:12,color:"#333333"},
-        axisTitleY:{font:"Georgia, sans-serif",size:12,color:"#333333"},
-        axisLabelX:{font:"Georgia, sans-serif",size:11,color:"#444444"},
-        axisLabelY:{font:"Georgia, sans-serif",size:11,color:"#444444"},
-        legend:{font:"Georgia, sans-serif",size:11,color:"#222222"},
-        comment:{font:"Georgia, sans-serif",size:12,color:"#555555",italic:true},
-        footer:{font:"Georgia, sans-serif",size:10,color:"#888888"}
+        subtitle:{font:"'Times New Roman', sans-serif",size:13,color:"#555555",italic:true},
+        axisTitleX:{font:"'Times New Roman', sans-serif",size:12,color:"#333333"},
+        axisTitleY:{font:"'Times New Roman', sans-serif",size:12,color:"#333333"},
+        axisLabelX:{font:"'Times New Roman', sans-serif",size:11,color:"#444444"},
+        axisLabelY:{font:"'Times New Roman', sans-serif",size:11,color:"#444444"},
+        legendLabel:{font:"'Times New Roman', sans-serif",size:11,color:"#222222"},
+        comment:{font:"'Times New Roman', sans-serif",size:12,color:"#555555",italic:true},
+        footer:{font:"'Times New Roman', sans-serif",size:10,color:"#888888"}
       },
       axes:{
         x:{line:{show:true,color:"#222222",width:1},ticks:{show:true,auto:true,width:1,length:5},labels:{show:true,padding:4,angle:0},grid:{show:false,color:"#e0e0e0",width:1}},
@@ -3936,6 +4329,173 @@
     $("#tplReset").addEventListener("click", resetTemplate);
   }
 
+  const RIGHT_PANEL_COLLAPSE_KEY = "vizRightPanelCollapse";
+  const LEFT_PANEL_COLLAPSE_KEY = "vizLeftPanelCollapse";
+  const PANEL_COLLAPSE_SKIP = { right: new Set(["rightPanelJumpSection"]), left: new Set() };
+  const PANEL_COLLAPSE_EXTRA_ROOTS = {
+    right: ["#axisX", "#axisY", "#endMarkers", "#seriesColors"],
+    left: []
+  };
+  function panelCollapseStorageKey(aside){
+    return aside?.classList.contains("left") ? LEFT_PANEL_COLLAPSE_KEY : RIGHT_PANEL_COLLAPSE_KEY;
+  }
+  function panelCollapseSide(aside){
+    return aside?.classList.contains("left") ? "left" : "right";
+  }
+  function readPanelCollapse(storageKey){
+    try {
+      const raw = localStorage.getItem(storageKey);
+      return raw ? JSON.parse(raw) : { sections: {}, groups: {} };
+    } catch { return { sections: {}, groups: {} }; }
+  }
+  function writePanelCollapse(storageKey, st){
+    try { localStorage.setItem(storageKey, JSON.stringify(st)); } catch {}
+  }
+  function panelSectionTitle(section){
+    return section.querySelector(".panel-section-head-text")?.textContent?.trim()
+      || section.querySelector(".title")?.textContent?.trim()
+      || "Раздел";
+  }
+  function panelGroupCollapseId(group){
+    const sec = group.closest(".section");
+    const head = group.querySelector(".panel-group-head")?.textContent?.trim() || "";
+    return (sec?.id || "section") + "::" + head;
+  }
+  function applyPanelCollapseState(aside){
+    if (!aside) return;
+    const storageKey = panelCollapseStorageKey(aside);
+    const st = readPanelCollapse(storageKey);
+    const skip = PANEL_COLLAPSE_SKIP[panelCollapseSide(aside)];
+    aside.querySelectorAll(":scope > .section").forEach(section => {
+      if (skip.has(section.id) || !section.id) return;
+      if (st.sections[section.id] === false) section.removeAttribute("data-collapsed");
+      else section.setAttribute("data-collapsed", "");
+    });
+    aside.querySelectorAll(".panel-group").forEach(group => {
+      const id = panelGroupCollapseId(group);
+      if (st.groups[id] === false) group.removeAttribute("data-collapsed");
+      else group.setAttribute("data-collapsed", "");
+    });
+  }
+  function setPanelSectionCollapsed(section, collapsed){
+    const aside = section?.closest(".side");
+    if (!section?.id || !aside) return;
+    const storageKey = panelCollapseStorageKey(aside);
+    if (collapsed) section.setAttribute("data-collapsed", "");
+    else section.removeAttribute("data-collapsed");
+    const st = readPanelCollapse(storageKey);
+    st.sections[section.id] = collapsed;
+    writePanelCollapse(storageKey, st);
+  }
+  function setPanelGroupCollapsed(group, collapsed){
+    const aside = group?.closest(".side");
+    if (!group || !aside) return;
+    const storageKey = panelCollapseStorageKey(aside);
+    const id = panelGroupCollapseId(group);
+    if (collapsed) group.setAttribute("data-collapsed", "");
+    else group.removeAttribute("data-collapsed");
+    const st = readPanelCollapse(storageKey);
+    st.groups[id] = collapsed;
+    writePanelCollapse(storageKey, st);
+  }
+  function expandPanelSection(sectionId){
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    setPanelSectionCollapsed(section, false);
+  }
+  function wrapPanelSubGroups(container){
+    if (!container) return;
+    [...container.querySelectorAll(":scope > .panel-sub")].forEach(sub => {
+      if (sub.closest(".panel-group")) return;
+      const group = document.createElement("div");
+      group.className = "panel-group";
+      const head = document.createElement("button");
+      head.type = "button";
+      head.className = "panel-group-head";
+      if (sub.classList.contains("panel-sub--gap")) head.classList.add("panel-group-head--gap");
+      if (sub.id) head.id = sub.id;
+      head.innerHTML = `<span class="panel-group-head-text">${sub.textContent}</span><span class="panel-chevron" aria-hidden="true"></span>`;
+      const body = document.createElement("div");
+      body.className = "panel-group-body";
+      sub.replaceWith(group);
+      group.append(head, body);
+      let sib = group.nextElementSibling;
+      while (sib && !sib.classList.contains("panel-sub")) {
+        const next = sib.nextElementSibling;
+        body.appendChild(sib);
+        sib = next;
+      }
+    });
+  }
+  function refreshPanelSubGroups(root){
+    const scope = root || null;
+    const aside = scope?.closest?.(".side") || scope;
+    const panel = aside?.classList?.contains("left") || aside?.classList?.contains("right")
+      ? aside
+      : (scope?.querySelector ? null : document.querySelector(".side.right"));
+    const targets = [];
+    if (!scope) {
+      document.querySelectorAll(".side.left, .side.right").forEach(p => {
+        p.querySelectorAll(":scope > .section > .section-body").forEach(body => targets.push(body));
+        (PANEL_COLLAPSE_EXTRA_ROOTS[panelCollapseSide(p)] || []).forEach(sel => {
+          const el = p.querySelector(sel);
+          if (el) targets.push(el);
+        });
+      });
+    } else if (scope.classList?.contains("section-body") || scope.classList?.contains("section")) {
+      targets.push(scope.querySelector(":scope > .section-body") || scope);
+    } else {
+      targets.push(scope);
+    }
+    targets.forEach(t => wrapPanelSubGroups(t));
+    if (scope?.closest) applyPanelCollapseState(scope.closest(".side"));
+    else document.querySelectorAll(".side.left, .side.right").forEach(applyPanelCollapseState);
+  }
+  function initPanelSectionCollapse(aside){
+    if (!aside || aside.dataset.collapseReady) return;
+    const side = panelCollapseSide(aside);
+    const skip = PANEL_COLLAPSE_SKIP[side];
+    aside.dataset.collapseReady = "1";
+    aside.querySelectorAll(":scope > .section").forEach(section => {
+      if (skip.has(section.id) || section.querySelector(":scope > .section-body")) return;
+      const title = section.querySelector(":scope > .title");
+      if (!title) return;
+      const head = document.createElement("button");
+      head.type = "button";
+      head.className = "panel-section-head";
+      head.innerHTML = `<span class="panel-section-head-text">${title.textContent.trim()}</span><span class="panel-chevron" aria-hidden="true"></span>`;
+      const body = document.createElement("div");
+      body.className = "section-body";
+      let n = title.nextElementSibling;
+      while (n) { const next = n.nextElementSibling; body.appendChild(n); n = next; }
+      title.replaceWith(head);
+      section.append(body);
+    });
+    aside.querySelectorAll(":scope > .section > .section-body").forEach(body => wrapPanelSubGroups(body));
+    (PANEL_COLLAPSE_EXTRA_ROOTS[side] || []).forEach(sel => {
+      const el = aside.querySelector(sel);
+      if (el) wrapPanelSubGroups(el);
+    });
+    applyPanelCollapseState(aside);
+    aside.addEventListener("click", e => {
+      const gHead = e.target.closest(".panel-group-head");
+      if (gHead) {
+        const group = gHead.closest(".panel-group");
+        if (group) setPanelGroupCollapsed(group, !group.hasAttribute("data-collapsed"));
+        return;
+      }
+      const sHead = e.target.closest(".panel-section-head");
+      if (sHead) {
+        const section = sHead.closest(".section");
+        if (section) setPanelSectionCollapsed(section, !section.hasAttribute("data-collapsed"));
+      }
+    });
+  }
+  function setupSidePanelCollapse(){
+    document.querySelectorAll(".side.left, .side.right").forEach(initPanelSectionCollapse);
+    refreshPanelSubGroups();
+  }
+
   function refreshRightPanelJump(){
     const aside = document.querySelector(".side.right");
     const sel = document.getElementById("rightPanelJump");
@@ -3947,20 +4507,60 @@
     });
     sel.innerHTML = `<option value="">— перейти к разделу —</option>` +
       sections.map(s => {
-        const title = s.querySelector(".title")?.textContent?.trim() || "Раздел";
+        const title = panelSectionTitle(s);
         const id = s.id || (s.id = "rightSec-" + title.replace(/\W+/g, "-").toLowerCase());
         return `<option value="${id}">${title}</option>`;
       }).join("");
     if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
   }
+  const RIGHT_PANEL_JUMP_GAP = 8;
+  function rightPanelJumpScrollInset(){
+    const jump = document.getElementById("rightPanelJumpSection");
+    const aside = document.querySelector(".side.right");
+    if (!jump || !aside) return 0;
+    const padTop = parseFloat(getComputedStyle(aside).paddingTop) || 0;
+    return jump.offsetHeight + padTop + RIGHT_PANEL_JUMP_GAP;
+  }
+  function syncRightPanelStickyScrollMargin(){
+    const aside = document.querySelector(".side.right");
+    if (!aside) return;
+    aside.style.setProperty("--right-panel-sticky-h", rightPanelJumpScrollInset() + "px");
+  }
+  function scrollRightPanelToSection(section, behavior = "smooth"){
+    const aside = section?.closest(".side.right");
+    const anchor = document.getElementById("rightPanelJumpSection");
+    if (!aside || !section || !anchor) return;
+    syncRightPanelStickyScrollMargin();
+    const target = section.querySelector(":scope > .panel-section-head") || section;
+    const anchorBottom = anchor.getBoundingClientRect().bottom;
+    const targetTop = target.getBoundingClientRect().top;
+    const delta = targetTop - anchorBottom - RIGHT_PANEL_JUMP_GAP;
+    if (Math.abs(delta) < 1) return;
+    aside.scrollBy({ top: delta, behavior });
+  }
   function bindRightPanelJump(){
     const sel = document.getElementById("rightPanelJump");
     if (!sel) return;
+    const jump = document.getElementById("rightPanelJumpSection");
+    if (jump && !jump.dataset.stickyObs) {
+      jump.dataset.stickyObs = "1";
+      if (typeof ResizeObserver !== "undefined") {
+        new ResizeObserver(syncRightPanelStickyScrollMargin).observe(jump);
+      }
+      window.addEventListener("resize", syncRightPanelStickyScrollMargin);
+    }
+    syncRightPanelStickyScrollMargin();
     sel.addEventListener("change", () => {
       const id = sel.value;
       if (!id) return;
+      expandPanelSection(id);
       const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el) {
+        requestAnimationFrame(() => {
+          scrollRightPanelToSection(el, "auto");
+          requestAnimationFrame(() => scrollRightPanelToSection(el, "auto"));
+        });
+      }
       sel.value = "";
     });
     refreshRightPanelJump();
@@ -4017,15 +4617,24 @@
     buildTextStyles();
     refreshRightPanelJump();
   }
+  function syncBarSizeUI(){
+    const bg = state.style.barGap || {};
+    const mode = bg.mode === "fixed" ? "fixed" : "gap";
+    const gap = document.getElementById("barGapModeGap");
+    const fixed = document.getElementById("barGapModeFixed");
+    if (gap) gap.style.display = mode === "fixed" ? "none" : "flex";
+    if (fixed) fixed.style.display = mode === "fixed" ? "flex" : "none";
+  }
   function syncShapesUI(){
     const t = state.chartType;
     const isLp = isLollipop(t);
     const isPt = t === "point";
     const isLine = isLineFamily(t);
     const isArea = t === "area";
-    const showBarGap = usesCategoryGap(t) && !isBarStack(t);
+    const showBarSize = isBarChart(t) && !isLollipop(t);
     const el = id => document.getElementById(id);
-    if (el("barGapRow")) el("barGapRow").style.display = showBarGap ? "block" : "none";
+    if (el("barGapRow")) el("barGapRow").style.display = showBarSize ? "block" : "none";
+    syncBarSizeUI();
     if (el("lollipopShapeRows")) el("lollipopShapeRows").style.display = isLp ? "block" : "none";
     if (el("strokeWidthRow")) el("strokeWidthRow").style.display = (isLine || isArea) ? "flex" : "none";
     if (el("pointSizeRow")) el("pointSizeRow").style.display = isPt ? "flex" : "none";
@@ -4036,7 +4645,7 @@
   function bindControls(){
     for (const [id, path, type] of BINDINGS){
       const el = document.getElementById(id); if (!el) continue;
-      const evt = (type==="text" && el.tagName!=="SELECT") ? "input" : "change";
+      const evt = (type === "num" || (type === "text" && el.tagName !== "SELECT")) ? "input" : "change";
       el.addEventListener(evt, () => {
         let v = type==="bool" ? el.checked : (type==="num" ? parseFloat(el.value) : el.value);
         if (type==="num" && isNaN(v)) return;
@@ -4045,6 +4654,10 @@
         if (id === "csvDelimiter" || id === "csvDecimal") reparseCsvIfLoaded();
         else if (/^workspaceBg/.test(id)) applyWorkspaceBg();
         else if (/^docGrid/.test(id)) applyDocGrid();
+        else if (id === "width" || id === "height") {
+          applyDocGrid();
+          render();
+        }
         else {
           if (id === "colorMode") syncColorUI();
           if (id === "chartType") {
@@ -4076,7 +4689,7 @@
   function refreshDatasetSelect(){
     const sel = $("#dataset");
     let opts = Object.entries(SAMPLES).map(([k,v]) => `<option value="${k}">${v.name}</option>`).join("");
-    if (state.csvValues) opts += `<option value="__csv__">Мои данные (CSV)</option>`;
+    if (state.csvValues?.length) opts += `<option value="__csv__">Мои данные (CSV)</option>`;
     sel.innerHTML = opts;
     sel.value = state.dataset;
   }
@@ -4152,19 +4765,46 @@
     const content = document.querySelector(".content");
     if (content) content.style.background = withAlpha(w.color, w.opacity);
   }
+  function docFrameSize(){
+    return {
+      w: Math.max(1, Math.round(state.size?.width || 640)),
+      h: Math.max(1, Math.round(state.size?.height || 640))
+    };
+  }
   function applyDocGrid(){
     const g = state.docGrid || defaultState().docGrid;
     const el = document.getElementById("docGrid");
+    const stage = document.querySelector(".stage");
+    const viz = document.getElementById("viz");
     if (!el) return;
-    if (!g.show) { el.style.display = "none"; return; }
+    const { w, h } = docFrameSize();
+    if (!g.show) {
+      el.style.display = "none";
+      if (stage) { stage.style.width = ""; stage.style.height = ""; }
+      if (viz) { viz.style.width = ""; viz.style.height = ""; }
+      return;
+    }
+    if (stage) {
+      stage.style.width = w + "px";
+      stage.style.height = h + "px";
+    }
+    if (viz) {
+      viz.style.width = w + "px";
+      viz.style.height = h + "px";
+    }
     const cell = Math.max(2, Math.round(g.cellSize || 10));
     const { r, g: gb, b } = hexToRgb(g.color || "#c8c8c3");
     const a = g.opacity != null ? Math.min(1, Math.max(0, g.opacity)) : 0.45;
     const line = `rgba(${r},${gb},${b},${a})`;
     el.style.display = "block";
+    el.style.width = w + "px";
+    el.style.height = h + "px";
+    el.style.left = "0";
+    el.style.top = "0";
+    // Шаг сетки = cell px; линия 1 px на границе ячейки, толщина не увеличивает шаг.
     el.style.backgroundImage =
-      `linear-gradient(to right, ${line} 1px, transparent 1px),` +
-      `linear-gradient(to bottom, ${line} 1px, transparent 1px)`;
+      `linear-gradient(to right, ${line} 0 1px, transparent 1px ${cell}px),` +
+      `linear-gradient(to bottom, ${line} 0 1px, transparent 1px ${cell}px)`;
     el.style.backgroundSize = `${cell}px ${cell}px`;
   }
 
@@ -4234,14 +4874,17 @@
     bindActions();
     bindTemplateUI();
     bindRightPanelJump();
+    setupSidePanelCollapse();
+    syncRightPanelStickyScrollMargin();
     bindZoom();
     bindLocalFontsUI();
     bindAxisTitlesUI();
     loadTemplatesManifest();
     await loadLocalFontsFromFolder({ silent: true });
     buildTextStyles();
-    const legacyFooter = "© 2026 Ваша компания";
-    if (state.texts.footerCopyright?.trim() === legacyFooter) {
+    const foot = state.texts.footerCopyright?.trim() || "";
+    const legacyFooters = ["© 2026 Ваша компания", /^© \d{4} Алексей Новичков/i, /· v[\d.]+\s*·\s*MIT/i];
+    if (!foot || legacyFooters.some(x => typeof x === "string" ? foot === x : x.test(foot))) {
       state.texts.footerCopyright = appFooterCopyrightLine();
     }
     applyStateToControls();

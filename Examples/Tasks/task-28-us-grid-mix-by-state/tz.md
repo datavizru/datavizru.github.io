@@ -10,24 +10,24 @@ Heatmap or stacked bars: state vs fuel type. Compare WA renewables vs PA coal.
 
 | State | Source | Share_pct |
 | --- | --- | --- |
-| CA | Coal | 18.0 |
-| CA | Gas | 30.9 |
-| CA | Nuclear | 9.8 |
-| CA | Wind | 10.7 |
-| CA | Solar | 3.6 |
-| TX | Coal | 18.9 |
-| TX | Gas | 31.8 |
-| TX | Nuclear | 10.7 |
-| TX | Wind | 11.6 |
-| TX | Solar | 4.5 |
-| NY | Coal | 19.8 |
-| NY | Gas | 32.7 |
-| NY | Nuclear | 11.6 |
-| NY | Wind | 12.5 |
-| NY | Solar | 5.4 |
-| FL | Coal | 20.7 |
-| FL | Gas | 33.6 |
-| FL | Nuclear | 12.5 |
+| CA | Coal | 19.5 |
+| CA | Gas | 27.9 |
+| CA | Nuclear | 8.6 |
+| CA | Wind | 11.8 |
+| CA | Solar | 4.0 |
+| TX | Coal | 17.1 |
+| TX | Gas | 30.2 |
+| TX | Nuclear | 9.6 |
+| TX | Wind | 12.0 |
+| TX | Solar | 4.9 |
+| NY | Coal | 20.8 |
+| NY | Gas | 32.9 |
+| NY | Nuclear | 10.7 |
+| NY | Wind | 10.8 |
+| NY | Solar | 6.0 |
+| FL | Coal | 17.8 |
+| FL | Gas | 33.4 |
+| FL | Nuclear | 9.7 |
 
 *Table shows the first 18 of 40 rows. Full dataset: `data.csv`.*
 

@@ -10,24 +10,24 @@ Chart 10 state series over time. Highlight the Midwest outlier and the national 
 
 | Month | State | Unemployment_pct |
 | --- | --- | --- |
-| 2025-01 | California | 3.8 |
-| 2025-01 | Texas | 3.3 |
-| 2025-01 | Florida | 3.4 |
-| 2025-01 | New York | 3.4 |
+| 2025-01 | California | 3.6 |
+| 2025-01 | Texas | 3.1 |
+| 2025-01 | Florida | 3.3 |
+| 2025-01 | New York | 3.6 |
 | 2025-01 | Pennsylvania | 3.5 |
-| 2025-01 | Illinois | 3.6 |
-| 2025-01 | Ohio | 3.7 |
-| 2025-01 | Georgia | 3.8 |
-| 2025-01 | North Carolina | 3.8 |
-| 2025-01 | Michigan | 3.9 |
-| 2025-02 | California | 3.8 |
-| 2025-02 | Texas | 3.3 |
-| 2025-02 | Florida | 3.4 |
+| 2025-01 | Illinois | 3.9 |
+| 2025-01 | Ohio | 3.6 |
+| 2025-01 | Georgia | 3.6 |
+| 2025-01 | North Carolina | 3.7 |
+| 2025-01 | Michigan | 4.8 |
+| 2025-02 | California | 3.7 |
+| 2025-02 | Texas | 3.1 |
+| 2025-02 | Florida | 3.3 |
 | 2025-02 | New York | 3.5 |
-| 2025-02 | Pennsylvania | 3.6 |
-| 2025-02 | Illinois | 3.6 |
-| 2025-02 | Ohio | 3.7 |
-| 2025-02 | Georgia | 3.8 |
+| 2025-02 | Pennsylvania | 3.4 |
+| 2025-02 | Illinois | 3.5 |
+| 2025-02 | Ohio | 3.6 |
+| 2025-02 | Georgia | 3.5 |
 
 *Table shows the first 18 of 100 rows. Full dataset: `data.csv`.*
 

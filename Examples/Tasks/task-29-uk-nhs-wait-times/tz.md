@@ -11,15 +11,15 @@ Trust-level league table. Mark the 18-week NHS operational standard.
 | Trust | Median_wait_weeks |
 | --- | --- |
 | Norfolk & Waveney | 24.6 |
-| Black Country | 23.1 |
-| Cornwall | 21.8 |
-| Somerset | 20.4 |
-| Leeds | 17.2 |
+| Black Country | 22.4 |
+| Cornwall | 21.2 |
+| Somerset | 19.6 |
+| Leeds | 17.3 |
 | Bristol | 16.5 |
 | Manchester | 13.1 |
-| Guy's & St Thomas' | 12.4 |
-| Imperial | 11.9 |
-| Royal Free | 11.2 |
+| Guy's & St Thomas' | 13.2 |
+| Imperial | 12.0 |
+| Royal Free | 11.6 |
 
 **CSV settings:** field delimiter — comma (`,`); decimal separator — period (`.`). File: `data.csv` (10 rows).
 

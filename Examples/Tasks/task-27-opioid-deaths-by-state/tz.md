@@ -10,18 +10,18 @@ State comparison snapshot or paired bars. Focus on highest and steepest decline.
 
 | State | Rate_2024 | Rate_2025_YTD |
 | --- | --- | --- |
-| West Virginia | 58.1 | 52.3 |
-| Ohio | 41.2 | 34.4 |
-| Pennsylvania | 38.5 | 35.1 |
-| Kentucky | 45.0 | 42.8 |
-| Tennessee | 36.2 | 33.5 |
-| Florida | 28.4 | 26.9 |
-| California | 12.8 | 12.1 |
-| New York | 18.6 | 17.2 |
-| Texas | 14.1 | 13.8 |
-| Massachusetts | 32.0 | 29.4 |
-| Arizona | 24.5 | 23.0 |
-| Colorado | 19.8 | 18.6 |
+| West Virginia | 55.9 | 52.6 |
+| Ohio | 22.0 | 19.0 |
+| Pennsylvania | 28.3 | 25.1 |
+| Kentucky | 30.9 | 27.2 |
+| Tennessee | 29.6 | 27.6 |
+| Florida | 30.7 | 28.6 |
+| California | 12.4 | 10.9 |
+| New York | 35.5 | 33.3 |
+| Texas | 35.9 | 33.0 |
+| Massachusetts | 35.9 | 33.7 |
+| Arizona | 40.5 | 38.2 |
+| Colorado | 40.7 | 39.1 |
 
 **CSV settings:** field delimiter — comma (`,`); decimal separator — period (`.`). File: `data.csv` (12 rows).
 

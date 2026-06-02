@@ -10,24 +10,24 @@ Multi-series quarterly chart. Show cumulative pain vs recent quarter relief.
 
 | Quarter | Company | Layoffs |
 | --- | --- | --- |
-| 2024-Q1 | Meta | 800 |
-| 2024-Q1 | Amazon | 1120 |
-| 2024-Q1 | Google | 1440 |
-| 2024-Q1 | Microsoft | 1760 |
-| 2024-Q1 | Salesforce | 1280 |
-| 2024-Q1 | Intel | 1600 |
-| 2024-Q1 | Dell | 1920 |
-| 2024-Q1 | SAP | 2240 |
-| 2024-Q1 | IBM | 1760 |
-| 2024-Q1 | Oracle | 2080 |
-| 2024-Q2 | Meta | 1090 |
-| 2024-Q2 | Amazon | 1410 |
-| 2024-Q2 | Google | 1730 |
-| 2024-Q2 | Microsoft | 1250 |
-| 2024-Q2 | Salesforce | 1570 |
-| 2024-Q2 | Intel | 1890 |
-| 2024-Q2 | Dell | 2210 |
-| 2024-Q2 | SAP | 1730 |
+| 2024-Q1 | Meta | 1017 |
+| 2024-Q1 | Amazon | 872 |
+| 2024-Q1 | Google | 1051 |
+| 2024-Q1 | Microsoft | 1277 |
+| 2024-Q1 | Salesforce | 1373 |
+| 2024-Q1 | Intel | 1186 |
+| 2024-Q1 | Dell | 1324 |
+| 2024-Q1 | SAP | 1584 |
+| 2024-Q1 | IBM | 1456 |
+| 2024-Q1 | Oracle | 1613 |
+| 2024-Q2 | Meta | 984 |
+| 2024-Q2 | Amazon | 1035 |
+| 2024-Q2 | Google | 845 |
+| 2024-Q2 | Microsoft | 1195 |
+| 2024-Q2 | Salesforce | 1461 |
+| 2024-Q2 | Intel | 1368 |
+| 2024-Q2 | Dell | 1593 |
+| 2024-Q2 | SAP | 1581 |
 
 *Table shows the first 18 of 80 rows. Full dataset: `data.csv`.*
 
