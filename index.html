@@ -1059,7 +1059,7 @@
       position: which === "y" ? "left" : "bottom",
       title:  { gap: 6, ...(which === "x" ? { align: "center" } : {}) },
       line:   { show: true,  color: "#d0d7de", width: 1, opacity: 1 },
-      ticks:  { show: true,  auto: true, width: 1, length: 5, step: null },
+      ticks:  { show: true,  width: 1, length: 5, step: null },
       labels: { show: true,  padding: 2, step: null, angle: 0 },
       grid:   { show: true,  color: "#ededeb", width: 1, opacity: 1 },
       range:  { auto: true, min: null, max: null }
@@ -3879,7 +3879,6 @@
       <div class="row"><label>Толщина</label><input type="number" data-path="${a}.line.width" data-type="num" min="0" max="8" step="0.5" /></div>
       ${sub("Засечки")}
       <div class="row"><label>Показывать</label>${sw(a+".ticks.show")}</div>
-      <div class="row"><label>Авто-расстановка</label>${sw(a+".ticks.auto")}</div>
       <div class="row"><label>Толщина</label><input type="number" data-path="${a}.ticks.width" data-type="num" min="0" max="8" step="0.5" /></div>
       <div class="row"><label>Длина</label><input type="number" data-path="${a}.ticks.length" data-type="num" min="0" max="40" step="1" /></div>
       ${sub("Подписи засечек")}
@@ -4242,8 +4241,8 @@
       valueLabels:{ show:false },
       endMarkers:{ showName:true, showValue:true },
       axes:{
-        x:{line:{show:true,color:"#111111",width:0.5},ticks:{show:false,auto:true,width:0.5,length:0},labels:{show:true,padding:5,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}},
-        y:{line:{show:false,color:"#cccccc",width:0.5},ticks:{show:false,auto:true,width:0.5,length:0},labels:{show:true,padding:3,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}}
+        x:{line:{show:true,color:"#111111",width:0.5},ticks:{show:false,width:0.5,length:0},labels:{show:true,padding:5,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}},
+        y:{line:{show:false,color:"#cccccc",width:0.5},ticks:{show:false,width:0.5,length:0},labels:{show:true,padding:3,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}}
       }
     }},
     "newspaper": { name: "Газетный (Times)", style: {
@@ -4261,8 +4260,8 @@
         footer:{font:"'Times New Roman', sans-serif",size:10,color:"#888888"}
       },
       axes:{
-        x:{line:{show:true,color:"#222222",width:1},ticks:{show:true,auto:true,width:1,length:5},labels:{show:true,padding:4,angle:0},grid:{show:false,color:"#e0e0e0",width:1}},
-        y:{line:{show:true,color:"#222222",width:1},ticks:{show:true,auto:true,width:1,length:5},labels:{show:true,padding:4,angle:0},grid:{show:true,color:"#e6e6e6",width:1}}
+        x:{line:{show:true,color:"#222222",width:1},ticks:{show:true,width:1,length:5},labels:{show:true,padding:4,angle:0},grid:{show:false,color:"#e0e0e0",width:1}},
+        y:{line:{show:true,color:"#222222",width:1},ticks:{show:true,width:1,length:5},labels:{show:true,padding:4,angle:0},grid:{show:true,color:"#e6e6e6",width:1}}
       }
     }}
   };

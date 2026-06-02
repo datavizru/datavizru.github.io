@@ -46,13 +46,13 @@
     "axes": {
       "x": {
         "line":   { "show": true,  "color": "#111111", "width": 0.5, "opacity": 1 },
-        "ticks":  { "show": false, "auto": true, "width": 0.5, "length": 0, "step": null },
+        "ticks":  { "show": false, "width": 0.5, "length": 0, "step": null },
         "labels": { "show": true,  "padding": 5, "step": null, "angle": 0 },
         "grid":   { "show": false, "color": "#e8e8e8", "width": 0.5, "opacity": 0.6 }
       },
       "y": {
         "line":   { "show": false, "color": "#cccccc", "width": 0.5, "opacity": 1 },
-        "ticks":  { "show": false, "auto": true, "width": 0.5, "length": 0, "step": null },
+        "ticks":  { "show": false, "width": 0.5, "length": 0, "step": null },
         "labels": { "show": true,  "padding": 3, "step": null, "angle": 0 },
         "grid":   { "show": false, "color": "#e8e8e8", "width": 0.5, "opacity": 0.6 }
       }

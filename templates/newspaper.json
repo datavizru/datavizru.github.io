@@ -26,13 +26,13 @@
     "axes": {
       "x": {
         "line":   { "show": true,  "color": "#222222", "width": 1 },
-        "ticks":  { "show": true,  "auto": true, "width": 1, "length": 5, "step": null },
+        "ticks":  { "show": true,  "width": 1, "length": 5, "step": null },
         "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
         "grid":   { "show": false, "color": "#e0e0e0", "width": 1 }
       },
       "y": {
         "line":   { "show": true,  "color": "#222222", "width": 1 },
-        "ticks":  { "show": true,  "auto": true, "width": 1, "length": 5, "step": null },
+        "ticks":  { "show": true,  "width": 1, "length": 5, "step": null },
         "labels": { "show": true,  "padding": 4, "step": null, "angle": 0 },
         "grid":   { "show": true,  "color": "#e6e6e6", "width": 1 }
       }
