@@ -2934,12 +2934,111 @@
     downloadURL(url, `chart@${scale}x.png`);
     setStatus(`Сохранено: PNG ${scale}×`);
   }
+  function chartFontCssFamilies(){
+    const set = new Set();
+    for (const k in state.style.text) {
+      const fam = state.style.text[k]?.font;
+      if (fam) set.add(fam);
+    }
+    return [...set];
+  }
+  const SVG_SKIP_FONT_LABELS = new Set(["Системный", "Arial", "Verdana", "Times New Roman", "Georgia"]);
+  function isGoogleChartFont(famCss){
+    if (isLocalFontFamily(famCss)) return false;
+    const name = primaryFamily(famCss);
+    if (!name || typeof FONT_OPTIONS === "undefined") return false;
+    const opt = FONT_OPTIONS.find(([, label]) => label === name);
+    return !!(opt && !SVG_SKIP_FONT_LABELS.has(name));
+  }
+  function isEmbeddableChartFont(famCss){
+    return isLocalFontFamily(famCss) || isGoogleChartFont(famCss);
+  }
+  async function fetchAsDataUri(url){
+    const abs = new URL(url, document.baseURI).href;
+    const res = await fetch(abs);
+    if (!res.ok) throw new Error(res.status + " " + abs);
+    const blob = await res.blob();
+    const buf = await blob.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    let bin = "";
+    const step = 0x8000;
+    for (let i = 0; i < bytes.length; i += step) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + step));
+    }
+    const ext = abs.split("?")[0].match(/\.(woff2|woff|otf|ttf)$/i);
+    const mime = ext
+      ? ({ woff2: "font/woff2", woff: "font/woff", otf: "font/otf", ttf: "font/ttf" })[ext[1].toLowerCase()] || blob.type
+      : blob.type || "application/octet-stream";
+    return `data:${mime};base64,${btoa(bin)}`;
+  }
+  async function localFontFaceCssForExport(famCss){
+    const name = primaryFamily(famCss);
+    const faces = LOCAL_FONT_FACE_LIST.filter(f => f.family === name);
+    if (!faces.length) return "";
+    const blocks = [];
+    for (const face of faces) {
+      try {
+        const data = await fetchAsDataUri(resolveFontAssetUrl(face.url));
+        blocks.push(`@font-face{font-family:${JSON.stringify(face.family)};src:url(${JSON.stringify(data)}) format(${JSON.stringify(face.format)});font-weight:${face.weight};font-style:${face.style};}`);
+      } catch (e) { console.warn("SVG font:", face.url, e); }
+    }
+    return blocks.join("\n");
+  }
+  async function googleFontFaceCssForExport(famCss){
+    const name = primaryFamily(famCss);
+    if (!name) return "";
+    const cssUrl = "https://fonts.googleapis.com/css2?family="
+      + encodeURIComponent(name).replace(/%20/g, "+")
+      + ":ital,wght@0,400;0,700;1,400;1,700&display=swap";
+    const css = await fetch(cssUrl, { headers: { "User-Agent": "Mozilla/5.0 (compatible; ChartSVG/1.0)" } }).then(r => {
+      if (!r.ok) throw new Error(r.status + " Google Fonts CSS");
+      return r.text();
+    });
+    const urls = [...new Set([...css.matchAll(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g)].map(m => m[1]))];
+    let embedded = css;
+    for (const u of urls) {
+      try {
+        const data = await fetchAsDataUri(u);
+        embedded = embedded.split(u).join(data);
+      } catch (e) { console.warn("SVG font:", u, e); }
+    }
+    return embedded.replace(/@font-face\s*\{/g, "@font-face{font-display:swap;");
+  }
+  async function buildSvgEmbeddedFontCss(){
+    const parts = [];
+    for (const fam of chartFontCssFamilies()) {
+      if (!isEmbeddableChartFont(fam)) continue;
+      try {
+        if (isLocalFontFamily(fam)) parts.push(await localFontFaceCssForExport(fam));
+        else if (isGoogleChartFont(fam)) parts.push(await googleFontFaceCssForExport(fam));
+      } catch (e) { console.warn("SVG embed font:", fam, e); }
+    }
+    return parts.filter(Boolean).join("\n");
+  }
+  function injectSvgEmbeddedFonts(svg, fontCss){
+    if (!fontCss.trim()) return svg;
+    const block = `<defs><style type="text/css"><![CDATA[\n${fontCss}\n]]></style></defs>`;
+    const m = svg.match(/^(\s*<svg[\s\S]*?>)/i);
+    return m ? m[1] + block + svg.slice(m[1].length) : block + svg;
+  }
   async function exportSVG(){
     if (!currentView) return;
     setStatus("Экспорт SVG…");
-    const svg = await currentView.toSVG();
+    let svg = await currentView.toSVG();
+    let fontNote = "";
+    try {
+      await ensureSpecFonts();
+      const fontCss = await buildSvgEmbeddedFontCss();
+      if (fontCss.trim()) {
+        svg = injectSvgEmbeddedFonts(svg, fontCss);
+        fontNote = " · шрифты встроены";
+      }
+    } catch (e) {
+      console.warn("SVG font embed:", e);
+      fontNote = " · шрифты не встроены";
+    }
     downloadBlob(svg, "chart.svg", "image/svg+xml");
-    setStatus("Сохранено: SVG");
+    setStatus("Сохранено: SVG" + fontNote);
   }
 
   /* ════════════════════════ СОХРАНЕНИЕ / ЗАГРУЗКА ПРОЕКТА ════════════════════════ */
@@ -3336,6 +3435,7 @@
   let LOCAL_FONT_OPTIONS = [];
   const LOCAL_FONT_CSS = new Set();
   const LOCAL_FONT_FACE_KEYS = new Set();
+  const LOCAL_FONT_FACE_LIST = [];
   function fontsBaseUrl(){ return new URL("./Fonts/", document.baseURI); }
   function fontFileUrl(fileName){
     const name = String(fileName || "").replace(/^Fonts\/?/i, "");
@@ -3399,12 +3499,14 @@
       : face.url.match(/\.otf(\?|$)/i) ? "opentype" : "truetype");
     const rule = `@font-face{font-family:${JSON.stringify(family)};src:url(${JSON.stringify(face.url)}) format(${JSON.stringify(fmt)});font-weight:${face.weight};font-style:${face.style};font-display:swap;}`;
     getLocalFontsStyleEl().appendChild(document.createTextNode(rule));
+    LOCAL_FONT_FACE_LIST.push({ family, weight: face.weight, style: face.style, url: face.url, format: fmt });
   }
   function registerLocalFontFamilies(entries, replace){
     if (replace) {
       LOCAL_FONT_OPTIONS = [];
       LOCAL_FONT_CSS.clear();
       LOCAL_FONT_FACE_KEYS.clear();
+      LOCAL_FONT_FACE_LIST.length = 0;
       const el = getLocalFontsStyleEl();
       el.textContent = "";
     }
