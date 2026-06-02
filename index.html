@@ -2984,6 +2984,9 @@
     }
     return blocks.join("\n");
   }
+  function svgEscapeStyleCss(css){
+    return String(css).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  }
   async function googleFontFaceCssForExport(famCss){
     const name = primaryFamily(famCss);
     if (!name) return "";
@@ -2994,15 +2997,29 @@
       if (!r.ok) throw new Error(r.status + " Google Fonts CSS");
       return r.text();
     });
-    const urls = [...new Set([...css.matchAll(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/g)].map(m => m[1]))];
-    let embedded = css;
-    for (const u of urls) {
+    const blocks = [];
+    const faceRe = /@font-face\s*\{([^}]+)\}/g;
+    let m;
+    while ((m = faceRe.exec(css)) !== null) {
+      const body = m[1];
+      const urlM = body.match(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/);
+      if (!urlM) continue;
+      const fmtM = body.match(/format\(\s*['"]?([^'")]+)/);
+      const fmt = fmtM ? fmtM[1].trim() : "woff2";
       try {
-        const data = await fetchAsDataUri(u);
-        embedded = embedded.split(u).join(data);
-      } catch (e) { console.warn("SVG font:", u, e); }
+        const data = await fetchAsDataUri(urlM[1]);
+        const famM = body.match(/font-family:\s*['"]?([^'";]+)/);
+        const fam = (famM ? famM[1].trim() : name);
+        const wM = body.match(/font-weight:\s*(\d+)/);
+        const weight = wM ? wM[1] : "400";
+        const sM = body.match(/font-style:\s*(normal|italic|oblique)/i);
+        const style = sM ? sM[1].toLowerCase() : "normal";
+        blocks.push(
+          `@font-face{font-family:${JSON.stringify(fam)};src:url(${JSON.stringify(data)}) format(${JSON.stringify(fmt)});font-weight:${weight};font-style:${style};font-display:swap;}`
+        );
+      } catch (e) { console.warn("SVG font:", urlM[1], e); }
     }
-    return embedded.replace(/@font-face\s*\{/g, "@font-face{font-display:swap;");
+    return blocks.join("\n");
   }
   async function buildSvgEmbeddedFontCss(){
     const parts = [];
@@ -3017,7 +3034,8 @@
   }
   function injectSvgEmbeddedFonts(svg, fontCss){
     if (!fontCss.trim()) return svg;
-    const block = `<defs><style type="text/css"><![CDATA[\n${fontCss}\n]]></style></defs>`;
+    const safe = svgEscapeStyleCss(fontCss);
+    const block = `<defs><style type="text/css">\n${safe}\n</style></defs>`;
     const m = svg.match(/^(\s*<svg[\s\S]*?>)/i);
     return m ? m[1] + block + svg.slice(m[1].length) : block + svg;
   }
