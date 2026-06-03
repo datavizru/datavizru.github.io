@@ -1,6 +1,3 @@
 {
-  "templates": [
-    { "name": "Минимал (светлый)", "file": "minimal-light.json" },
-    { "name": "Газетный (Times)", "file": "newspaper.json" }
-  ]
+  "templates": []
 }

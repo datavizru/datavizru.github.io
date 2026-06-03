@@ -64,7 +64,9 @@ freehtml2/
 ├── gen-examples-csv.mjs    # генерация CSV в Examples/
 ├── gen-tasks-examples.mjs  # генерация Examples/Tasks/
 ├── gen-fonts-manifest.py   # обновление манифеста шрифтов (без Node)
-└── gen-fonts-manifest.mjs  # то же, если установлен Node.js
+├── gen-fonts-manifest.mjs  # то же, если установлен Node.js
+├── gen-templates-manifest.py   # список шаблонов → templates/manifest.json
+└── gen-templates-manifest.mjs  # то же, если установлен Node.js
 ```
 
 | Папка / файл | Назначение |
@@ -123,6 +125,10 @@ node gen-tasks-examples.mjs
 # манифест локальных шрифтов после добавления файлов в Fonts/
 python3 gen-fonts-manifest.py
 # или: node gen-fonts-manifest.mjs
+
+# список шаблонов в выпадающем меню (все *.json в templates/, кроме manifest.json)
+python3 gen-templates-manifest.py
+# или: node gen-templates-manifest.mjs
 ```
 
 ---

@@ -13,7 +13,7 @@
   <!-- Шрифты диаграммы: семейство PT (Google Fonts) -->
   <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=PT+Sans+Narrow:wght@400;700&family=PT+Sans+Caption:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=PT+Serif+Caption:ital@0;1&family=PT+Mono&display=swap" rel="stylesheet" />
   <!-- Шрифты диаграммы: Open Sans, Noto, IBM Plex, Fira, Playfair, Cormorant, Montserrat -->
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet" />
   <!-- Golos Text, Literata, Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Golos+Text:ital,wght@0,400;0,700;1,400;1,700&family=Literata:ital,wght@0,400;0,700;1,400;1,700&family=Roboto:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Roboto+Slab:wght@400;700&family=Roboto+Condensed:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
   <!-- EB Garamond, Vollkorn, Playfair SC, Inter, JetBrains Mono, Source -->
@@ -112,7 +112,7 @@
     .side.right > .section:not(.right-panel-jump) {
       scroll-margin-top: var(--right-panel-sticky-h, 80px);
     }
-    .heatmap-stop-row { display:flex; align-items:center; gap:6px; margin:6px 0; }
+    .heatmap-stop-row { display:flex; align-items:flex-start; gap:6px; margin:6px 0; }
     .heatmap-stop-row input[type=number] { width:80px; flex:none; }
     .heatmap-stop-row input[type=color] { width:40px; flex:none; padding:2px; height:var(--ctrl-h); }
     .heatmap-stop-row .btn.icon { flex:none; min-width:28px; padding:0; }
@@ -259,6 +259,17 @@
     }
     input[type=color]::-webkit-color-swatch-wrapper { padding:2px; }
     input[type=color]::-webkit-color-swatch { border:none; border-radius:4px; }
+    .color-field { margin:0; width:100%; }
+    .color-field-head { margin:0 !important; }
+    .color-field .color-hex {
+      width:100%; margin-top:6px; display:block; box-sizing:border-box;
+      font-family:"JetBrains Mono", ui-monospace, monospace;
+      font-size:11px; letter-spacing:0.02em; text-transform:uppercase;
+    }
+    .color-ctrl-swatch { display:inline-flex; flex:none; align-items:center; }
+    .color-field--compact { flex:1; min-width:0; }
+    .color-field--compact .color-hex { margin-top:4px; }
+    .heatmap-stop-row .color-field-head { display:flex; align-items:center; }
 
     /* чекбокс / переключатель */
     .switch { position:relative; width:34px; height:20px; flex:none; }
@@ -535,6 +546,10 @@
           <button class="btn icon" id="tplReset" title="Сбросить оформление">⟲</button>
         </div>
         <input type="file" id="tplFile" accept=".json,application/json" class="hidden" />
+        <p class="panel-note" style="margin-top:6px;">
+          Новый файл в <code>templates/</code> → в корне репозитория:
+          <code>python3 gen-templates-manifest.py</code>
+        </p>
         <div class="file-name" id="tplNote"></div>
       </div>
 
@@ -628,6 +643,14 @@
         <div class="field" style="margin-bottom:10px;">
           <label>Шрифт всех надписей</label>
           <select id="allTextsFont" title="Один шрифт для заголовка, осей, легенды, подписей и футера"></select>
+          <div class="color-field" style="margin-top:8px;">
+            <div class="row color-field-head">
+              <label>Цвет всех надписей</label>
+              <span class="color-ctrl-swatch">
+                <input type="color" id="allTextsColor" title="Один цвет для заголовка, осей, легенды, подписей и футера" />
+              </span>
+            </div>
+          </div>
         </div>
         <div id="textStyles"></div>
       </div>
@@ -803,9 +826,9 @@
   </div>
 
   <script>
-  const APP_VERSION = "0.0.2";
+  const APP_VERSION = "0.0.3";
   function appSiteMetaLine(){
-    return `© 2026 · Алексей Новичков · v${APP_VERSION} (alpha) · MIT`;
+    return `© 2026 · Алексей Новичков · v${APP_VERSION} (alpha) · MIT · Счастье для всех, даром, и пусть никто не уйдет обиженный!`;
   }
   function appFooterCopyrightLine(){
     return "© Визуаллизируй свои данные. 2026";
@@ -938,37 +961,37 @@
       footerCopyright: appFooterCopyrightLine(),
       footerSources: "Источник: тестовые данные"
     },
-    size: { width: 640, height: 640 },
+    size: { width: 512, height: 512 },
     // Сетка рабочей области (не входит в экспорт диаграммы).
     workspaceBg: { color: "#e8e8e6", opacity: 1 },
-    docGrid: { show: false, color: "#c8c8c3", opacity: 0.45, cellSize: 10 },
+    docGrid: { show: false, color: "#c8c8c3", opacity: 0.45, cellSize: 8 },
     style: {
-      markColor: "#4c6ef5", backgroundColor: "#ffffff", scheme: "viridis",
+      markColor: "#ef4e23", backgroundColor: "#ffffff", scheme: "viridis",
       strokeWidth: 2, pointSize: 70, lollipopStemWidth: 2, lollipopHeadDiameter: 10,
       areaOpacity: 0.45, innerRadius: 0,
       showLegend: true, showPoints: false,
       // Оформление каждой надписи: шрифт, размер, цвет, жирность, наклон.
       text: {
-        title:      textDefault({ size: 18, color: "#2b2b29", weight: 700, bold: true }),
-        subtitle:   textDefault({ size: 13, color: "#8a8a85" }),
-        axisTitleX: textDefault({ size: 12, color: "#2b2b29" }),
-        axisTitleY: textDefault({ size: 12, color: "#2b2b29" }),
-        axisLabelX: textDefault({ size: 11, color: "#2b2b29" }),
-        axisLabelY: textDefault({ size: 11, color: "#2b2b29" }),
-        legendLabel: textDefault({ size: 11, color: "#2b2b29" }),
-        comment:    textDefault({ size: 12, color: "#2b2b29", italic: true }),
-        footer:     textDefault({ size: 11, color: "#8a8a85" }),
-        valueLabel: textDefault({ size: 10, color: "#2b2b29" }),
-        pointLabelName:   textDefault({ size: 11, color: "#2b2b29", weight: 700, bold: true }),
-        pointLabelSeries: textDefault({ size: 10, color: "#2b2b29" }),
-        pointLabelX:      textDefault({ size: 10, color: "#8a8a85" }),
-        pointLabelY:      textDefault({ size: 10, color: "#8a8a85" }),
-        endName:    textDefault({ size: 11, color: "#2b2b29", weight: 700, bold: true }),
-        endValue:   textDefault({ size: 10, color: "#8a8a85" })
+        title:      textDefault({ size: 30, weight: 700, bold: true }),
+        subtitle:   textDefault({ size: 20 }),
+        axisTitleX: textDefault({ size: 15 }),
+        axisTitleY: textDefault({ size: 15 }),
+        axisLabelX: textDefault({ size: 12 }),
+        axisLabelY: textDefault({ size: 12 }),
+        legendLabel: textDefault({ size: 15 }),
+        comment:    textDefault({ size: 15, italic: true }),
+        footer:     textDefault({ size: 12 }),
+        valueLabel: textDefault({ size: 15 }),
+        pointLabelName:   textDefault({ size: 15, weight: 700, bold: true }),
+        pointLabelSeries: textDefault({ size: 15 }),
+        pointLabelX:      textDefault({ size: 15 }),
+        pointLabelY:      textDefault({ size: 15 }),
+        endName:    textDefault({ size: 15, weight: 700, bold: true }),
+        endValue:   textDefault({ size: 15 })
       },
       markOpacity: 1, bgOpacity: 1, legendMarkerSize: 11,
       // Зазор между столбиками/линейками: в процентах от шага или в пикселях.
-      barGap: { mode: "gap", unit: "percent", value: 10, fixedWidth: 24 },
+      barGap: { mode: "gap", unit: "percent", value: 60, fixedWidth: 24 },
       // Раскраска рядов: схема или свои цвета по каждому ряду.
       colorMode: "scheme", seriesColors: {}, seriesOpacity: {},
       heatmap: {
@@ -991,8 +1014,8 @@
         numberFormat: { decimal: ",", grouping: true, prefix: "", suffix: "" }
       },
       pointProjections: {
-        x: pointProjectionDefault("#4c6ef5"),
-        y: pointProjectionDefault("#4c6ef5")
+        x: pointProjectionDefault("#ef4e23"),
+        y: pointProjectionDefault("#ef4e23")
       },
       // Концевые маркеры линий/областей — у начала (слева) и конца (справа).
       // Подпись = имя ряда (сверху) + значение (снизу); каждая часть со своим
@@ -1010,15 +1033,16 @@
       plotArea: plotAreaDefault(),
       padding: {
         chart: { top: 30, right: 30, bottom: 30, left: 30 },
-        title: { top: 0, between: 4, bottom: 12 },
-        legend: { top: 6, bottom: 10 },
-        comment: { top: 12, bottom: 0 },
-        footer: { top: 8, bottom: 4 }
+        title: { top: 0, between: 7, bottom: 15 },
+        legend: { top: 9, bottom: 13 },
+        comment: { top: 15, bottom: 0 },
+        footer: { top: 11, bottom: 7 }
       }
     }
   });
 
   const SYSTEM_FONT = "system-ui, sans-serif";
+  const DEFAULT_CHART_FONT = "'Noto Sans', sans-serif";
 
   // Список всех настраиваемых надписей (для генерации правой панели).
   const TEXTS = [
@@ -1041,7 +1065,7 @@
   ];
 
   function textDefault(over){
-    return { font: SYSTEM_FONT, size: 12, color: "#2b2b29", opacity: 1, weight: 400, bold: false, italic: false, align: "left",
+    return { font: DEFAULT_CHART_FONT, size: 12, color: "#000000", opacity: 1, weight: 400, bold: false, italic: false, align: "left",
              lineHeight: { unit: "percent", value: 120 }, ...over };
   }
   function endSideDefault(){
@@ -1051,17 +1075,17 @@
   function plotAreaDefault(){
     return {
       fillEnabled: false, fillColor: "#f6f6f5", fillOpacity: 1,
-      borderEnabled: true, borderColor: "#e8e8e6", borderOpacity: 1, borderWidth: 1
+      borderEnabled: true, borderColor: "#000000", borderOpacity: 0.1, borderWidth: 1
     };
   }
   function axisDefault(which){
     return {
       position: which === "y" ? "left" : "bottom",
-      title:  { gap: 6, ...(which === "x" ? { align: "center" } : {}) },
-      line:   { show: true,  color: "#d0d7de", width: 1, opacity: 1 },
+      title:  { gap: 9, ...(which === "x" ? { align: "center" } : {}) },
+      line:   { show: true,  color: "#000000", width: 1, opacity: 1 },
       ticks:  { show: true,  width: 1, length: 5, step: null },
-      labels: { show: true,  padding: 2, step: null, angle: 0 },
-      grid:   { show: true,  color: "#ededeb", width: 1, opacity: 1 },
+      labels: { show: true,  padding: 5, step: null, angle: 0 },
+      grid:   { show: true,  color: "#000000", width: 1, opacity: 0.1 },
       range:  { min: null, max: null }
     };
   }
@@ -1075,6 +1099,148 @@
     if (h.length === 3) h = h.split("").map(c => c + c).join("");
     const n = parseInt(h || "000000", 16);
     return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  // <input type="color"> принимает только #rrggbb (всплывающий выбор — в hex).
+  function colorInputHex(color){
+    const c = String(color || "").trim();
+    if (!c) return "#2b2b29";
+    if (c.startsWith("#")) {
+      let h = c.replace("#", "");
+      if (h.length === 3) h = h.split("").map(ch => ch + ch).join("");
+      if (h.length >= 6) return "#" + h.slice(0, 6);
+    }
+    const m = c.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (m) {
+      const hex = [m[1], m[2], m[3]].map(n => (+n).toString(16).padStart(2, "0")).join("");
+      return "#" + hex;
+    }
+    return "#2b2b29";
+  }
+  function parseHexInput(raw){
+    let v = String(raw || "").trim().toUpperCase();
+    if (!v) return null;
+    if (!v.startsWith("#")) v = "#" + v;
+    if (!/^#[0-9A-F]{3}$/.test(v) && !/^#[0-9A-F]{6}$/.test(v)) return null;
+    return colorInputHex(v);
+  }
+  function syncColorHexField(inp, colorOverride){
+    const path = inp.dataset.path;
+    const raw = colorOverride != null ? colorOverride : (path ? getPath(state, path) : inp.value);
+    const h = colorInputHex(raw);
+    inp.value = h;
+    const hex = inp.closest(".color-field")?.querySelector(".color-hex");
+    if (hex) hex.value = h.toUpperCase();
+  }
+  function bindColorHexInput(inp, hex, onCommit){
+    if (!hex) return;
+    if (inp._colorHexBound) return;
+    inp._colorHexBound = true;
+    const commit = h => {
+      const norm = colorInputHex(h);
+      inp.value = norm;
+      hex.value = norm.toUpperCase();
+      onCommit(norm);
+    };
+    syncColorHexField(inp);
+    hex.addEventListener("focus", () => hex.select());
+    hex.addEventListener("input", () => {
+      const h = parseHexInput(hex.value);
+      if (h) commit(h);
+    });
+    hex.addEventListener("change", () => {
+      const h = parseHexInput(hex.value);
+      if (h) commit(h);
+      else syncColorHexField(inp);
+    });
+    inp.addEventListener("input", () => {
+      hex.value = colorInputHex(inp.value).toUpperCase();
+    });
+  }
+  function wrapColorInputWithHex(inp, onCommit){
+    if (inp.dataset.colorCtrl) {
+      const existing = inp.closest(".color-field")?.querySelector(".color-hex");
+      bindColorHexInput(inp, existing, onCommit);
+      return;
+    }
+    inp.dataset.colorCtrl = "1";
+    const swatch = document.createElement("span");
+    swatch.className = "color-ctrl-swatch";
+    const hex = document.createElement("input");
+    hex.type = "text";
+    hex.className = "color-hex";
+    hex.autocomplete = "off";
+    hex.spellcheck = false;
+    hex.placeholder = "#RRGGBB";
+    hex.title = "HEX — вставьте цвет из Figma";
+
+    const row = inp.closest(".row");
+    const existingField = inp.closest(".color-field");
+
+    if (existingField) {
+      if (!existingField.querySelector(".color-hex")) existingField.appendChild(hex);
+      bindColorHexInput(inp, existingField.querySelector(".color-hex"), onCommit);
+      return;
+    }
+
+    if (row) {
+      const field = document.createElement("div");
+      field.className = "color-field";
+      const head = document.createElement("div");
+      head.className = "row color-field-head";
+      const label = row.querySelector(":scope > label");
+      const rest = [...row.children].filter(c => c !== inp && c !== label);
+      if (label) head.appendChild(label);
+      swatch.appendChild(inp);
+      head.appendChild(swatch);
+      rest.forEach(c => head.appendChild(c));
+      row.replaceWith(field);
+      field.appendChild(head);
+      field.appendChild(hex);
+    } else {
+      const parent = inp.parentNode;
+      const ref = inp.nextSibling;
+      const field = document.createElement("div");
+      field.className = "color-field";
+      const head = document.createElement("div");
+      head.className = "color-field-head";
+      swatch.appendChild(inp);
+      head.appendChild(swatch);
+      field.appendChild(head);
+      field.appendChild(hex);
+      parent.insertBefore(field, ref);
+    }
+    bindColorHexInput(inp, hex, onCommit);
+  }
+  function enhanceColorInputs(root){
+    const scope = root || document;
+    scope.querySelectorAll('input[type=color][data-path]:not([data-color-ctrl])').forEach(inp => {
+      const path = inp.dataset.path;
+      wrapColorInputWithHex(inp, h => {
+        setPath(state, path, h);
+        if (/^style\.text\.[^.]+\.color$/.test(path)) syncAllTextsColorInput();
+        render({ immediate: true });
+      });
+    });
+  }
+  function enhanceBindingColorPickers(){
+    for (const [id, path] of [
+      ["markColor", "style.markColor"],
+      ["bgColor", "style.backgroundColor"],
+      ["workspaceBgColor", "workspaceBg.color"]
+    ]) {
+      const inp = document.getElementById(id);
+      if (!inp) continue;
+      wrapColorInputWithHex(inp, h => {
+        setPath(state, path, h);
+        if (id === "markColor" || id === "bgColor") syncColorUI();
+        render({ immediate: true });
+      });
+    }
+  }
+  function enhanceColorControls(root){
+    enhanceColorInputs(root);
+    enhanceBindingColorPickers();
+    bindAllTextsColor();
   }
   function withAlpha(color, op){
     if (op == null || op >= 1) return color;
@@ -1319,6 +1485,19 @@
     if (isBarH(t) || isLollipopH(t)) return "x";
     if (isHeatmap(t)) return null;
     return "y";
+  }
+  function categoryAxisChannel(){
+    for (const w of ["x", "y"]) {
+      const af = axisField(w);
+      if (af && !af.quant) return w;
+    }
+    return null;
+  }
+  function axisLabelsShow(which){
+    const a = state.style.axes[which];
+    if (!state.style.hideAxisTitles) return a.labels.show;
+    const cat = categoryAxisChannel();
+    return cat === which;
   }
   function plotMarkClip(){
     const ch = valueAxisChannel();
@@ -1609,15 +1788,32 @@
     const v = renderText(state.texts[key] || "").trim();
     return v || null;
   }
+  // Какое поле данных → заголовок оси X/Y (у горизонтальных столбиков оси меняются местами).
+  function axisTitleColumns(){
+    const fx = state.fields.x, fy = state.fields.y;
+    const t = state.chartType;
+    if (isBarH(t) || isLollipopH(t)) return { axisTitleX: fy, axisTitleY: fx };
+    return { axisTitleX: fx, axisTitleY: fy };
+  }
   // Поля «Заголовок оси X/Y» ← имена выбранных столбцов (onlyIfEmpty: не затирать свой текст).
   function syncAxisTitlesFromFields(onlyIfEmpty){
+    if (state.style.hideAxisTitles) {
+      state.texts.axisTitleX = "";
+      state.texts.axisTitleY = "";
+      const elX = document.getElementById("axisTitleX");
+      const elY = document.getElementById("axisTitleY");
+      if (elX) elX.value = "";
+      if (elY) elY.value = "";
+      return;
+    }
+    const cols = axisTitleColumns();
     const set = (key, col) => {
       const cur = renderText(state.texts[key] || "").trim();
       if (onlyIfEmpty && cur) return;
       state.texts[key] = col || "";
     };
-    set("axisTitleX", state.fields.x);
-    set("axisTitleY", state.fields.y);
+    set("axisTitleX", cols.axisTitleX);
+    set("axisTitleY", cols.axisTitleY);
     const elX = document.getElementById("axisTitleX");
     const elY = document.getElementById("axisTitleY");
     if (elX) elX.value = state.texts.axisTitleX || "";
@@ -1944,7 +2140,7 @@
     if (isBarChart(t) && !isLollipop(t)) {
       const pad = barPaddingInner();
       const chan = isBarH(t) ? "y" : "x";
-      if (pad != null && enc[chan] && enc[chan].type === "nominal" && !isBarStack(t)) {
+      if (pad != null && enc[chan] && enc[chan].type === "nominal") {
         enc[chan] = { ...enc[chan], scale: { ...(enc[chan].scale || {}), paddingInner: pad, paddingOuter: pad / 2 } };
       }
     }
@@ -2400,7 +2596,7 @@
       domain: a.line.show, domainColor: lineCol, domainWidth: a.line.width,
       ticks: a.ticks.show, tickColor: lineCol, tickWidth: a.ticks.width, tickSize: a.ticks.length,
       grid: a.grid.show, gridColor: withAlpha(a.grid.color, a.grid.opacity), gridWidth: a.grid.width,
-      labels: a.labels.show, labelPadding: a.labels.padding, labelAngle: a.labels.angle,
+      labels: axisLabelsShow(which), labelPadding: a.labels.padding, labelAngle: a.labels.angle,
       labelColor: withAlpha(lab.color, lab.opacity), labelFont: chartFontFamily(lab.font), labelFontSize: lab.size,
       labelFontWeight: tw(lab), labelFontStyle: fs(lab.italic),
       titleColor: withAlpha(ttl.color, ttl.opacity), titleFont: chartFontFamily(ttl.font), titleFontSize: ttl.size,
@@ -3156,7 +3352,7 @@
   }
   function loadProject(file){
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const parsed = JSON.parse(reader.result);
         const loaded = { ...(parsed.state || parsed), ...(parsed.data || {}) };
@@ -3184,12 +3380,13 @@
           refreshFieldSelects();
         }
         syncAxisTitlesFromFields(true);
-        buildTextStyles();
+        state.style = normalizeStyleFonts(state.style);
         buildAxes();
         buildHeatmapStopsUI();
         applyStateToControls();
         syncChartTypeUI();
-        render();
+        await ensureChartFontsLoaded();
+        render({ fontRefresh: true });
         const n = state.csvValues?.length;
         setStatus(n
           ? `Проект загружен · ${n} строк CSV${state.csvFileName ? " · " + state.csvFileName : ""}`
@@ -3740,6 +3937,29 @@
     const src = source ? ` (${source})` : "";
     el.textContent = `Добавлено семейств: ${count}${src}. ${names}`;
   }
+  function normalizeFontCss(saved){
+    const s = String(saved || "").trim();
+    if (!s) return s;
+    const exact = FONT_OPTIONS.find(([v]) => v === s);
+    if (exact) return exact[0];
+    if (LOCAL_FONT_CSS.has(s)) return s;
+    const name = primaryFamily(s);
+    const byLabel = FONT_OPTIONS.find(([, label]) => label === name);
+    if (byLabel) return byLabel[0];
+    const byFam = FONT_OPTIONS.find(([v]) => primaryFamily(v) === name);
+    if (byFam) return byFam[0];
+    const local = LOCAL_FONT_OPTIONS.find(([v]) => primaryFamily(v) === name);
+    if (local) return local[0];
+    return s;
+  }
+  function normalizeStyleFonts(style){
+    if (!style?.text) return style;
+    for (const k in style.text) {
+      const t = style.text[k];
+      if (t?.font) t.font = normalizeFontCss(t.font);
+    }
+    return style;
+  }
   function refreshFontSelects(){
     document.querySelectorAll('select[data-path$=".font"]').forEach(sel => {
       const path = sel.getAttribute("data-path");
@@ -3756,6 +3976,11 @@
       }
     });
     syncAllWeightDropdowns();
+  }
+  async function ensureChartFontsLoaded(){
+    const fams = chartFontCssFamilies();
+    await Promise.all(fams.map(f => ensureWebFontCss(f)));
+    await ensureSpecFonts();
   }
   function bindAxisTitlesUI(){
     document.getElementById("btnResetAxisTitles")?.addEventListener("click", () => {
@@ -3797,6 +4022,7 @@
     ["'EB Garamond', serif", "EB Garamond"],
     ["'Vollkorn', serif", "Vollkorn"],
     ["'Vollkorn SC', serif", "Vollkorn SC"],
+    ["'Playfair', serif", "Playfair"],
     ["'Playfair Display', serif", "Playfair Display"],
     ["'Playfair Display SC', serif", "Playfair Display SC"],
     ["'Inter', sans-serif", "Inter"],
@@ -3853,6 +4079,7 @@
     "'EB Garamond', serif":              [400, 500, 600, 700, 800],
     "'Vollkorn', serif":                [400, 500, 600, 700, 800, 900],
     "'Vollkorn SC', serif":             [400, 600, 700, 900],
+    "'Playfair', serif":                 [400, 500, 600, 700],
     "'Playfair Display', serif":        [400, 500, 600, 700, 800, 900],
     "'Playfair Display SC', serif":     [400, 700],
     "'Inter', sans-serif":              [300, 400, 500, 600, 700, 800],
@@ -3924,6 +4151,10 @@
     const fonts = [...new Set(visibleTextKeys().map(k => state.style.text[k]?.font).filter(Boolean))];
     return fonts.length === 1 ? fonts[0] : "";
   }
+  function commonAllTextsColor(){
+    const colors = [...new Set(visibleTextKeys().map(k => state.style.text[k]?.color).filter(Boolean))];
+    return colors.length === 1 ? colors[0] : null;
+  }
   function applyFontToAllTexts(font){
     for (const key of Object.keys(state.style.text)) {
       const t = state.style.text[key];
@@ -3934,6 +4165,14 @@
       t.bold = isBoldWeight(font, t.weight);
     }
     syncAllTextsFontSelect();
+  }
+  function applyColorToAllTexts(color){
+    for (const key of Object.keys(state.style.text)) {
+      const t = state.style.text[key];
+      if (!t) continue;
+      t.color = color;
+    }
+    syncAllTextsColorInput();
   }
   function initAllTextsFontOptions(){
     const sel = document.getElementById("allTextsFont");
@@ -3949,6 +4188,25 @@
     if (!sel) return;
     const common = commonAllTextsFont();
     if (common && [...sel.options].some(o => o.value === common)) sel.value = common;
+  }
+  function syncTextColorInputs(){
+    document.querySelectorAll("[data-path^='style.text.'][data-path$='.color']").forEach(el => {
+      if (el.id === "allTextsColor") return;
+      syncColorHexField(el);
+    });
+  }
+  function syncAllTextsColorInput(){
+    const inp = document.getElementById("allTextsColor");
+    if (!inp) return;
+    const common = commonAllTextsColor();
+    const fallback = state.style.text.title?.color || defaultState().style.text.title?.color || "#2b2b29";
+    const h = colorInputHex(common || fallback);
+    inp.value = h;
+    const hex = inp.closest(".color-field")?.querySelector(".color-hex");
+    if (hex) hex.value = h.toUpperCase();
+    inp.title = common
+      ? "Один цвет для всех надписей"
+      : "Сейчас у надписей разные цвета — выберите, чтобы унифицировать";
   }
   function bindAllTextsFont(){
     const sel = document.getElementById("allTextsFont");
@@ -3968,6 +4226,33 @@
       await ensureSpecFonts();
       render({ immediate: true, fontRefresh: true });
     });
+  }
+  function bindAllTextsColor(){
+    const inp = document.getElementById("allTextsColor");
+    const field = inp?.closest(".color-field");
+    if (!inp || !field || inp._allTextsColorBound) return;
+    inp._allTextsColorBound = true;
+    let hex = field.querySelector(".color-hex");
+    if (!hex) {
+      hex = document.createElement("input");
+      hex.type = "text";
+      hex.className = "color-hex";
+      hex.autocomplete = "off";
+      hex.spellcheck = false;
+      hex.placeholder = "#RRGGBB";
+      hex.title = "HEX — вставьте цвет из Figma";
+      field.appendChild(hex);
+    }
+    inp.dataset.colorCtrl = "1";
+    const applyAll = h => {
+      applyColorToAllTexts(h);
+      syncTextColorInputs();
+      render({ immediate: true });
+    };
+    bindColorHexInput(inp, hex, applyAll);
+    const onApply = () => applyAll(colorInputHex(inp.value));
+    inp.addEventListener("input", onApply);
+    inp.addEventListener("change", onApply);
   }
 
   /* ── Генерация правой панели: оформление надписей ── */
@@ -4003,7 +4288,10 @@
       TEXTS.filter(t => !t.pointOnly || isPt).map(t => textStyleRow(t.key, t.label)).join("");
     initAllTextsFontOptions();
     bindAllTextsFont();
+    bindAllTextsColor();
+    syncAllTextsColorInput();
     bindGeneric();
+    enhanceColorInputs(document.getElementById("textStyles"));
     syncAllWeightDropdowns();
     syncAllBoldButtons();
     syncAllTextsFontSelect();
@@ -4069,6 +4357,9 @@
     document.getElementById("axisY").innerHTML = axisBlock("y");
     refreshPanelSubGroups(document.getElementById("axisX"));
     refreshPanelSubGroups(document.getElementById("axisY"));
+    bindGeneric();
+    enhanceColorInputs(document.getElementById("axisX"));
+    enhanceColorInputs(document.getElementById("axisY"));
   }
 
   /* ── Генерация правой панели: концевые маркеры ── */
@@ -4157,13 +4448,32 @@
     if (!list || !hm) return;
     ensureHeatmapStops(heatmapValueField());
     const stops = hm.stops;
-    list.innerHTML = stops.map((st, i) => `
+    list.innerHTML = stops.map((st, i) => {
+      const hc = colorInputHex(st.color).toUpperCase();
+      return `
       <div class="heatmap-stop-row" data-idx="${i}">
         <input type="number" class="hm-stop-val" step="any" value="${st.value}" title="Значение" />
-        <input type="color" class="hm-stop-color" value="${st.color}" title="Цвет" />
+        <div class="color-field color-field--compact">
+          <div class="color-field-head">
+            <span class="color-ctrl-swatch">
+              <input type="color" class="hm-stop-color" value="${hc}" title="Цвет" />
+            </span>
+          </div>
+          <input type="text" class="color-hex hm-stop-hex" value="${hc}" spellcheck="false" autocomplete="off" placeholder="#RRGGBB" title="HEX" />
+        </div>
         <button type="button" class="btn icon hm-stop-del" title="Удалить точку" ${stops.length <= 2 ? "disabled" : ""}>×</button>
-      </div>
-    `).join("");
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".hm-stop-color").forEach((inp, i) => {
+      if (inp.dataset.colorCtrl) return;
+      inp.dataset.colorCtrl = "1";
+      const hex = inp.closest(".color-field")?.querySelector(".hm-stop-hex");
+      if (!hex) return;
+      bindColorHexInput(inp, hex, h => {
+        if (state.style.heatmap.stops[i]) state.style.heatmap.stops[i].color = h;
+        render({ immediate: true });
+      });
+    });
     const rangeEl = document.getElementById("heatmapDataRange");
     if (rangeEl) {
       const { min, max } = heatmapValueExtent(heatmapValueField());
@@ -4219,12 +4529,12 @@
         const rows = [...list.querySelectorAll(".heatmap-stop-row")];
         state.style.heatmap.stops = rows.map(row => ({
           value: parseFloat(row.querySelector(".hm-stop-val").value),
-          color: row.querySelector(".hm-stop-color").value
+          color: colorInputHex((row.querySelector(".hm-stop-hex") || row.querySelector(".hm-stop-color")).value)
         })).filter(s => !isNaN(s.value)).sort((a, b) => a.value - b.value);
         render();
       };
       list.addEventListener("input", e => {
-        if (e.target.classList.contains("hm-stop-val") || e.target.classList.contains("hm-stop-color")) applyStops();
+        if (e.target.classList.contains("hm-stop-val") || e.target.classList.contains("hm-stop-color") || e.target.classList.contains("hm-stop-hex")) applyStops();
       });
       list.addEventListener("click", e => {
         const btn = e.target.closest(".hm-stop-del");
@@ -4270,6 +4580,7 @@
     document.querySelectorAll("[data-path]").forEach(el => {
       const val = getPath(state, el.dataset.path);
       if (el.type === "checkbox" || el.dataset.type === "bool") el.checked = !!val;
+      else if (el.type === "color") syncColorHexField(el);
       else el.value = (val == null ? "" : val);
     });
     document.querySelectorAll("[data-toggle]").forEach(btn => {
@@ -4346,21 +4657,26 @@
 
   /* ── Шаблоны оформления ── */
   // Размер фрейма по умолчанию для шаблонов, если он в них не задан.
-  const TEMPLATE_DEFAULT_SIZE = { width: 640, height: 640 };
+  const TEMPLATE_DEFAULT_SIZE = { width: 512, height: 512 };
   function applyTemplate(tpl){
     tpl = tpl || {};
     const styleObj = tpl.style || tpl;          // допускаем «голый» объект стиля
     const sz = tpl.size || {};
-    state.style = mergeStyle(defaultState().style, styleObj);
+    state.style = normalizeStyleFonts(mergeStyle(defaultState().style, styleObj));
     state.size = {
       width:  sz.width  ?? TEMPLATE_DEFAULT_SIZE.width,
       height: sz.height ?? TEMPLATE_DEFAULT_SIZE.height
     };
+    if (tpl.texts) {
+      for (const k in tpl.texts) state.texts[k] = tpl.texts[k];
+    }
+    if (state.style.hideAxisTitles) {
+      state.texts.axisTitleX = "";
+      state.texts.axisTitleY = "";
+    }
     plotW = plotH = 0; textShiftX = 0; legendBodyH = 0; legendBodyW = 0;   // пересчитать раскладку под новый размер
     applyStateToControls();
-    initAllTextsFontOptions();
-    syncAllTextsFontSelect();
-    render({ fontRefresh: true });
+    ensureChartFontsLoaded().then(() => render({ fontRefresh: true }));
   }
   function saveTemplate(){
     const payload = { app:"make-your-chart-template", version:1, savedAt:new Date().toISOString(),
@@ -4377,59 +4693,52 @@
     r.readAsText(file);
   }
   // Встроенные шаблоны — доступны всегда, даже при открытии файлом (file://).
+  const FONT_INTER = "'Inter', sans-serif";
+  const FONT_PLAYFAIR = "'Playfair', serif";
+  const TEMPLATE_TEXT_COLOR = "#000000";
+  const AXIS_LABEL_FONT_SIZE = 12;
+  const TEMPLATE_TEXT_KEYS = ["title","subtitle","axisTitleX","axisTitleY","axisLabelX","axisLabelY","legendLabel",
+    "comment","footer","valueLabel","pointLabelName","pointLabelSeries","pointLabelX","pointLabelY","endName","endValue"];
+  function interTextStyle(){
+    const text = {};
+    for (const k of TEMPLATE_TEXT_KEYS) {
+      text[k] = { font: FONT_INTER, color: TEMPLATE_TEXT_COLOR };
+      if (k === "footer" || k === "axisLabelX" || k === "axisLabelY") text[k].size = AXIS_LABEL_FONT_SIZE;
+    }
+    return text;
+  }
+  function antiquaTextStyle(){
+    const text = {};
+    for (const k of TEMPLATE_TEXT_KEYS) {
+      text[k] = { font: FONT_PLAYFAIR, color: TEMPLATE_TEXT_COLOR };
+      if (k === "title") { text[k].italic = false; text[k].bold = true; }
+      else if (k === "subtitle") { text[k].italic = true; text[k].bold = false; }
+      else if (k === "comment") text[k].italic = true;
+      if (k === "footer" || k === "axisLabelX" || k === "axisLabelY") text[k].size = AXIS_LABEL_FONT_SIZE;
+    }
+    return text;
+  }
   const BUILTIN_TEMPLATES = {
-    "minimal-light": { name: "Минимал (светлый)", style: {
-      markColor:"#111111", backgroundColor:"#ffffff", scheme:"dark2", strokeWidth:1.25,
-      pointSize:36, areaOpacity:0.28, lollipopStemWidth:1.25, lollipopHeadDiameter:8,
-      showLegend:false, showPoints:false, legendMarkerSize:8,
-      barGap:{ unit:"percent", value:4 },
-      plotArea:{ fillEnabled:false, borderEnabled:false },
-      padding:{
-        chart:{ top:30, right:30, bottom:30, left:30 },
-        title:{ top:0, between:2, bottom:6 },
-        legend:{ top:2, bottom:4 },
-        comment:{ top:6, bottom:0 },
-        footer:{ top:4, bottom:2 }
-      },
-      text:{
-        title:{font:"'Inter', sans-serif",size:15,color:"#111111",bold:true,italic:false},
-        subtitle:{font:"'Inter', sans-serif",size:11,color:"#666666",bold:false,italic:false},
-        axisTitleX:{font:"'Inter', sans-serif",size:10,color:"#444444"},
-        axisTitleY:{font:"'Inter', sans-serif",size:10,color:"#444444"},
-        axisLabelX:{font:"'Inter', sans-serif",size:9,color:"#555555"},
-        axisLabelY:{font:"'Inter', sans-serif",size:9,color:"#555555"},
-        legendLabel:{font:"'Inter', sans-serif",size:9,color:"#333333"},
-        comment:{font:"'Inter', sans-serif",size:10,color:"#666666",italic:false},
-        footer:{font:"'Inter', sans-serif",size:9,color:"#999999"},
-        valueLabel:{font:"'Inter', sans-serif",size:9,color:"#333333"},
-        endName:{font:"'Inter', sans-serif",size:10,color:"#111111",bold:false},
-        endValue:{font:"'Inter', sans-serif",size:9,color:"#555555"}
-      },
-      valueLabels:{ show:false },
-      endMarkers:{ showName:true, showValue:true },
-      axes:{
-        x:{line:{show:true,color:"#111111",width:0.5},ticks:{show:false,width:0.5,length:0},labels:{show:true,padding:5,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}},
-        y:{line:{show:false,color:"#cccccc",width:0.5},ticks:{show:false,width:0.5,length:0},labels:{show:true,padding:3,angle:0},grid:{show:false,color:"#e8e8e8",width:0.5}}
+    "grotesk": { name: "Гротеск",
+      texts: { axisTitleX: "", axisTitleY: "" },
+      style: {
+      hideAxisTitles: true,
+      markColor: "#211dc6",
+      barGap: { mode: "gap", unit: "pixels", value: 1, fixedWidth: 24 },
+      text: interTextStyle(),
+      valueLabels: { show: true },
+      plotArea: { borderEnabled: false },
+      axes: {
+        x: { line: { show: true, color: "#000000", width: 1, opacity: 1 }, ticks: { show: false, width: 1, length: 0 },
+             labels: { show: true, padding: 5, step: null, angle: 0 }, grid: { show: false } },
+        y: { line: { show: false }, ticks: { show: false, length: 0 },
+             labels: { show: false, padding: 5, step: null, angle: 0 }, grid: { show: false } }
       }
     }},
-    "newspaper": { name: "Газетный (Times)", style: {
-      markColor:"#222222", backgroundColor:"#ffffff", scheme:"category10", strokeWidth:1.5,
-      padding:{ chart:{ top:30, right:30, bottom:30, left:30 } },
-      text:{
-        title:{font:"'Times New Roman', sans-serif",size:20,color:"#111111",bold:true,italic:false},
-        subtitle:{font:"'Times New Roman', sans-serif",size:13,color:"#555555",italic:true},
-        axisTitleX:{font:"'Times New Roman', sans-serif",size:12,color:"#333333"},
-        axisTitleY:{font:"'Times New Roman', sans-serif",size:12,color:"#333333"},
-        axisLabelX:{font:"'Times New Roman', sans-serif",size:11,color:"#444444"},
-        axisLabelY:{font:"'Times New Roman', sans-serif",size:11,color:"#444444"},
-        legendLabel:{font:"'Times New Roman', sans-serif",size:11,color:"#222222"},
-        comment:{font:"'Times New Roman', sans-serif",size:12,color:"#555555",italic:true},
-        footer:{font:"'Times New Roman', sans-serif",size:10,color:"#888888"}
-      },
-      axes:{
-        x:{line:{show:true,color:"#222222",width:1},ticks:{show:true,width:1,length:5},labels:{show:true,padding:4,angle:0},grid:{show:false,color:"#e0e0e0",width:1}},
-        y:{line:{show:true,color:"#222222",width:1},ticks:{show:true,width:1,length:5},labels:{show:true,padding:4,angle:0},grid:{show:true,color:"#e6e6e6",width:1}}
-      }
+    "antiqua": { name: "Антиква", style: {
+      markColor: "#808080",
+      barGap: { mode: "gap", unit: "percent", value: 30, fixedWidth: 24 },
+      text: antiquaTextStyle()
     }}
   };
 
@@ -4481,7 +4790,7 @@
       setStatus("Шаблон применён: " + file);
     } catch(e){ setStatus("Не удалось загрузить шаблон: " + e.message); }
   }
-  // Сброс оформления к значениям по умолчанию (размер — 640×640).
+  // Сброс оформления к значениям по умолчанию (размер — 512×512).
   function resetTemplate(){
     applyTemplate({});
     $("#templateSelect").value = "";
@@ -4736,9 +5045,10 @@
     for (const [id, path, type] of BINDINGS){
       const el = document.getElementById(id); if (!el) continue;
       const val = getPath(state, path);
-      if (type==="bool") el.checked = !!val; else el.value = val;
+      if (type === "bool") el.checked = !!val;
+      else if (el.type === "color") syncColorHexField(el, val);
+      else el.value = val;
     }
-    applyGeneric();
     syncColorUI();
     $("#dataset").value = state.dataset;
     if (state.csvValues?.length && state.csvFileName)
@@ -4746,6 +5056,12 @@
     applyWorkspaceBg();
     applyDocGrid();
     syncValueLabelsPointHint();
+    buildTextStyles();
+    applyGeneric();
+    refreshFontSelects();
+    syncAllTextsFontSelect();
+    syncAllTextsColorInput();
+    enhanceColorControls(document.querySelector(".side.right"));
   }
 
   function syncChartTypeUI(){
@@ -4781,6 +5097,11 @@
     const fpl = document.getElementById("fieldPointLabel");
     if (fpl) fpl.value = state.fields.pointLabel || "";
     buildTextStyles();
+    applyGeneric();
+    refreshFontSelects();
+    syncAllTextsFontSelect();
+    syncAllTextsColorInput();
+    enhanceColorControls(document.querySelector(".side.right"));
     refreshRightPanelJump();
   }
   function syncBarSizeUI(){
@@ -4839,6 +5160,8 @@
             }
             if (isBarStack(v)) ensureStackedBarSeries();
             syncChartTypeUI();
+            syncAxisTitlesFromFields(false);
+            plotW = plotH = 0;
           }
           if (id === "fieldX" || id === "fieldY") {
             syncAxisTitlesFromFields(false);
@@ -4933,8 +5256,8 @@
   }
   function docFrameSize(){
     return {
-      w: Math.max(1, Math.round(state.size?.width || 640)),
-      h: Math.max(1, Math.round(state.size?.height || 640))
+      w: Math.max(1, Math.round(state.size?.width || 512)),
+      h: Math.max(1, Math.round(state.size?.height || 512))
     };
   }
   function applyDocGrid(){
