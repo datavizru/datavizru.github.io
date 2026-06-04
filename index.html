@@ -2580,10 +2580,15 @@
         const mk = textMark(state.style.text.endName, isLeft, r + (em.name.dx || 0), em.name.dy || 0);
         layers.push({ transform, mark: mk, encoding: { ...enc, text: { field: series, type: "nominal" } } });
       }
-      // Подпись значения.
+      // Подпись значения — тот же numberFormat, что у подписей значений (разряды, запятая, префикс/суффикс).
       if (em.showValue) {
         const mk = textMark(state.style.text.endValue, isLeft, r + (em.value.dx || 0), em.value.dy || 0);
-        layers.push({ transform, mark: mk, encoding: { ...enc, text: { field: y, type: "quantitative" } } });
+        const valExpr = stackedArea ? vegaDatumRef("__stk1") : vegaDatumRef(y);
+        layers.push({
+          transform: [...transform, valueLabelFmtTransform(vegaFormatNumberExpr(valExpr))],
+          mark: mk,
+          encoding: { ...enc, text: valueLabelTextEnc() }
+        });
       }
     }
     return layers;
