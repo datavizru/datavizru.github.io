@@ -21,11 +21,13 @@
 
   <!-- Локальные шрифты из папки Fonts/ (см. gen-fonts-manifest.mjs) -->
   <script src="./Fonts/fonts-manifest.js"></script>
+  <!-- Шаблоны из папки templates/ (см. gen-templates-manifest.mjs) -->
+  <script src="./templates/templates-manifest.js"></script>
 
   <!-- Vega -->
-  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5/build/vega.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5/build/vega-lite.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6/build/vega-embed.min.js"></script>
 
   <style>
     :root {
@@ -341,10 +343,17 @@
       flex:1 1 0; min-height:0; height:0; min-width:40px; position:relative; overflow:hidden;
       line-height:0; font-size:0; width:100%;
     }
-    .chart-chrome-plot #viz,
+    .chart-chrome-plot #viz {
+      position:absolute; left:0; top:0; width:100%; height:100%;
+      overflow:hidden; line-height:0; font-size:0;
+      display:flex; align-items:center; justify-content:center;
+    }
+    /* autosize:fit делает холст Vega равным слоту, поэтому показываем его в
+       натуральном размере (шрифт = заданному). max-* — только защита от
+       обрезки при субпиксельных расхождениях, пропорции сохраняются. */
     .chart-chrome-plot #viz canvas,
     .chart-chrome-plot #viz svg {
-      display:block; width:100% !important; height:100% !important; max-width:100%; max-height:100%;
+      display:block; max-width:100%; max-height:100%;
     }
     .chart-chrome__inner { width:100%; box-sizing:border-box; }
     .chart-legend-typo { white-space:normal; word-break:break-word; }
@@ -588,6 +597,7 @@
         <p class="panel-note" style="margin-top:6px;">
           Новый файл в <code>templates/</code> → в корне репозитория:
           <code>python3 gen-templates-manifest.py</code>
+          (или <code>node gen-templates-manifest.mjs</code>), затем обновите страницу.
         </p>
         <div class="file-name" id="tplNote"></div>
       </div>
@@ -874,7 +884,7 @@
   </div>
 
   <script>
-  const APP_VERSION = "0.0.4";
+  const APP_VERSION = "0.0.5";
   function appSiteMetaLine(){
     return `© 2026 · Алексей Новичков · v${APP_VERSION} (alpha) · MIT · Счастье для всех, даром, и пусть никто не уйдет обиженный!`;
   }
@@ -1357,11 +1367,15 @@
     for (const k in base.text) {
       const lk = loaded.text?.[k] || {};
       const merged = { ...base.text[k], ...lk };
-      // Жирность: weight из списка семейства; bold — кнопка «Ж» (обычное/жирное).
-      const fw = fontWeightsFor(merged.font);
+      // Жирность: weight + italic из списка начертаний семейства; bold — кнопка «Ж».
       if (lk.weight == null && lk.bold != null)
         merged.weight = lk.bold ? boldWeightFor(merged.font) : regularWeightFor(merged.font);
-      merged.weight = nearestWeight(merged.weight != null ? merged.weight : 400, fw);
+      const face = nearestFace(
+        { weight: merged.weight != null ? merged.weight : 400, italic: !!merged.italic },
+        fontFacesFor(merged.font)
+      );
+      merged.weight = face.weight;
+      merged.italic = face.italic;
       merged.bold = isBoldWeight(merged.font, merged.weight);
       const al = lk.align != null ? lk.align : (base.text[k].align || "left");
       merged.align = (al === "center" || al === "right") ? al : "left";
@@ -2308,6 +2322,31 @@
     if (p === "base")    return { xKey: "bot", align: "left",   baseline: "middle", dx: g + s.dx, dy: s.dy };
     return { xKey: "top", align: "left",  baseline: "middle", dx: g + s.dx, dy: s.dy };
   }
+  // Доп. padding у view (px), чтобы внешние подписи значений не обрезались view.clip.
+  // scale.padding здесь не подходит: он расширяет домен и сжимает геометрию, но подписи
+  // всё равно режутся границей view; нужна физическая зона справа/сверху + clip: false.
+  function outerValueLabelChartPadding(){
+    const vl = state.style.valueLabels;
+    if (!vl?.show) return null;
+    const t = state.chartType;
+    const horizontal = isBarH(t) || isLollipopH(t);
+    const vertical = t === "bar" || t === "lollipop" || (isBarStack(t) && !isBarH(t));
+    if (!horizontal && !vertical) return null;
+    const shift = labelShift(vl);
+    const cfg = horizontal ? horizBarLabelCfg(vl.position, shift) : vertBarLabelCfg(vl.position, shift);
+    const outer = horizontal ? cfg.xKey === "top" : cfg.yKey === "top";
+    if (!outer) return null;
+    const T = state.style.text?.valueLabel || {};
+    const fs = T.size || 15;
+    const nf = vl.numberFormat || {};
+    let pad = VL_EDGE_GAP + 4;
+    if (horizontal) pad += Math.max(0, shift.dx);
+    else pad += Math.max(0, shift.dy);
+    if (isLollipop(t)) pad += lollipopHeadRadius() + VL_EDGE_GAP;
+    pad += ((nf.suffix || "").length + (nf.prefix || "").length) * fs * 0.45;
+    pad = Math.ceil(Math.max(pad, 10));
+    return horizontal ? { right: pad } : { top: pad };
+  }
   function encYFromVertKey(cfg, yField, stacked){
     if (cfg.yKey === "mid") return { field: "__stkMid", type: "quantitative" };
     if (cfg.yKey === "top") return { field: stacked ? "__stk1" : yField, type: "quantitative" };
@@ -2403,7 +2442,7 @@
       const cfg = horizBarLabelCfg(vl.position, shift);
       const enc = { y: { field: x, type: xType, sort: null } };
       if (series) enc.yOffset = { field: series, sort: null };
-      const layer = { mark: { ...baseText, align: cfg.align, baseline: cfg.baseline, dx: cfg.dx, dy: cfg.dy }, encoding: enc };
+      const layer = { mark: { ...baseText, clip: false, align: cfg.align, baseline: cfg.baseline, dx: cfg.dx, dy: cfg.dy }, encoding: enc };
       const tr = [];
       if (cfg.xKey === "mid") tr.push({ calculate: `${vegaDatumRef(y)} / 2`, as: "__xLbl" });
       enc.x = encXFromHorizKey(cfg, y, false);
@@ -2443,7 +2482,7 @@
       const headR = lollipopHeadRadius();
       const enc = { y: { field: x, type: xType, sort: null } };
       if (series) enc.yOffset = { field: series, sort: null };
-      const layer = { mark: { ...baseText, align: cfg.align, baseline: cfg.baseline, dx: cfg.dx,
+      const layer = { mark: { ...baseText, clip: false, align: cfg.align, baseline: cfg.baseline, dx: cfg.dx,
         dy: cfg.xKey === "top" ? cfg.dy : cfg.dy }, encoding: enc };
       if (cfg.xKey === "top") layer.mark.dx = (layer.mark.dx || 0) + VL_EDGE_GAP + headR;
       const tr = [];
@@ -2997,16 +3036,16 @@
       };
     }
     forceChartFrameReflow();
-    let cw = plot.clientWidth;
-    let ch = plot.clientHeight;
-    if (ch < MIN_CHART_HEIGHT) {
-      const { innerH } = frameInnerSize();
-      ch = Math.max(MIN_CHART_HEIGHT, innerH - chromeHeights().total);
+    const cw = Math.round(plot.clientWidth);
+    const ch = Math.round(plot.clientHeight);
+    if (cw >= MIN_CHART_WIDTH && ch >= MIN_CHART_HEIGHT) {
+      return { plotW: cw, plotH: ch, p };
     }
-    if (cw < MIN_CHART_WIDTH) cw = innerW;
+    const { innerH } = frameInnerSize();
+    const chromeH = chromeHeights().total;
     return {
-      plotW: Math.max(MIN_CHART_WIDTH, cw),
-      plotH: Math.max(MIN_CHART_HEIGHT, ch),
+      plotW: Math.max(MIN_CHART_WIDTH, cw > 0 ? cw : innerW),
+      plotH: Math.max(MIN_CHART_HEIGHT, ch > 0 ? ch : innerH - chromeH),
       p
     };
   }
@@ -3129,20 +3168,31 @@
       ? lollipopChartLayers()
       : [{ mark: markDef(), encoding: encodingDef() }];
     const borderPad = plotBorderPadding();
-    if (borderPad) chartLayer.padding = borderPad;
+    const vlPad = outerValueLabelChartPadding();
+    if (borderPad || vlPad) {
+      chartLayer.padding = {
+        top: Math.max(borderPad?.top || 0, vlPad?.top || 0),
+        right: Math.max(borderPad?.right || 0, vlPad?.right || 0),
+        bottom: Math.max(borderPad?.bottom || 0, vlPad?.bottom || 0),
+        left: Math.max(borderPad?.left || 0, vlPad?.left || 0)
+      };
+    }
     const subLayers = [...projLayers, ...chartMarks, ...labelLayers].map(clipLayerMark);
     if (subLayers.length > 1) chartLayer.layer = subLayers;
     else {
       chartLayer.mark = subLayers[0].mark;
       chartLayer.encoding = subLayers[0].encoding;
     }
-    chartLayer.view = plotAreaViewProps();
+    chartLayer.view = { ...plotAreaViewProps(), ...(vlPad ? { clip: false } : {}) };
     chartLayerIndex = 0;
 
     return {
       $schema: "https://vega.github.io/schema/vega-lite/v5.json",
       background: "transparent",
       padding: 0,
+      // fit: оси с подписями вписываются в width×height за счёт сжатия области
+      // построения, а не масштабирования всего холста (шрифты остаются заданными).
+      autosize: { type: "fit", contains: "padding" },
       config: configDef(),
       ...chartLayer
     };
@@ -3171,6 +3221,34 @@
   let renderGen = 0;
   let plotResizeTimer = null;
   let plotResizeObserver = null;
+  async function waitPlotSlotStable(maxMs = 400){
+    const plot = document.getElementById("chromePlot");
+    if (!plot) return;
+    const deadline = Date.now() + maxMs;
+    let prevW = -1, prevH = -1;
+    while (Date.now() < deadline) {
+      forceChartFrameReflow();
+      const w = Math.round(plot.clientWidth);
+      const h = Math.round(plot.clientHeight);
+      if (w >= MIN_CHART_WIDTH && h >= MIN_CHART_HEIGHT && w === prevW && h === prevH) return;
+      prevW = w;
+      prevH = h;
+      await nextFrames(1);
+    }
+  }
+  async function fitPlotViewToSlot(){
+    const plot = document.getElementById("chromePlot");
+    if (!plot || !currentView) return false;
+    const w = Math.round(plot.clientWidth);
+    const h = Math.round(plot.clientHeight);
+    if (w < MIN_CHART_WIDTH || h < MIN_CHART_HEIGHT) return false;
+    if (Math.abs(w - plotW) <= 1 && Math.abs(h - plotH) <= 1
+        && Math.abs(w - currentView.width()) <= 1 && Math.abs(h - currentView.height()) <= 1) return false;
+    plotW = w;
+    plotH = h;
+    await currentView.width(w).height(h).run();
+    return true;
+  }
   function bindPlotResizeObserver(){
     const plot = document.getElementById("chromePlot");
     if (!plot || typeof ResizeObserver === "undefined") return;
@@ -3184,35 +3262,25 @@
       plotW = w;
       plotH = h;
       clearTimeout(plotResizeTimer);
-      plotResizeTimer = setTimeout(() => {
-        if (!currentView) return;
-        currentView.width(plotW).height(plotH).run();
-      }, 80);
+      plotResizeTimer = setTimeout(() => { fitPlotViewToSlot().catch(console.error); }, 80);
     });
     plotResizeObserver.observe(plot);
   }
-
   async function embedOnce(){
     if (currentView) { currentView.finalize(); currentView = null; }
     const host = document.getElementById("viz");
     if (host) host.innerHTML = "";
-    forceChartFrameReflow();
+    if (typeof vegaEmbed !== "function") {
+      throw new Error("vegaEmbed не загружен — проверьте интернет и обновите страницу (Cmd+Shift+R)");
+    }
+    await waitPlotSlotStable();
     const m = measurePlotAreaSize();
     plotW = m.plotW;
     plotH = m.plotH;
     const res = await vegaEmbed("#viz", compileChartVegaSpec(), { actions: false, renderer: "canvas" });
     currentView = res.view;
-    const plot = document.getElementById("chromePlot");
-    if (plot && currentView) {
-      forceChartFrameReflow();
-      const w = Math.max(MIN_CHART_WIDTH, plot.clientWidth || plotW);
-      const h = Math.max(MIN_CHART_HEIGHT, plot.clientHeight || plotH);
-      if (Math.abs(w - plotW) > 1 || Math.abs(h - plotH) > 1) {
-        plotW = w;
-        plotH = h;
-        currentView.width(w).height(h).run();
-      }
-    }
+    await waitPlotSlotStable(200);
+    await fitPlotViewToSlot();
     return res.view;
   }
 
@@ -3266,17 +3334,28 @@
       && FONT_OPTIONS.slice(6).some(([, label]) => label === name);
     if (!isWeb) return Promise.resolve();
     const id = "gf-" + name.replace(/\W+/g, "-");
-    if (document.getElementById(id)) return document.fonts?.ready || Promise.resolve();
+    const href = buildGoogleFontsCssUrl(name, famCss);
+    const existing = document.getElementById(id);
+    if (existing) {
+      if (existing.getAttribute("href") !== href) existing.setAttribute("href", href);
+      return document.fonts?.ready || Promise.resolve();
+    }
     return new Promise(resolve => {
       const link = document.createElement("link");
       link.id = id;
       link.rel = "stylesheet";
-      link.href = "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(name).replace(/%20/g, "+")
-        + ":ital,wght@0,400;0,700;1,400;1,700&display=swap";
+      link.href = href;
       link.onload = () => resolve();
       link.onerror = () => resolve();
       document.head.appendChild(link);
     });
+  }
+  function buildGoogleFontsCssUrl(family, fontCss){
+    const faces = fontFacesFor(fontCss);
+    const pairs = faces.map(f => `${f.italic ? 1 : 0},${f.weight}`);
+    if (!pairs.length) pairs.push("0,400");
+    return "https://fonts.googleapis.com/css2?family=" + encodeURIComponent(family).replace(/%20/g, "+")
+      + ":ital,wght@" + pairs.join(";") + "&display=swap";
   }
   function collectFontSpecs(){
     const out = [], seen = new Set();
@@ -3288,9 +3367,9 @@
     };
     for (const k in state.style.text){
       const t = state.style.text[k]; if (!t) continue;
-      const fam = t.font || SYSTEM_FONT, size = t.size || 12, italic = !!t.italic;
-      for (const w of fontWeightsFor(fam)) add(fam, size, w, italic);
-      add(fam, size, tw(t), italic);
+      const fam = t.font || SYSTEM_FONT, size = t.size || 12;
+      for (const f of fontFacesFor(fam)) add(fam, size, f.weight, f.italic);
+      add(fam, size, tw(t), !!t.italic);
     }
     return out;
   }
@@ -3320,9 +3399,11 @@
   async function preloadTextFonts(textKey){
     const t = state.style.text[textKey];
     if (!t) return;
-    const fam = t.font || SYSTEM_FONT, size = t.size || 12, italic = !!t.italic;
-    const specs = fontWeightsFor(fam).map(w => ({ fam, size, weight: w, italic }));
-    if (!specs.some(s => s.weight === tw(t))) specs.push({ fam, size, weight: tw(t), italic });
+    const fam = t.font || SYSTEM_FONT, size = t.size || 12;
+    const specs = fontFacesFor(fam).map(f => ({ fam, size, weight: f.weight, italic: f.italic }));
+    const cur = { weight: tw(t), italic: !!t.italic };
+    if (!specs.some(s => s.weight === cur.weight && s.italic === cur.italic))
+      specs.push({ fam, size, weight: cur.weight, italic: cur.italic });
     await primeFontsAndWait(specs);
   }
   async function ensureSpecFonts(){
@@ -3353,7 +3434,11 @@
         await nextFrames(2);
         forceChartFrameReflow();
         await embedOnce();
+        // Финальная раскладка обвязки может изменить высоту слота — подгоняем view под него.
         renderChartChrome();
+        if (gen !== renderGen) return;
+        await waitPlotSlotStable(200);
+        await fitPlotViewToSlot();
         bindPlotResizeObserver();
         setStatus(`Готово · ${labelType()} · ${state.size.width}×${state.size.height}`);
         applyDocGrid();
@@ -3526,13 +3611,13 @@
     };
   }
   function vegaPlotSvgFragment(chartSvg, plot){
-    const root = parseVegaSvgRoot(chartSvg, plot.w, plot.h);
-    const w = Math.round(plot.w);
-    const h = Math.round(plot.h);
-    const vb = root.viewBox || `0 0 ${root.w} ${root.h}`;
+    const slotW = Math.round(plot.w);
+    const slotH = Math.round(plot.h);
+    const root = parseVegaSvgRoot(chartSvg, slotW, slotH);
+    const vb = root.viewBox || `0 0 ${slotW} ${slotH}`;
     const markup = `<svg class="chart-export-plot" xmlns="http://www.w3.org/2000/svg" `
-      + `x="${plot.x}" y="${plot.y}" width="${w}" height="${h}" viewBox="${vb}" `
-      + `preserveAspectRatio="none" overflow="hidden">${root.inner}</svg>`;
+      + `x="${plot.x}" y="${plot.y}" width="${slotW}" height="${slotH}" viewBox="${vb}" `
+      + `preserveAspectRatio="xMidYMid meet" overflow="hidden">${root.inner}</svg>`;
     return { defs: "", markup };
   }
   function escSvgText(s){
@@ -3706,18 +3791,30 @@
   async function prepareExportLayout(){
     renderChartChrome();
     forceChartFrameReflow();
-    const layout = exportFrameLayout();
+    await waitPlotSlotStable(200);
+    let layout = exportFrameLayout();
+    const domPlot = chromeRectsForExport()?.plot;
+    if (domPlot && layout.blocks.plot) {
+      layout.blocks.plot = {
+        x: domPlot.x,
+        y: domPlot.y,
+        w: domPlot.w,
+        h: domPlot.h
+      };
+    }
     frameContentW = layout.contentW;
     const plot = layout.blocks.plot;
     if (!plot) throw new Error("нет области графика");
     plotW = Math.round(plot.w);
     plotH = Math.round(plot.h);
-    if (currentView) {
-      await currentView.width(plotW).height(plotH).run();
-      await nextFrames(2);
-    }
+    // Пересобираем spec/view под точный слот — resize без re-embed давал другие пропорции, чем превью.
+    await embedOnce();
     await ensureSpecFonts();
-    return exportFrameLayout();
+    if (layout.blocks.plot) {
+      layout.blocks.plot.w = plotW;
+      layout.blocks.plot.h = plotH;
+    }
+    return layout;
   }
   async function buildExportFrameSvg(existingLayout){
     const layout = existingLayout || await prepareExportLayout();
@@ -3885,7 +3982,9 @@
     ctx.scale(scale, scale);
     ctx.fillStyle = withAlpha(state.style.backgroundColor, state.style.bgOpacity);
     ctx.fillRect(0, 0, layout.W, layout.H);
-    ctx.drawImage(plotImg, plot.x, plot.y, plot.w, plot.h);
+    const slotW = plot.w;
+    const slotH = plot.h;
+    ctx.drawImage(plotImg, plot.x, plot.y, slotW, slotH);
     setStatus(`PNG ${scale}×: надписи…`);
     drawExportChromeOnCanvas(ctx, layout);
     return { canvas, note: " · шрифты как в превью" };
@@ -4487,6 +4586,14 @@
   ];
 
   /* ── Локальные шрифты (папка Fonts/) ── */
+  const LOCAL_FONT_LABELS = {
+    "TT Norms Tochka Extended": "TT Norms Tochka",
+    "pt root ui": "PT Root UI",
+    "pt root ui vf": "PT Root UI Variable",
+    "PermianSansTypeface": "Permian Sans",
+    "PermianSerifTypeface": "Permian Serif",
+    "PermianSlabSerifTypeface": "Permian Slab"
+  };
   const FONTS_DIR_KEY = "chartFontsFileList_v1";
   let LOCAL_FONT_OPTIONS = [];
   const LOCAL_FONT_CSS = new Set();
@@ -4572,17 +4679,23 @@
       if (!family) continue;
       const category = ent.category || guessFontCategory(family);
       const cssVal = localFontCssValue(family, category);
-      const label = ent.label || family;
-      const faces = ent.faces || [];
-      if (!faces.length) continue;
+      const label = LOCAL_FONT_LABELS[family] || ent.label || family;
+      const srcFaces = ent.faces || [];
+      if (!srcFaces.length) continue;
       const weights = new Set();
-      for (const face of faces) {
+      const faceVariants = [];
+      for (const face of srcFaces) {
         if (!face?.url) continue;
         appendFontFaceRule(family, face);
-        weights.add(face.weight ?? 400);
+        const w = face.weight ?? 400;
+        const italic = face.style === "italic" || face.style === "oblique";
+        weights.add(w);
+        faceVariants.push({ weight: w, italic });
       }
       if (!weights.size) continue;
       const wArr = [...weights].sort((a, b) => a - b);
+      const faceArr = dedupeFontFaces(faceVariants);
+      FONT_FACES[cssVal] = faceArr;
       FONT_WEIGHTS[cssVal] = wArr;
       LOCAL_FONT_CSS.add(cssVal);
       if (!LOCAL_FONT_OPTIONS.some(([v]) => v === cssVal)) {
@@ -4590,6 +4703,7 @@
         added++;
       } else {
         FONT_WEIGHTS[cssVal] = [...new Set([...(FONT_WEIGHTS[cssVal] || []), ...wArr])].sort((a, b) => a - b);
+        FONT_FACES[cssVal] = dedupeFontFaces([...(FONT_FACES[cssVal] || []), ...faceArr]);
       }
     }
     LOCAL_FONT_OPTIONS.sort((a, b) => a[1].localeCompare(b[1], "ru"));
@@ -4816,7 +4930,7 @@
         sel.value = cur;
       }
     });
-    syncAllWeightDropdowns();
+    syncAllFaceDropdowns();
   }
   async function ensureChartFontsLoaded(){
     const fams = chartFontCssFamilies();
@@ -4889,7 +5003,7 @@
     const local = LOCAL_FONT_OPTIONS.map(([v,l]) =>
       `<option value="${v}">${String(l).replace(/</g, "&lt;")}</option>`
     ).join("");
-    return base + `<optgroup label="Fonts/">${local}</optgroup>`;
+    return base + `<optgroup label="Локальные (Fonts/)">${local}</optgroup>`;
   }
   function isLocalFontFamily(famCss){ return LOCAL_FONT_CSS.has(famCss); }
 
@@ -4897,7 +5011,9 @@
     100: "100 Thin", 200: "200 Extra Light", 300: "300 Light", 400: "400 Regular",
     500: "500 Medium", 600: "600 Semibold", 700: "700 Bold", 800: "800 Extra Bold", 900: "900 Black"
   };
-  // Доступные начертания по семейству (как в подключённых Google Fonts).
+  // Доступные начертания по семейству (веса; курсив — где есть в Google Fonts / Fonts/).
+  const FONT_FACES = {};
+  const WEB_FONT_NO_ITALIC = new Set(["'PT Mono', monospace"]);
   const FONT_WEIGHTS = {
     "system-ui, sans-serif":           [100, 200, 300, 400, 500, 600, 700, 800, 900],
     "Arial, sans-serif":               [100, 200, 300, 400, 500, 600, 700, 800, 900],
@@ -4932,19 +5048,50 @@
     "'Source Serif Pro', serif":        [400, 600, 700],
     "'Cormorant', serif":               [300, 400, 500, 600, 700],
     "'Montserrat', sans-serif":         [300, 400, 500, 600, 700, 800, 900],
-    "'Golos Text', sans-serif":         [400, 700],
-    "'Literata', serif":                [400, 700],
-    "'Roboto', sans-serif":             [400, 700],
-    "'Roboto Serif', serif":            [400, 700],
-    "'Roboto Mono', monospace":         [400, 700],
-    "'Roboto Slab', serif":             [400, 700],
-    "'Roboto Condensed', sans-serif":   [400, 700]
+    "'Golos Text', sans-serif":         [400, 500, 600, 700],
+    "'Literata', serif":                [400, 500, 600, 700, 800],
+    "'Roboto', sans-serif":             [100, 300, 400, 500, 700, 900],
+    "'Roboto Serif', serif":            [100, 300, 400, 500, 700, 900],
+    "'Roboto Mono', monospace":         [100, 300, 400, 500, 700],
+    "'Roboto Slab', serif":             [100, 300, 400, 700, 900],
+    "'Roboto Condensed', sans-serif":   [300, 400, 700]
   };
+  function dedupeFontFaces(faces){
+    const seen = new Set(), out = [];
+    for (const f of faces) {
+      const key = `${f.weight}|${f.italic ? 1 : 0}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ weight: f.weight, italic: !!f.italic });
+    }
+    return out.sort((a, b) => a.weight - b.weight || (a.italic ? 1 : 0) - (b.italic ? 1 : 0));
+  }
+  function webFontHasItalic(fontCss){ return !WEB_FONT_NO_ITALIC.has(fontCss); }
+  function fontFacesFor(fontCss){
+    if (FONT_FACES[fontCss]?.length) return FONT_FACES[fontCss];
+    const weights = FONT_WEIGHTS[fontCss] || FONT_WEIGHTS[SYSTEM_FONT];
+    const italic = isLocalFontFamily(fontCss) ? false : webFontHasItalic(fontCss);
+    const out = [];
+    for (const w of weights) {
+      out.push({ weight: w, italic: false });
+      if (italic) out.push({ weight: w, italic: true });
+    }
+    return out.length ? out : [{ weight: 400, italic: false }];
+  }
   function fontWeightsFor(fontCss){
-    return FONT_WEIGHTS[fontCss] || FONT_WEIGHTS[SYSTEM_FONT];
+    return [...new Set(fontFacesFor(fontCss).map(f => f.weight))].sort((a, b) => a - b);
   }
   function nearestWeight(w, weights){
     return weights.reduce((best, x) => Math.abs(x - w) < Math.abs(best - w) ? x : best, weights[0]);
+  }
+  function nearestFace(cur, faces){
+    if (!faces.length) return { weight: 400, italic: false };
+    let best = faces[0], bestScore = Infinity;
+    for (const f of faces) {
+      const score = Math.abs(f.weight - cur.weight) + (f.italic !== cur.italic ? 1000 : 0);
+      if (score < bestScore) { bestScore = score; best = f; }
+    }
+    return best;
   }
   function regularWeightFor(fontCss){
     const w = fontWeightsFor(fontCss);
@@ -4961,28 +5108,44 @@
   function isBoldWeight(fontCss, weight){
     return weight >= boldWeightFor(fontCss);
   }
-  function weightOptionsHTML(weights){
-    return weights.map(w => `<option value="${w}">${WEIGHT_LABELS[w] || w}</option>`).join("");
+  function faceSelectValue(weight, italic){
+    return `${weight}:${italic ? 1 : 0}`;
   }
-  function syncWeightDropdown(textKey){
-    const sel = document.querySelector(`select[data-weight-for="${textKey}"]`);
+  function faceLabel(face){
+    const base = WEIGHT_LABELS[face.weight] || String(face.weight);
+    return face.italic ? `${base} Italic` : base;
+  }
+  function faceOptionsHTML(faces){
+    return faces.map(f => `<option value="${faceSelectValue(f.weight, f.italic)}">${faceLabel(f)}</option>`).join("");
+  }
+  function syncFaceDropdown(textKey){
+    const sel = document.querySelector(`select[data-face-for="${textKey}"]`);
     const t = state.style.text[textKey];
     if (!sel || !t) return;
-    const weights = fontWeightsFor(t.font || SYSTEM_FONT);
-    const cur = t.weight != null ? t.weight : 400;
-    const clamped = nearestWeight(cur, weights);
-    if (clamped !== cur) setPath(state, `style.text.${textKey}.weight`, clamped);
-    t.bold = isBoldWeight(t.font, clamped);
-    sel.innerHTML = weightOptionsHTML(weights);
-    sel.value = String(clamped);
+    const faces = fontFacesFor(t.font || SYSTEM_FONT);
+    const cur = { weight: t.weight != null ? t.weight : 400, italic: !!t.italic };
+    const clamped = nearestFace(cur, faces);
+    if (clamped.weight !== cur.weight || clamped.italic !== cur.italic) {
+      t.weight = clamped.weight;
+      t.italic = clamped.italic;
+    }
+    t.bold = isBoldWeight(t.font, t.weight);
+    sel.innerHTML = faceOptionsHTML(faces);
+    sel.value = faceSelectValue(t.weight, t.italic);
     syncBoldButton(textKey);
+    syncItalicButton(textKey);
   }
   function syncBoldButton(textKey){
     const btn = document.querySelector(`[data-toggle="style.text.${textKey}.bold"]`);
     if (btn) btn.classList.toggle("on", !!state.style.text[textKey]?.bold);
   }
-  function syncAllWeightDropdowns(){ TEXTS.forEach(t => syncWeightDropdown(t.key)); }
+  function syncItalicButton(textKey){
+    const btn = document.querySelector(`[data-toggle="style.text.${textKey}.italic"]`);
+    if (btn) btn.classList.toggle("on", !!state.style.text[textKey]?.italic);
+  }
+  function syncAllFaceDropdowns(){ TEXTS.forEach(t => syncFaceDropdown(t.key)); }
   function syncAllBoldButtons(){ TEXTS.forEach(t => syncBoldButton(t.key)); }
+  function syncAllItalicButtons(){ TEXTS.forEach(t => syncItalicButton(t.key)); }
 
   function visibleTextKeys(){
     const isPt = state.chartType === "point";
@@ -5001,8 +5164,12 @@
       const t = state.style.text[key];
       if (!t) continue;
       t.font = font;
-      const fw = fontWeightsFor(font);
-      t.weight = nearestWeight(t.weight != null ? t.weight : 400, fw);
+      const face = nearestFace(
+        { weight: t.weight != null ? t.weight : 400, italic: !!t.italic },
+        fontFacesFor(font)
+      );
+      t.weight = face.weight;
+      t.italic = face.italic;
       t.bold = isBoldWeight(font, t.weight);
     }
     syncAllTextsFontSelect();
@@ -5062,7 +5229,7 @@
         el.value = font;
       });
       refreshFontSelects();
-      syncAllWeightDropdowns();
+      syncAllFaceDropdowns();
       syncAllBoldButtons();
       await ensureSpecFonts();
       render({ immediate: true, fontRefresh: true });
@@ -5123,7 +5290,7 @@
         <button type="button" class="tgl" data-toggle="${b}.italic" style="font-style:italic;">К</button>
       </div>
       <div class="row" style="margin:6px 0 0;">
-        <select data-path="${b}.weight" data-type="num" data-weight-for="${key}" title="Начертание" style="flex:1;">${weightOptionsHTML(fontWeightsFor(def.font))}</select>
+        <select data-face-for="${key}" title="Начертание" style="flex:1;">${faceOptionsHTML(fontFacesFor(def.font))}</select>
       </div>
       ${alignRow}
       <div class="row" style="margin:6px 0 0;gap:6px;">
@@ -5146,8 +5313,9 @@
     syncAllTextsColorInput();
     bindGeneric();
     enhanceColorInputs(document.getElementById("textStyles"));
-    syncAllWeightDropdowns();
+    syncAllFaceDropdowns();
     syncAllBoldButtons();
+    syncAllItalicButtons();
     syncAllTextsFontSelect();
   }
 
@@ -5440,9 +5608,32 @@
     document.querySelectorAll("[data-toggle]").forEach(btn => {
       btn.classList.toggle("on", !!getPath(state, btn.dataset.toggle));
     });
-    syncAllWeightDropdowns();
+    syncAllFaceDropdowns();
     syncAllBoldButtons();
+    syncAllItalicButtons();
     syncBarSizeUI();
+  }
+  function bindFaceSelects(){
+    document.querySelectorAll("[data-face-for]").forEach(el => {
+      if (el._faceBound) return;
+      el._faceBound = true;
+      el.addEventListener("change", async () => {
+        const key = el.dataset.faceFor;
+        const t = state.style.text[key];
+        if (!t) return;
+        const parts = String(el.value).split(":");
+        const w = parseInt(parts[0], 10);
+        const italic = parts[1] === "1";
+        if (isNaN(w)) return;
+        t.weight = w;
+        t.italic = italic;
+        t.bold = isBoldWeight(t.font, w);
+        syncBoldButton(key);
+        syncItalicButton(key);
+        await preloadTextFonts(key);
+        render({ immediate: true, fontRefresh: true });
+      });
+    });
   }
   function bindGeneric(){
     document.querySelectorAll("[data-path]").forEach(el => {
@@ -5458,7 +5649,7 @@
         setPath(state, path, v);
         const fm = path.match(/^style\.text\.([^.]+)\.font$/);
         if (fm) {
-          syncWeightDropdown(fm[1]);
+          syncFaceDropdown(fm[1]);
           syncAllTextsFontSelect();
           await preloadTextFonts(fm[1]);
           render({ immediate: true, fontRefresh: true });
@@ -5484,6 +5675,7 @@
         render();
       });
     });
+    bindFaceSelects();
     document.querySelectorAll("[data-toggle]").forEach(btn => {
       if (btn._bound) return; btn._bound = true;
       btn.addEventListener("click", async () => {
@@ -5496,7 +5688,13 @@
           if (tm[2] === "bold" && t) {
             const w = v ? boldWeightFor(t.font) : regularWeightFor(t.font);
             setPath(state, `style.text.${tk}.weight`, w);
-            syncWeightDropdown(tk);
+            syncFaceDropdown(tk);
+          } else if (tm[2] === "italic" && t) {
+            const faces = fontFacesFor(t.font);
+            const face = nearestFace({ weight: tw(t), italic: v }, faces);
+            t.italic = face.italic;
+            t.weight = face.weight;
+            syncFaceDropdown(tk);
           }
           await preloadTextFonts(tm[1]);
           btn.classList.toggle("on", v);
@@ -5606,6 +5804,12 @@
     }}
   };
 
+  function embeddedTemplatesManifest(){
+    const m = window.__CHART_TEMPLATES_MANIFEST__;
+    if (!m?.templates?.length) return null;
+    return m;
+  }
+
   function renderTemplateOptions(fileItems){
     const sel = $("#templateSelect");
     let html = `<option value="">— выберите шаблон —</option>`;
@@ -5626,6 +5830,12 @@
   }
 
   async function loadTemplatesManifest(){
+    const embedded = embeddedTemplatesManifest();
+    if (embedded) {
+      renderTemplateOptions(embedded.templates);
+      $("#tplNote").textContent = `Из папки templates: ${embedded.templates.length} (без сервера)`;
+      return;
+    }
     renderTemplateOptions(null);
     try {
       const res = await fetch("templates/manifest.json", { cache:"no-store" });
@@ -5635,7 +5845,7 @@
       renderTemplateOptions(items);
       $("#tplNote").textContent = items.length ? `Плюс из папки templates: ${items.length}` : "Встроенные шаблоны доступны";
     } catch(e){
-      $("#tplNote").textContent = "Свои файлы из папки templates подхватятся при запуске через сервер. Или используйте «Импорт…».";
+      $("#tplNote").textContent = "Добавьте шаблоны в templates/ и выполните gen-templates-manifest. Или «Импорт…».";
     }
   }
 
@@ -5647,8 +5857,17 @@
       return;
     }
     const file = value.replace(/^f:/, "");
+    const embedded = embeddedTemplatesManifest();
+    const fromEmbed = embedded?.data?.[file];
+    if (fromEmbed) {
+      applyTemplate(fromEmbed);
+      const name = embedded.templates.find(it => it.file === file)?.name || file;
+      setStatus("Шаблон применён: " + name);
+      return;
+    }
     try {
-      const res = await fetch("templates/" + file, { cache:"no-store" });
+      const url = "templates/" + file.split("/").map(encodeURIComponent).join("/");
+      const res = await fetch(url, { cache:"no-store" });
       const tpl = await res.json();
       applyTemplate(tpl);
       setStatus("Шаблон применён: " + file);
