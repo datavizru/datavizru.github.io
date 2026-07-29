@@ -19,6 +19,8 @@
   <!-- EB Garamond, Vollkorn, Playfair SC, Inter, JetBrains Mono, Source -->
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Vollkorn:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Vollkorn+SC:wght@400;600;700;900&family=Playfair+Display+SC:ital,wght@0,400;0,700;1,400&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Source+Code+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Source+Sans+Pro:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Source+Serif+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
 
+  <!-- Локализация интерфейса (словари RU→EN) -->
+  <script src="./i18n.js"></script>
   <!-- Локальные шрифты из папки Fonts/ (см. gen-fonts-manifest.mjs) -->
   <script src="./Fonts/fonts-manifest.js"></script>
   <!-- Шаблоны из папки templates/ (см. gen-templates-manifest.mjs) -->
@@ -92,6 +94,18 @@
       line-height:1.2;
     }
     .header .sp { flex:1; }
+    /* ── Переключатель языка интерфейса ── */
+    .lang-switch {
+      display:flex; align-items:center; gap:2px; flex:none;
+      background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:2px;
+    }
+    .lang-switch button {
+      border:none; background:transparent; border-radius:6px; cursor:pointer;
+      font-family:inherit; font-size:11px; font-weight:600; letter-spacing:0.02em;
+      color:var(--muted); padding:4px 8px; line-height:1;
+    }
+    .lang-switch button:hover { color:var(--text); }
+    .lang-switch button.on { background:var(--bg); color:var(--text); box-shadow:0 1px 2px rgba(16,24,40,.08); }
 
     /* ── Панели ─────────────────────────────────────────────── */
     .side {
@@ -360,12 +374,17 @@
     .chart-legend-body { white-space:normal; }
     .chart-legend-line { display:block; }
     .chart-legend-item { white-space:nowrap; }
-    .chart-legend-body .legend-marker { line-height:1; vertical-align:-0.06em; }
+    .chart-legend-body .legend-marker-slot,
+    .chart-legend-body .legend-gap { display:inline-block; vertical-align:baseline; }
+    .chart-legend-body .legend-marker-slot { position:relative; height:0; }
+    .chart-legend-body .legend-marker { position:absolute; }
     .chart-legend-hm-gradient {
       display:block; height:14px; border-radius:2px;
     }
-    .content.space-pan { cursor:grab; }
-    .content.space-pan.panning { cursor:grabbing; }
+    .content.space-pan,
+    .content.canvas-pan { cursor:grab; }
+    .content.space-pan.panning,
+    .content.canvas-pan.panning { cursor:grabbing; }
 
     /* ── Управление масштабом холста ── */
     .zoom-controls {
@@ -416,6 +435,10 @@
       <img class="logo" src="./logo.svg" width="24" height="24" alt="" />
       <h1>Визуализируй свои данные</h1>
       <div class="sp"></div>
+      <div class="lang-switch" id="langSwitch" title="Язык интерфейса">
+        <button type="button" data-lang="en">ENG</button>
+        <button type="button" data-lang="ru">RUS</button>
+      </div>
     </header>
 
     <!-- ░░ ЛЕВАЯ ПАНЕЛЬ ░░ -->
@@ -550,9 +573,9 @@
     <!-- ░░ КОНТЕНТ ░░ -->
     <main class="content">
       <div class="zoom-controls">
-        <button id="zoomOut" title="Уменьшить (−10%)">−</button>
+        <button id="zoomOut" title="Уменьшить (−10%). Колесо мыши или pinch на трекпаде">−</button>
         <span class="zlabel" id="zoomLabel" title="Сбросить до 100%">100%</span>
-        <button id="zoomIn" title="Увеличить (+10%)">+</button>
+        <button id="zoomIn" title="Увеличить (+10%). Колесо мыши или pinch на трекпаде">+</button>
         <span class="zsep"></span>
         <button id="zoomReset" title="Сбросить до 100%">⟲</button>
       </div>
@@ -594,7 +617,7 @@
           <button class="btn icon" id="tplReset" title="Сбросить оформление">⟲</button>
         </div>
         <input type="file" id="tplFile" accept=".json,application/json" class="hidden" />
-        <p class="panel-note" style="margin-top:6px;">
+        <p class="panel-note" style="margin-top:6px;" data-i18n-html="note.templates">
           Новый файл в <code>templates/</code> → в корне репозитория:
           <code>python3 gen-templates-manifest.py</code>
           (или <code>node gen-templates-manifest.mjs</code>), затем обновите страницу.
@@ -637,6 +660,15 @@
         <div class="row"><label>Правое, px</label><input type="number" id="padChartRight" min="0" max="200" step="1" /></div>
       </div>
 
+      <div class="section" id="rightSec-plot-padding">
+        <p class="title">Отступы области построения</p>
+        <p class="panel-note">Дополнительно к полям макета и отступам текстов. По умолчанию — 0.</p>
+        <div class="row"><label>Верхний, px</label><input type="number" id="padPlotTop" min="0" max="200" step="1" /></div>
+        <div class="row"><label>Нижний, px</label><input type="number" id="padPlotBottom" min="0" max="200" step="1" /></div>
+        <div class="row"><label>Левый, px</label><input type="number" id="padPlotLeft" min="0" max="200" step="1" /></div>
+        <div class="row"><label>Правый, px</label><input type="number" id="padPlotRight" min="0" max="200" step="1" /></div>
+      </div>
+
       <div class="section" id="rightSec-plot-area">
         <p class="title">Зона построения</p>
         <div class="row"><label>Заливка</label>
@@ -676,7 +708,7 @@
 
       <div class="section" id="localFontsSection">
         <p class="title">Локальные шрифты</p>
-        <p class="panel-note">
+        <p class="panel-note" data-i18n-html="note.localFonts">
           Положите файлы в <code>Fonts/</code> и выполните <code>python3 gen-fonts-manifest.py</code>, затем обновите страницу (Cmd+Shift+R). Кнопка «Обновить» — при локальном сервере.
           При открытии страницы шрифты подключаются автоматически.
         </p>
@@ -866,8 +898,8 @@
             <option value="circle">Круг ●</option>
           </select>
         </div>
-        <div class="row"><label>Размер маркера, px</label>
-          <input type="number" data-path="style.legend.markerFontSize" data-type="numOrNull" min="6" max="72" step="1" title="Пусто — как у текста легенды" placeholder="—" />
+        <div class="row"><label>Кегль маркера</label>
+          <input type="number" data-path="style.legend.markerFontSize" data-type="numOrNull" min="6" max="72" step="1" title="Размер маркера в кеглях шрифта легенды. Пусто — как у текста легенды" placeholder="—" />
         </div>
       </div>
     </aside>
@@ -884,16 +916,20 @@
   </div>
 
   <script>
-  const APP_VERSION = "0.0.5";
+  const APP_VERSION = "0.0.6";
+  const APP_GITHUB_URL = "https://github.com/datavizru/datavizru.github.io";
+  i18nSetLang(i18nStoredLang() || I18N_DEFAULT_LANG);
   function appSiteMetaLine(){
-    return `© 2026 · Алексей Новичков · v${APP_VERSION} (alpha) · MIT · Счастье для всех, даром, и пусть никто не уйдет обиженный!`;
+    const gh = `<a href="${APP_GITHUB_URL}" target="_blank" rel="noopener noreferrer">GitHub</a>`;
+    return L("© 2026 · Алексей Новичков · v{v} (alpha) · MIT · {github} · Счастье для всех, даром, и пусть никто не уйдет обиженный!",
+      { v: APP_VERSION, github: gh });
   }
   function appFooterCopyrightLine(){
-    return "© Визуализируй свои данные. 2026";
+    return L("© Визуализируй свои данные. 2026");
   }
   function renderAppMetaFooter(){
     const el = document.getElementById("appMeta");
-    if (el) el.textContent = appSiteMetaLine();
+    if (el) el.innerHTML = appSiteMetaLine();
   }
   renderAppMetaFooter();
 
@@ -916,7 +952,7 @@
     return values;
   }
 
-  const SAMPLES = {
+  const SAMPLES_RU = {
     monthly: {
       name: "Продажи по месяцам",
       values: [
@@ -1001,10 +1037,34 @@
     }
   };
 
+  // Английские наборы = русские с переведёнными именами полей и категорий.
+  function translateSampleRows(rows){
+    return rows.map(row => {
+      const out = {};
+      for (const key in row) {
+        const v = row[key];
+        out[i18nDataTerm(key, "en")] = typeof v === "string" ? i18nDataTerm(v, "en") : v;
+      }
+      return out;
+    });
+  }
+  function buildEnSamples(ruSamples){
+    const out = {};
+    for (const key in ruSamples) {
+      out[key] = { name: tEn(ruSamples[key].name), values: translateSampleRows(ruSamples[key].values) };
+    }
+    return out;
+  }
+  const SAMPLES_BY_LANG = { ru: SAMPLES_RU, en: buildEnSamples(SAMPLES_RU) };
+  let SAMPLES = SAMPLES_BY_LANG[i18nLang()];
+  // Поля предустановленного набора для языка (для defaultState и переключения языка).
+  function sampleFieldName(ru){ return i18nDataTerm(ru, i18nLang()); }
+
   /* ════════════════════════ СОСТОЯНИЕ ════════════════════════ */
   const CHART_DOC_PADDING = { top: 14, right: 22, bottom: 14, left: 24 };
   const CHROME_TITLE_SIZE = 25;
   const CHROME_SUBTITLE_SIZE = 18;
+  const LEGEND_LABEL_SIZE = 15;
   const defaultState = () => ({
     chartType: "bar",
     dataset: "monthly",
@@ -1012,16 +1072,14 @@
     csvRawText: null,
     csvFileName: "",
     csv: { delimiter: ",", decimal: "." },
-    fields: { x:"Месяц", y:"Продажи", series:"", pointLabel:"", pointSwapAxes: false },
+    fields: { x: sampleFieldName("Месяц"), y: sampleFieldName("Продажи"), series:"", pointLabel:"", pointSwapAxes: false },
     texts: {
-      title: "Визуализируй свои данные",
-      subtitle: "Подзаголовок диаграммы",
-      axisTitleX: "",
-      axisTitleY: "",
+      title: L("Визуализируй свои данные"),
+      subtitle: L("Подзаголовок диаграммы"),
       legendTitle: "",
       comment: "",
       footerCopyright: appFooterCopyrightLine(),
-      footerSources: "Источник: тестовые данные"
+      footerSources: L("Источник: тестовые данные")
     },
     size: { width: 512, height: 512 },
     // Сетка рабочей области (не входит в экспорт диаграммы).
@@ -1032,7 +1090,7 @@
       strokeWidth: 2, pointSize: 70, lollipopStemWidth: 2, lollipopHeadDiameter: 10,
       areaOpacity: 0.45, innerRadius: 0,
       showLegend: true, showPoints: false,
-      legend: { markerShape: "circle", markerFontSize: 20 },
+      legend: { markerShape: "circle", markerFontSize: LEGEND_LABEL_SIZE },
       // Оформление каждой надписи: шрифт, размер, цвет, жирность, наклон.
       text: {
         title:      textDefault({ size: CHROME_TITLE_SIZE, weight: 700, bold: true }),
@@ -1042,7 +1100,7 @@
         axisLabelX: textDefault({ size: 12 }),
         axisLabelY: textDefault({ size: 12 }),
         legendTitle: textDefault({ size: 12 }),
-        legendLabel: textDefault({ size: 15 }),
+        legendLabel: textDefault({ size: LEGEND_LABEL_SIZE }),
         comment:    textDefault({ size: 15, italic: true }),
         footer:     textDefault({ size: 12 }),
         valueLabel: textDefault({ size: 15 }),
@@ -1097,6 +1155,7 @@
       plotArea: plotAreaDefault(),
       padding: {
         chart: { ...CHART_DOC_PADDING },
+        plot: { top: 0, right: 0, bottom: 0, left: 0 },
         title: { top: 0, between: 7, bottom: 15 },
         legend: { top: 9, titleGap: 10, bottom: 13 },
         comment: { top: 15, bottom: 0 },
@@ -1237,7 +1296,7 @@
     hex.autocomplete = "off";
     hex.spellcheck = false;
     hex.placeholder = "#RRGGBB";
-    hex.title = "HEX — вставьте цвет из Figma";
+    hex.title = L("HEX — вставьте цвет из Figma");
 
     const row = inp.closest(".row");
     const existingField = inp.closest(".color-field");
@@ -1316,7 +1375,7 @@
   }
 
   function mergePadding(base, loaded){
-    const keys = ["chart","title","legend","comment","footer"];
+    const keys = ["chart","plot","title","legend","comment","footer"];
     const out = {};
     for (const k of keys) out[k] = {...base[k], ...(loaded?.[k]||{})};
     return out;
@@ -1506,10 +1565,10 @@
     const btns = document.getElementById("textCharBtns");
     if (!hint || !btns) return;
     hint.innerHTML = TEXT_CHAR_ESCAPES.map(e =>
-      `<li><code>${e.token}</code> <span aria-hidden="true">${e.sign}</span> — ${e.hint}</li>`
+      `<li><code>${e.token}</code> <span aria-hidden="true">${e.sign}</span> — ${escHtml(L(e.hint))}</li>`
     ).join("");
     btns.innerHTML = TEXT_CHAR_ESCAPES.map(e =>
-      `<button type="button" data-token="${e.token}" title="${e.token} — ${e.hint}">${e.sign}</button>`
+      `<button type="button" data-token="${e.token}" title="${escHtml(e.token + " — " + L(e.hint))}">${e.sign}</button>`
     ).join("");
     btns.querySelectorAll("[data-token]").forEach(btn => {
       btn.addEventListener("click", () => insertTextToken(btn.dataset.token));
@@ -1596,10 +1655,11 @@
     if (typeof mk === "string") return { ...layer, mark: { type: mk, clip: true } };
     return { ...layer, mark: { ...mk, clip: true } };
   }
-  // Для тепловой карты: сетка осей по умолчанию выключена (при первом выборе типа).
-  function applyHeatmapAxisDefaults(){
-    state.style.axes.x.grid.show = false;
-    state.style.axes.y.grid.show = false;
+  // Для тепловой карты сетку не рисуем, но настройки осей в state не трогаем —
+  // иначе после возврата к другим типам сетка остаётся выключенной.
+  function axisGridShow(which){
+    if (isHeatmap(state.chartType)) return false;
+    return !!state.style.axes[which].grid.show;
   }
   // Длинный формат: категория X, строки Y (номинал), значение для цвета.
   function dataFitsHeatmap(){
@@ -1656,6 +1716,63 @@
     const n = state.style.heatmap?.legendGradientLength;
     if (n == null || n === "" || isNaN(+n)) return HEATMAP_LEGEND_GRADIENT_LENGTH_DEFAULT;
     return Math.max(40, Math.min(800, +n));
+  }
+  const HEATMAP_LEGEND_GRADIENT_STEPS = 24;
+  // Точки градиента легенды. В режиме схемы цвет снимаем с той же шкалы, что
+  // красит карту: пользовательские точки к схеме не относятся, и легенда
+  // оставалась в цветах, не имеющих отношения к диаграмме.
+  function heatmapLegendStops(valField){
+    const hm = state.style.heatmap || {};
+    const f = valField || heatmapValueField();
+    const { min, max } = heatmapScaleExtent(f);
+    const span = max - min || 1;
+    if (hm.colorMode === "custom") {
+      const stops = (hm.stops && hm.stops.length) ? hm.stops : defaultState().style.heatmap.stops;
+      return stops
+        .map(s => ({ off: Math.max(0, Math.min(1, (+s.value - min) / span)), color: withAlpha(s.color, 1) }))
+        .sort((a, b) => a.off - b.off);
+    }
+    const sample = heatmapSchemeSampler();
+    const out = [];
+    const last = HEATMAP_LEGEND_GRADIENT_STEPS - 1;
+    for (let i = 0; i <= last; i++) {
+      const off = i / last;
+      out.push({ off, color: sample(min + off * span, off) });
+    }
+    return out;
+  }
+  // Живая шкала графика — источник истины; пока её нет, берём интерполятор схемы.
+  function heatmapSchemeSampler(){
+    const name = state.style.heatmap?.scheme || state.style.scheme || "viridis";
+    let live = null;
+    if (currentView) {
+      try { live = currentView.scale("color"); } catch (e) { live = null; }
+    }
+    if (typeof live === "function") return v => vegaColorCss(live(v));
+    const interp = schemeInterpolator(name);
+    if (interp) return (v, off) => vegaColorCss(interp(off));
+    const pal = schemeColors(name, HEATMAP_LEGEND_GRADIENT_STEPS);
+    return (v, off) => pal[Math.min(pal.length - 1, Math.round(off * (pal.length - 1)))];
+  }
+  // Непрерывные схемы Vega — функция t→цвет, дискретные — массив (или массив массивов).
+  function schemeInterpolator(name){
+    try {
+      if (typeof vega === "undefined" || !vega.scheme) return null;
+      const raw = vega.scheme(name);
+      if (typeof raw === "function") return raw;
+      if (Array.isArray(raw) && raw.length) {
+        const pal = Array.isArray(raw[0]) ? raw[raw.length - 1] : raw;
+        return t => pal[Math.min(pal.length - 1, Math.round(t * (pal.length - 1)))];
+      }
+    } catch (e) {}
+    return null;
+  }
+  function vegaColorCss(raw){
+    if (raw == null || raw === "") return "";
+    if (typeof raw === "object" && raw.r != null) {
+      return `rgba(${raw.r},${raw.g},${raw.b},${raw.opacity != null ? raw.opacity : 1})`;
+    }
+    return String(raw);
   }
   // Засечки только на краях домена шкалы (не по диапазону данных, если он другой).
   function heatmapLegendTickValues(valField){
@@ -1885,8 +2002,11 @@
     }
     const cols = axisTitleColumns();
     const set = (key, col) => {
-      const cur = renderText(state.texts[key] || "").trim();
-      if (onlyIfEmpty && cur) return;
+      const raw = state.texts[key];
+      if (onlyIfEmpty) {
+        if (raw === "") return;
+        if (renderText(raw ?? "").trim()) return;
+      }
       state.texts[key] = col || "";
     };
     set("axisTitleX", cols.axisTitleX);
@@ -2152,13 +2272,8 @@
       try {
         const sc = currentView.scale("color");
         if (sc) {
-          const raw = sc(value);
-          if (raw != null && raw !== "") {
-            const c = typeof raw === "object" && raw.r != null
-              ? `rgba(${raw.r},${raw.g},${raw.b},${raw.opacity != null ? raw.opacity : 1})`
-              : String(raw);
-            return withAlpha(c, op);
-          }
+          const c = vegaColorCss(sc(value));
+          if (c) return withAlpha(c, op);
         }
       } catch (e) {}
     }
@@ -2640,6 +2755,41 @@
     state.style.padding = mergePadding(base, state.style.padding);
     return state.style.padding;
   }
+  function plotInsetPx(){
+    const pi = ensurePadding().plot || {};
+    return {
+      top: Math.max(0, +(pi.top || 0)),
+      right: Math.max(0, +(pi.right || 0)),
+      bottom: Math.max(0, +(pi.bottom || 0)),
+      left: Math.max(0, +(pi.left || 0))
+    };
+  }
+  function plotChartSlot(outer){
+    const ins = plotInsetPx();
+    return {
+      x: outer.x + ins.left,
+      y: outer.y + ins.top,
+      w: Math.max(MIN_CHART_WIDTH, outer.w - ins.left - ins.right),
+      h: Math.max(MIN_CHART_HEIGHT, outer.h - ins.top - ins.bottom)
+    };
+  }
+  function measurePlotVizSize(){
+    const viz = document.getElementById("viz");
+    const plot = document.getElementById("chromePlot");
+    if (viz) {
+      const w = Math.round(viz.clientWidth);
+      const h = Math.round(viz.clientHeight);
+      if (w >= MIN_CHART_WIDTH && h >= MIN_CHART_HEIGHT) return { w, h };
+    }
+    if (plot) {
+      const ins = plotInsetPx();
+      return {
+        w: Math.max(MIN_CHART_WIDTH, Math.round(plot.clientWidth) - ins.left - ins.right),
+        h: Math.max(MIN_CHART_HEIGHT, Math.round(plot.clientHeight) - ins.top - ins.bottom)
+      };
+    }
+    return null;
+  }
 
   function countLines(text){
     if (Array.isArray(text)) return text.length;
@@ -2741,8 +2891,11 @@
       orient: axisOrient(which),
       domain: a.line.show, domainColor: lineCol, domainWidth: a.line.width,
       ticks: a.ticks.show, tickColor: lineCol, tickWidth: a.ticks.width, tickSize: a.ticks.length,
-      grid: a.grid.show, gridColor: withAlpha(a.grid.color, a.grid.opacity), gridWidth: a.grid.width,
+      grid: axisGridShow(which), gridColor: withAlpha(a.grid.color, a.grid.opacity), gridWidth: a.grid.width,
       labels: axisLabelsShow(which), labelPadding: a.labels.padding, labelAngle: a.labels.angle,
+      // 0 = без обрезки и «…»; область построения сжимается (autosize: fit), а не текст.
+      labelLimit: 0,
+      labelOverlap: false,
       labelColor: withAlpha(lab.color, lab.opacity), labelFont: chartFontFamily(lab.font), labelFontSize: lab.size,
       labelFontWeight: tw(lab), labelFontStyle: fs(lab.italic),
       titleColor: withAlpha(ttl.color, ttl.opacity), titleFont: chartFontFamily(ttl.font), titleFontSize: ttl.size,
@@ -2814,9 +2967,15 @@
   let plotW = 0, plotH = 0;
   let chartLayerIndex = 0;
   let frameContentW = 0;   // ширина контента = W − левое поле − правое поле
-  const LEGEND_MARKER_SQUARE = "\u25A0";
-  const LEGEND_MARKER_CIRCLE = "\u25CF";
-  const LEGEND_ITEM_SEP = "\u2003";
+  // Маркер легенды — вектор, а не символ ●/■: этих глифов нет в большинстве
+  // шрифтов, и системная подмена давала в SVG другой размер, чем в превью и PNG.
+  // Доли повторяют метрики прежних глифов, поэтому размер задаётся кеглем маркера.
+  const LEGEND_MARKER_METRICS = {
+    circle: { size: 0.430, cell: 0.604, mid: 0.284 },
+    square: { size: 0.337, cell: 0.542, mid: 0.307 }
+  };
+  const LEGEND_MARKER_GAP_EM = 0.278;   // от маркера до подписи, доли кегля маркера
+  const LEGEND_ITEM_GAP_EM = 1;         // между элементами, доли кегля подписи
   const MIN_CHART_WIDTH = 40;
 
   // Измеритель ширины текста для переноса по словам.
@@ -2882,9 +3041,6 @@
       T, frameContentW
     );
   }
-  function legendMarkerChar(shape){
-    return shape === "circle" ? LEGEND_MARKER_CIRCLE : LEGEND_MARKER_SQUARE;
-  }
   function seriesLegendMarkerShape(){
     return state.style.legend?.markerShape === "circle" ? "circle" : "square";
   }
@@ -2894,32 +3050,38 @@
     if (raw == null || raw === "" || isNaN(+raw)) return labelPx;
     return Math.max(6, Math.min(72, +raw));
   }
-  function setLegendMeasureFont(T, isMarker){
+  // Размеры маркера в пикселях: cell — место под сам маркер, gap — до подписи,
+  // mid — подъём центра маркера над базовой линией строки.
+  function legendMarkerGeom(T, shape){
+    const px = legendMarkerFontSizePx(T);
+    const m = LEGEND_MARKER_METRICS[shape === "circle" ? "circle" : "square"];
+    const size = px * m.size;
+    const cell = px * m.cell;
+    const gap = px * LEGEND_MARKER_GAP_EM;
+    return { px, size, cell, gap, inset: (cell - size) / 2, mid: px * m.mid, advance: cell + gap };
+  }
+  function setLegendMeasureFont(T){
     const fam = chartFontFamily(T.font || DEFAULT_CHART_FONT);
-    const px = isMarker ? legendMarkerFontSizePx(T) : (T.size || 12);
-    _measureCtx.font = `${T.italic ? "italic " : ""}${tw(T)} ${px}px ${fam}, sans-serif`;
+    _measureCtx.font = `${T.italic ? "italic " : ""}${tw(T)} ${T.size || 12}px ${fam}, sans-serif`;
   }
   function seriesLegendItems(series){
-    const marker = legendMarkerChar(seriesLegendMarkerShape());
+    const shape = seriesLegendMarkerShape();
     const T = state.style.text.legendLabel;
     const labelColor = withAlpha(T.color, T.opacity);
     const vals = seriesOrder(series);
     return vals.map(v => ({
-      marker,
+      shape,
       name: String(v),
       markerColor: seriesColorForValue(series, v),
       labelColor
     }));
   }
   function measureLegendItemWidth(item, T){
-    setLegendMeasureFont(T, true);
-    const mw = _measureCtx.measureText(item.marker + "\u00A0").width;
-    setLegendMeasureFont(T, false);
-    return mw + _measureCtx.measureText(item.name).width;
+    setLegendMeasureFont(T);
+    return legendMarkerGeom(T, item.shape).advance + _measureCtx.measureText(item.name).width;
   }
   function measureLegendSepWidth(T){
-    setLegendMeasureFont(T, false);
-    return _measureCtx.measureText(LEGEND_ITEM_SEP).width;
+    return (T.size || 12) * LEGEND_ITEM_GAP_EM;
   }
   function wrapSeriesLegendItemLines(items, T, maxWidth){
     if (!items.length) return [];
@@ -2934,7 +3096,7 @@
         lineW = 0;
       }
       const line = lines[lines.length - 1];
-      const sep = line.length ? LEGEND_ITEM_SEP : null;
+      const sep = line.length > 0;
       if (sep) lineW += measureLegendSepWidth(T);
       line.push({ item, sep });
       lineW += itemW;
@@ -2944,8 +3106,7 @@
   function measureSeriesLegendBlockHeight(series, T, maxWidth){
     const lines = wrapSeriesLegendItemLines(seriesLegendItems(series), T, maxWidth);
     if (!lines.length) return 0;
-    const cap = Math.max(T.size || 12, legendMarkerFontSizePx(T));
-    return lineBlock(cap, lines, T.lineHeight);
+    return lineBlock(T.size || 12, lines, T.lineHeight);
   }
   function measureLegendLineWidth(lineEntries, T){
     let w = 0;
@@ -2958,9 +3119,14 @@
   function legendItemHtml(item, T){
     const mc = escHtml(item.markerColor);
     const lc = escHtml(item.labelColor);
-    const mPx = legendMarkerFontSizePx(T);
-    return `<span class="chart-legend-item">`
-      + `<span class="legend-marker" style="color:${mc};font-size:${mPx}px;">${escHtml(item.marker)}\u00A0</span>`
+    const g = legendMarkerGeom(T, item.shape);
+    // Маркер вынесен из потока: высота строки легенды в превью и в экспорте
+    // должна зависеть только от кегля подписи.
+    const marker = `<span class="legend-marker-slot" style="width:${g.advance}px;">`
+      + `<span class="legend-marker" style="width:${g.size}px;height:${g.size}px;`
+      + `left:${g.inset}px;bottom:${g.mid - g.size / 2}px;background:${mc};`
+      + `border-radius:${item.shape === "circle" ? "50%" : "0"};"></span></span>`;
+    return `<span class="chart-legend-item">${marker}`
       + `<span style="color:${lc};">${escHtml(item.name)}</span></span>`;
   }
   function typographicSeriesLegendHtml(){
@@ -2973,7 +3139,7 @@
     const html = lines.map(line => {
       const inner = line.map(e => {
         const sep = e.sep
-          ? `<span style="color:${escHtml(e.item.labelColor)};">${escHtml(e.sep)}</span>` : "";
+          ? `<span class="legend-gap" style="width:${measureLegendSepWidth(T)}px;"></span>` : "";
         return sep + legendItemHtml(e.item, T);
       }).join("");
       return `<div class="chart-legend-line">${inner}</div>`;
@@ -2984,13 +3150,8 @@
     return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
   function heatmapGradientCss(valField){
-    const hm = state.style.heatmap || {};
-    const stops = (hm.stops && hm.stops.length) ? hm.stops : defaultState().style.heatmap.stops;
-    const { min, max } = heatmapScaleExtent(valField);
-    const span = max - min || 1;
-    const sorted = stops.map(s => ({ ...s, pct: Math.max(0, Math.min(100, ((+s.value - min) / span) * 100)) }))
-      .sort((a, b) => a.pct - b.pct);
-    const stopsCss = sorted.map(s => `${withAlpha(s.color, 1)} ${s.pct}%`).join(", ");
+    const stopsCss = heatmapLegendStops(valField)
+      .map(s => `${s.color} ${(s.off * 100).toFixed(2)}%`).join(", ");
     return `linear-gradient(to right, ${stopsCss})`;
   }
   function typographicHeatmapLegendHtml(){
@@ -3025,27 +3186,37 @@
   function measurePlotAreaSize(){
     const { p, innerW } = frameInnerSize();
     frameContentW = innerW;
+    const vizSize = measurePlotVizSize();
     const plot = document.getElementById("chromePlot");
     if (!plot) {
       const { innerH } = frameInnerSize();
       const chromeH = chromeHeights().total;
+      const ins = plotInsetPx();
       return {
-        plotW: innerW,
-        plotH: Math.max(MIN_CHART_HEIGHT, innerH - chromeH),
+        plotW: Math.max(MIN_CHART_WIDTH, innerW - ins.left - ins.right),
+        plotH: Math.max(MIN_CHART_HEIGHT, innerH - chromeH - ins.top - ins.bottom),
         p
       };
     }
     forceChartFrameReflow();
+    if (vizSize) {
+      return { plotW: vizSize.w, plotH: vizSize.h, p };
+    }
     const cw = Math.round(plot.clientWidth);
     const ch = Math.round(plot.clientHeight);
+    const ins = plotInsetPx();
     if (cw >= MIN_CHART_WIDTH && ch >= MIN_CHART_HEIGHT) {
-      return { plotW: cw, plotH: ch, p };
+      return {
+        plotW: Math.max(MIN_CHART_WIDTH, cw - ins.left - ins.right),
+        plotH: Math.max(MIN_CHART_HEIGHT, ch - ins.top - ins.bottom),
+        p
+      };
     }
     const { innerH } = frameInnerSize();
     const chromeH = chromeHeights().total;
     return {
-      plotW: Math.max(MIN_CHART_WIDTH, cw > 0 ? cw : innerW),
-      plotH: Math.max(MIN_CHART_HEIGHT, ch > 0 ? ch : innerH - chromeH),
+      plotW: Math.max(MIN_CHART_WIDTH, (cw > 0 ? cw : innerW) - ins.left - ins.right),
+      plotH: Math.max(MIN_CHART_HEIGHT, (ch > 0 ? ch : innerH - chromeH) - ins.top - ins.bottom),
       p
     };
   }
@@ -3147,6 +3318,18 @@
       frame.style.padding = `${p.chart.top}px ${p.chart.right}px ${p.chart.bottom}px ${p.chart.left}px`;
       frame.style.boxSizing = "border-box";
     }
+    const plotEl = $("#chromePlot");
+    const vizEl = document.getElementById("viz");
+    if (plotEl) plotEl.style.padding = "";
+    if (vizEl) {
+      const pi = plotInsetPx();
+      vizEl.style.left = pi.left + "px";
+      vizEl.style.top = pi.top + "px";
+      vizEl.style.right = pi.right + "px";
+      vizEl.style.bottom = pi.bottom + "px";
+      vizEl.style.width = "auto";
+      vizEl.style.height = "auto";
+    }
     return legH;
   }
 
@@ -3222,14 +3405,13 @@
   let plotResizeTimer = null;
   let plotResizeObserver = null;
   async function waitPlotSlotStable(maxMs = 400){
-    const plot = document.getElementById("chromePlot");
-    if (!plot) return;
     const deadline = Date.now() + maxMs;
     let prevW = -1, prevH = -1;
     while (Date.now() < deadline) {
       forceChartFrameReflow();
-      const w = Math.round(plot.clientWidth);
-      const h = Math.round(plot.clientHeight);
+      const size = measurePlotVizSize();
+      const w = size?.w ?? 0;
+      const h = size?.h ?? 0;
       if (w >= MIN_CHART_WIDTH && h >= MIN_CHART_HEIGHT && w === prevW && h === prevH) return;
       prevW = w;
       prevH = h;
@@ -3237,10 +3419,10 @@
     }
   }
   async function fitPlotViewToSlot(){
-    const plot = document.getElementById("chromePlot");
-    if (!plot || !currentView) return false;
-    const w = Math.round(plot.clientWidth);
-    const h = Math.round(plot.clientHeight);
+    if (!currentView) return false;
+    const size = measurePlotVizSize();
+    if (!size) return false;
+    const { w, h } = size;
     if (w < MIN_CHART_WIDTH || h < MIN_CHART_HEIGHT) return false;
     if (Math.abs(w - plotW) <= 1 && Math.abs(h - plotH) <= 1
         && Math.abs(w - currentView.width()) <= 1 && Math.abs(h - currentView.height()) <= 1) return false;
@@ -3250,8 +3432,8 @@
     return true;
   }
   function bindPlotResizeObserver(){
-    const plot = document.getElementById("chromePlot");
-    if (!plot || typeof ResizeObserver === "undefined") return;
+    const viz = document.getElementById("viz");
+    if (!viz || typeof ResizeObserver === "undefined") return;
     if (plotResizeObserver) plotResizeObserver.disconnect();
     plotResizeObserver = new ResizeObserver(entries => {
       const box = entries[0]?.contentRect;
@@ -3264,14 +3446,14 @@
       clearTimeout(plotResizeTimer);
       plotResizeTimer = setTimeout(() => { fitPlotViewToSlot().catch(console.error); }, 80);
     });
-    plotResizeObserver.observe(plot);
+    plotResizeObserver.observe(viz);
   }
   async function embedOnce(){
     if (currentView) { currentView.finalize(); currentView = null; }
     const host = document.getElementById("viz");
     if (host) host.innerHTML = "";
     if (typeof vegaEmbed !== "function") {
-      throw new Error("vegaEmbed не загружен — проверьте интернет и обновите страницу (Cmd+Shift+R)");
+      throw new Error(L("vegaEmbed не загружен — проверьте интернет и обновите страницу (Cmd+Shift+R)"));
     }
     await waitPlotSlotStable();
     const m = measurePlotAreaSize();
@@ -3440,24 +3622,25 @@
         await waitPlotSlotStable(200);
         await fitPlotViewToSlot();
         bindPlotResizeObserver();
-        setStatus(`Готово · ${labelType()} · ${state.size.width}×${state.size.height}`);
+        setStatus(L("Готово · {type} · {w}×{h}", { type: labelType(), w: state.size.width, h: state.size.height }));
         applyDocGrid();
-      } catch(e){ setStatus("Ошибка: " + e.message); console.error(e); }
+      } catch(e){ setStatus(L("Ошибка: ") + e.message); console.error(e); }
     };
     if (delay === 0) run();
     else renderTimer = setTimeout(run, delay);
   }
   function labelType(){
-    return {
+    const ru = {
       bar:"Столбчатая", barStack:"Столбчатая с накоплением", barStackNorm:"Столбчатая нормированая",
       barh:"Линейчатая", barhStack:"Линейчатая с накоплением", barhStackNorm:"Линейчатая нормированая",
       line:"Линейный график",
       lineStepBefore:"Ступенчатый график (ступень до значения)",
       lineStepAfter:"Ступенчатый график (ступень после значения)",
-      area:"Площадная", point:"Точечная"
+      area:"Площадная", point:"Точечная", heatmap:"Тепловая карта"
     }[state.chartType];
+    return ru ? L(ru) : ru;
   }
-  function setStatus(t){ $("#status").textContent = t; }
+  function setStatus(msg){ $("#status").textContent = msg; }
 
   /* ════════════════════════ ЭКСПОРТ ════════════════════════ */
   function downloadURL(url, name){
@@ -3547,14 +3730,16 @@
     const contentX = p.chart.left;
     const contentW = Math.max(MIN_CHART_WIDTH, state.size.width - p.chart.left - p.chart.right);
     if (!plot) {
-      return { x: contentX, y: p.chart.top, w: contentW, h: Math.max(MIN_CHART_HEIGHT, plotH || 200) };
+      const outer = { x: contentX, y: p.chart.top, w: contentW, h: Math.max(MIN_CHART_HEIGHT, plotH || 200) };
+      return plotChartSlot(outer);
     }
-    return {
+    const outer = {
       x: plot.offsetLeft,
       y: plot.offsetTop,
       w: Math.max(MIN_CHART_WIDTH, plot.clientWidth || plotW),
       h: Math.max(MIN_CHART_HEIGHT, plot.clientHeight || plotH)
     };
+    return plotChartSlot(outer);
   }
   function chromeRectsForExport(){
     const frame = document.getElementById("chartFrame");
@@ -3627,6 +3812,9 @@
   function escSvgAttr(s){
     return escSvgText(s).replace(/"/g, "&quot;");
   }
+  function svgNum(v){
+    return Math.round((+v || 0) * 100) / 100;
+  }
   function svgTextAnchor(align){
     return align === "center" ? "middle" : align === "right" ? "end" : "start";
   }
@@ -3673,63 +3861,55 @@
     const size = T.size || 12;
     const fam = svgFontFamilyAttr(T.font);
     const y0 = y + (padTop || 0) + size;
-    let tspans = "";
-    let docFirst = true;
-    lines.forEach(lineEntries => {
+    let body = "";
+    lines.forEach((lineEntries, li) => {
       const lineW = measureLegendLineWidth(lineEntries, T);
       let cx = x;
       if (T.align === "center") cx = x + Math.max(0, (width - lineW) / 2);
       else if (T.align === "right") cx = x + Math.max(0, width - lineW);
-      let firstOnLine = true;
-      const markerPx = legendMarkerFontSizePx(T);
-      const emit = (text, fill, segPx) => {
-        const f = escSvgAttr(fill);
-        const fsAttr = segPx !== size ? ` font-size="${segPx}"` : "";
-        if (docFirst) {
-          tspans += `<tspan fill="${f}"${fsAttr} x="${cx}" y="${y0}">${escSvgText(text)}</tspan>`;
-          docFirst = false;
-          firstOnLine = false;
-        } else if (firstOnLine) {
-          tspans += `<tspan fill="${f}"${fsAttr} x="${cx}" dy="${lh}">${escSvgText(text)}</tspan>`;
-          firstOnLine = false;
-        } else {
-          tspans += `<tspan fill="${f}"${fsAttr}>${escSvgText(text)}</tspan>`;
-        }
-      };
+      const cy = y0 + li * lh;
       for (const e of lineEntries) {
-        if (e.sep) emit(e.sep, e.item.labelColor, size);
-        emit(e.item.marker + "\u00A0", e.item.markerColor, markerPx);
-        emit(e.item.name, e.item.labelColor, size);
+        if (e.sep) cx += measureLegendSepWidth(T);
+        const g = legendMarkerGeom(T, e.item.shape);
+        body += svgLegendMarker(g, e.item.shape, cx, cy, e.item.markerColor);
+        cx += g.advance;
+        body += `<text class="chart-export-text" x="${svgNum(cx)}" y="${svgNum(cy)}" `
+          + `fill="${escSvgAttr(e.item.labelColor)}">${escSvgText(e.item.name)}</text>`;
+        setLegendMeasureFont(T);
+        cx += _measureCtx.measureText(e.item.name).width;
       }
     });
-    return `<text class="chart-export-text chart-legend-series" text-anchor="start" font-family="${fam}" font-size="${size}" font-weight="${tw(T)}" font-style="${fs(T.italic)}">${tspans}</text>`;
+    return `<g class="chart-legend-series" text-anchor="start" font-family="${fam}" `
+      + `font-size="${size}" font-weight="${tw(T)}" font-style="${fs(T.italic)}">${body}</g>`;
+  }
+  function svgLegendMarker(g, shape, cx, cy, color){
+    const fill = escSvgAttr(color);
+    if (shape === "circle") {
+      return `<circle class="chart-legend-marker" cx="${svgNum(cx + g.cell / 2)}" `
+        + `cy="${svgNum(cy - g.mid)}" r="${svgNum(g.size / 2)}" fill="${fill}"/>`;
+    }
+    return `<rect class="chart-legend-marker" x="${svgNum(cx + g.inset)}" `
+      + `y="${svgNum(cy - g.mid - g.size / 2)}" width="${svgNum(g.size)}" `
+      + `height="${svgNum(g.size)}" fill="${fill}"/>`;
   }
   function exportHeatmapLegendSvg(x, y, width, padTop){
     if (!isHeatmap(state.chartType) || !state.style.showLegend) return "";
     const valField = heatmapValueField();
     const gradLen = Math.min(width, heatmapLegendGradientLength());
     const { min, max } = heatmapScaleExtent(valField);
-    const hm = state.style.heatmap || {};
-    const stops = (hm.stops && hm.stops.length) ? hm.stops : defaultState().style.heatmap.stops;
-    const span = heatmapScaleExtent(valField);
-    const domain = span.max - span.min || 1;
-    const sorted = stops.map(s => ({
-      ...s,
-      off: Math.max(0, Math.min(1, ((+s.value - span.min) / domain)))
-    })).sort((a, b) => a.off - b.off);
     const T = state.style.text.legendLabel;
     const gradX = T.align === "center" ? x + (width - gradLen) / 2
       : T.align === "right" ? x + width - gradLen : x;
     const gradY = y + (padTop || 0);
     const gradId = "hmGradExport";
-    const stopsSvg = sorted.map(s =>
-      `<stop offset="${(s.off * 100).toFixed(2)}%" stop-color="${escSvgAttr(withAlpha(s.color, 1))}"/>`
+    const stopsSvg = heatmapLegendStops(valField).map(s =>
+      `<stop offset="${(s.off * 100).toFixed(2)}%" stop-color="${escSvgAttr(s.color)}"/>`
     ).join("");
     const fam = svgFontFamilyAttr(T.font);
     const fill = escSvgAttr(withAlpha(T.color, T.opacity));
     let out = `<defs><linearGradient id="${gradId}" x1="0" y1="0" x2="1" y2="0">${stopsSvg}</linearGradient></defs>`;
     out += `<rect x="${gradX}" y="${gradY}" width="${gradLen}" height="14" fill="url(#${gradId})"/>`;
-    const ly = gradY + 18;
+    const ly = gradY + 18 + (T.size || 11);
     out += `<text class="chart-export-text" x="${gradX}" y="${ly}" font-family="${fam}" font-size="${T.size || 11}" fill="${fill}">${escSvgText(String(min))}</text>`;
     out += `<text class="chart-export-text" x="${gradX + gradLen}" y="${ly}" text-anchor="end" font-family="${fam}" font-size="${T.size || 11}" fill="${fill}">${escSvgText(String(max))}</text>`;
     return out;
@@ -3792,33 +3972,23 @@
     renderChartChrome();
     forceChartFrameReflow();
     await waitPlotSlotStable(200);
-    let layout = exportFrameLayout();
-    const domPlot = chromeRectsForExport()?.plot;
-    if (domPlot && layout.blocks.plot) {
-      layout.blocks.plot = {
-        x: domPlot.x,
-        y: domPlot.y,
-        w: domPlot.w,
-        h: domPlot.h
-      };
-    }
+    // Только расчётная вёрстка: getBoundingClientRect() зависит от zoom/pan превью,
+    // а заголовки экспортируются из blocks — иначе диаграмма «съезжает» относительно текста.
+    const layout = exportFrameLayout();
     frameContentW = layout.contentW;
-    const plot = layout.blocks.plot;
-    if (!plot) throw new Error("нет области графика");
-    plotW = Math.round(plot.w);
-    plotH = Math.round(plot.h);
-    // Пересобираем spec/view под точный слот — resize без re-embed давал другие пропорции, чем превью.
+    const plotOuter = layout.blocks.plot;
+    if (!plotOuter) throw new Error(L("нет области графика"));
+    const plotInner = plotChartSlot(plotOuter);
+    plotW = Math.round(plotInner.w);
+    plotH = Math.round(plotInner.h);
     await embedOnce();
     await ensureSpecFonts();
-    if (layout.blocks.plot) {
-      layout.blocks.plot.w = plotW;
-      layout.blocks.plot.h = plotH;
-    }
+    layout.plotChart = plotInner;
     return layout;
   }
   async function buildExportFrameSvg(existingLayout){
     const layout = existingLayout || await prepareExportLayout();
-    const plotSlot = layout.blocks.plot;
+    const plotSlot = layout.plotChart || plotChartSlot(layout.blocks.plot);
     const { w, h } = docFrameSize();
     const chartSvg = await currentView.toSVG();
     const chromeTop = buildExportChromeTextSvg("top", layout);
@@ -3862,6 +4032,16 @@
       ty += lh;
     });
   }
+  function canvasLegendMarker(ctx, g, shape, cx, cy, color){
+    ctx.fillStyle = color;
+    if (shape === "circle") {
+      ctx.beginPath();
+      ctx.arc(cx + g.cell / 2, cy - g.mid, g.size / 2, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+    ctx.fillRect(cx + g.inset, cy - g.mid - g.size / 2, g.size, g.size);
+  }
   function canvasTypographicSeriesLegend(ctx, x, y, width, padTop){
     const series = seriesField();
     if (!series || !state.style.showLegend) return;
@@ -3880,17 +4060,16 @@
       if (T.align === "center") cx = x + Math.max(0, (width - lineW) / 2);
       else if (T.align === "right") cx = x + Math.max(0, width - lineW);
       const cy = y0 + li * lh;
-      const draw = (text, fill, isMarker) => {
-        setLegendMeasureFont(T, isMarker);
-        ctx.font = _measureCtx.font;
-        ctx.fillStyle = fill;
-        ctx.fillText(text, cx, cy);
-        cx += ctx.measureText(text).width;
-      };
+      setLegendMeasureFont(T);
+      ctx.font = _measureCtx.font;
       for (const e of lineEntries) {
-        if (e.sep) draw(e.sep, e.item.labelColor, false);
-        draw(e.item.marker + "\u00A0", e.item.markerColor, true);
-        draw(e.item.name, e.item.labelColor, false);
+        if (e.sep) cx += measureLegendSepWidth(T);
+        const g = legendMarkerGeom(T, e.item.shape);
+        canvasLegendMarker(ctx, g, e.item.shape, cx, cy, e.item.markerColor);
+        cx += g.advance;
+        ctx.fillStyle = e.item.labelColor;
+        ctx.fillText(e.item.name, cx, cy);
+        cx += ctx.measureText(e.item.name).width;
       }
     });
   }
@@ -3899,27 +4078,20 @@
     const valField = heatmapValueField();
     const gradLen = Math.min(width, heatmapLegendGradientLength());
     const { min, max } = heatmapScaleExtent(valField);
-    const hm = state.style.heatmap || {};
-    const stops = (hm.stops && hm.stops.length) ? hm.stops : defaultState().style.heatmap.stops;
-    const span = heatmapScaleExtent(valField);
-    const domain = span.max - span.min || 1;
-    const sorted = stops.map(s => ({
-      ...s,
-      off: Math.max(0, Math.min(1, ((+s.value - span.min) / domain)))
-    })).sort((a, b) => a.off - b.off);
     const T = state.style.text.legendLabel;
     const gradX = T.align === "center" ? x + (width - gradLen) / 2
       : T.align === "right" ? x + width - gradLen : x;
     const gradY = y + (padTop || 0);
     const g = ctx.createLinearGradient(gradX, gradY, gradX + gradLen, gradY);
-    sorted.forEach(s => g.addColorStop(s.off, withAlpha(s.color, 1)));
+    heatmapLegendStops(valField).forEach(s => g.addColorStop(s.off, s.color));
     ctx.fillStyle = g;
     ctx.fillRect(gradX, gradY, gradLen, 14);
     canvasSetTextStyle(ctx, T);
+    const ly = gradY + 18 + (T.size || 11);
     ctx.textAlign = "left";
-    ctx.fillText(String(min), gradX, gradY + 18);
+    ctx.fillText(String(min), gradX, ly);
     ctx.textAlign = "right";
-    ctx.fillText(String(max), gradX + gradLen, gradY + 18);
+    ctx.fillText(String(max), gradX + gradLen, ly);
   }
   function canvasChromeLegend(ctx, block){
     if (!block) return;
@@ -3965,13 +4137,13 @@
   }
   async function rasterizeChartToPng(scale){
     const layout = await prepareExportLayout();
-    const plot = layout.blocks.plot;
-    if (!plot) throw new Error("нет области графика");
+    const plot = layout.plotChart || plotChartSlot(layout.blocks.plot);
+    if (!plot) throw new Error(L("нет области графика"));
     await ensureSpecFonts();
     await document.fonts.ready;
-    setStatus(`PNG ${scale}×: график…`);
+    setStatus(L("PNG {n}×: график…", { n: scale }));
     if (typeof currentView.toImageURL !== "function") {
-      throw new Error("экспорт графика недоступен");
+      throw new Error(L("экспорт графика недоступен"));
     }
     const plotUrl = await currentView.toImageURL("png", scale);
     const plotImg = await loadImageFromUrl(plotUrl);
@@ -3985,13 +4157,13 @@
     const slotW = plot.w;
     const slotH = plot.h;
     ctx.drawImage(plotImg, plot.x, plot.y, slotW, slotH);
-    setStatus(`PNG ${scale}×: надписи…`);
+    setStatus(L("PNG {n}×: надписи…", { n: scale }));
     drawExportChromeOnCanvas(ctx, layout);
-    return { canvas, note: " · шрифты как в превью" };
+    return { canvas, note: L(" · шрифты как в превью") };
   }
   async function exportPNG(scale){
     if (!currentView) return;
-    setStatus(`Экспорт PNG ${scale}×…`);
+    setStatus(L("Экспорт PNG {n}×…", { n: scale }));
     try {
       const { canvas, note } = await rasterizeChartToPng(scale);
       const blob = await new Promise((resolve, reject) => {
@@ -4001,9 +4173,9 @@
       const url = URL.createObjectURL(blob);
       downloadURL(url, `chart@${scale}x.png`);
       URL.revokeObjectURL(url);
-      setStatus(`Сохранено: PNG ${scale}×` + note);
+      setStatus(L("Сохранено: PNG {n}×", { n: scale }) + note);
     } catch (e) {
-      setStatus("Ошибка PNG: " + e.message);
+      setStatus(L("Ошибка PNG: ") + e.message);
       console.error(e);
     } finally {
       render({ immediate: true });
@@ -4162,7 +4334,7 @@
   }
   async function embedFontsInExportSvg(svg, opts = {}){
     if (opts.skipEmbedFonts) {
-      return { svg, embedded: false, note: " · без встраивания шрифтов" };
+      return { svg, embedded: false, note: L(" · без встраивания шрифтов") };
     }
     try {
       await ensureSpecFonts();
@@ -4172,23 +4344,23 @@
       return {
         svg: out,
         embedded: !!fontCss.trim(),
-        note: fontCss.trim() ? " · шрифты встроены" : " · шрифты не встроены (системные или сеть)"
+        note: fontCss.trim() ? L(" · шрифты встроены") : L(" · шрифты не встроены (системные или сеть)")
       };
     } catch (e) {
       console.warn("export font embed:", e);
-      return { svg, embedded: false, note: " · шрифты не встроены" };
+      return { svg, embedded: false, note: L(" · шрифты не встроены") };
     }
   }
   async function exportSVG(opts = {}){
     if (!currentView) return;
-    setStatus("Экспорт SVG…");
+    setStatus(L("Экспорт SVG…"));
     try {
       const layout = await prepareExportLayout();
       let svg = await buildExportFrameSvg(layout);
       const emb = await embedFontsInExportSvg(svg, opts);
       svg = emb.svg;
       downloadBlob(svg, "chart.svg", "image/svg+xml");
-      setStatus("Сохранено: SVG" + emb.note);
+      setStatus(L("Сохранено: SVG") + emb.note);
     } finally {
       render({ immediate: true });
     }
@@ -4242,6 +4414,7 @@
       app: "make-your-chart",
       version: 3,
       savedAt: new Date().toISOString(),
+      lang: i18nLang(),
       state: s,
       data: projectDataSlice(s)
     };
@@ -4251,8 +4424,8 @@
     downloadBlob(JSON.stringify(payload, null, 2), "chart-project.json", "application/json");
     const n = payload.data.csvValues?.length;
     setStatus(n
-      ? `Проект сохранён (${n} строк CSV в файле)`
-      : "Проект сохранён в JSON");
+      ? L("Проект сохранён ({n} строк CSV в файле)", { n })
+      : L("Проект сохранён в JSON"));
   }
   function restoreProjectData(loaded){
     if (!hasCsvProjectData(loaded)) return false;
@@ -4282,7 +4455,7 @@
         updateCsvNameLabel();
         return true;
       } catch (e) {
-        setStatus("Не удалось прочитать CSV из проекта: " + e.message);
+        setStatus(L("Не удалось прочитать CSV из проекта: ") + e.message);
         state.csvValues = null;
         return false;
       }
@@ -4294,6 +4467,8 @@
     reader.onload = async () => {
       try {
         const parsed = JSON.parse(reader.result);
+        // Язык проекта задаём до чтения состояния: от него зависят наборы данных.
+        if (parsed.lang) applyProjectLanguage(parsed.lang);
         const loaded = { ...(parsed.state || parsed), ...(parsed.data || {}) };
         const base = defaultState();
         const styleSrc = loaded.style || (loaded.text || loaded.axes ? loaded : null);
@@ -4328,15 +4503,16 @@
         render({ fontRefresh: true });
         const n = state.csvValues?.length;
         setStatus(n
-          ? `Проект загружен · ${n} строк CSV${state.csvFileName ? " · " + state.csvFileName : ""}`
-          : "Проект загружен из JSON");
-      } catch(e){ setStatus("Не удалось прочитать JSON: " + e.message); }
+          ? L("Проект загружен · {n} строк CSV{name}", { n, name: state.csvFileName ? " · " + state.csvFileName : "" })
+          : L("Проект загружен из JSON"));
+      } catch(e){ setStatus(L("Не удалось прочитать JSON: ") + e.message); }
     };
     reader.readAsText(file);
   }
 
   /* ════════════════════════ CSV ════════════════════════ */
   const CSV_DELIM_LABELS = { ",": ",", ";": ";", "\t": "таб", "|": "|" };
+  function csvDelimLabel(d){ return L(CSV_DELIM_LABELS[d] || d); }
 
   function normalizeCsvCell(val, decimalSep){
     if (val == null || val === "") return val;
@@ -4390,7 +4566,7 @@
     const lines = stripCsvBom(text).split(/\r?\n/).filter(l => l.trim() !== "");
     if (!lines.length) return [];
     const header = splitCsvLine(lines[0], delimiter);
-    if (header.length < 2) throw new Error("нужно не меньше двух столбцов");
+    if (header.length < 2) throw new Error(L("нужно не меньше двух столбцов"));
     const rows = [];
     for (let i = 1; i < lines.length; i++) {
       const cells = splitCsvLine(lines[i], delimiter);
@@ -4423,7 +4599,7 @@
       delimiter = detectCsvDelimiter(firstLine);
     src = preprocessCsvDecimals(src, decimal);
     const rawRows = readCsvRows(src, delimiter);
-    if (!rawRows.length) throw new Error("пустой файл");
+    if (!rawRows.length) throw new Error(L("пустой файл"));
     const keyMap = sanitizeKeys(Object.keys(rawRows[0]));
     const cellDec = decimal === "," ? "." : decimal;
     const rows = rawRows.map(row => {
@@ -4450,11 +4626,12 @@
     const el = $("#csvName");
     if (!el) return;
     if (!state.csvValues?.length) { el.textContent = ""; return; }
-    const d = CSV_DELIM_LABELS[state.csv.delimiter] || state.csv.delimiter;
-    const dec = state.csv.decimal === "," ? "запятая" : "точка";
+    const d = csvDelimLabel(state.csv.delimiter);
+    const dec = L(state.csv.decimal === "," ? "запятая" : "точка");
+    const n = state.csvValues.length;
     el.textContent = state.csvFileName
-      ? `${state.csvFileName} · ${state.csvValues.length} строк · «${d}» · ${dec}`
-      : `${state.csvValues.length} строк · «${d}» · ${dec}`;
+      ? L("{file} · {n} строк · «{d}» · {dec}", { file: state.csvFileName, n, d, dec })
+      : L("{n} строк · «{d}» · {dec}", { n, d, dec });
   }
 
   function applyCsvRows(rows, fileName, opts = {}){
@@ -4479,8 +4656,8 @@
       const delimEl = document.getElementById("csvDelimiter");
       if (delimEl) delimEl.value = delimiter;
       applyCsvRows(rows, state.csvFileName, { keepFields: true });
-      setStatus("CSV перечитан с новыми настройками");
-    } catch(e){ setStatus("Ошибка CSV: " + e.message); }
+      setStatus(L("CSV перечитан с новыми настройками"));
+    } catch(e){ setStatus(L("Ошибка CSV: ") + e.message); }
   }
 
   function loadCSV(file){
@@ -4494,8 +4671,8 @@
         const delimEl = document.getElementById("csvDelimiter");
         if (delimEl) delimEl.value = delimiter;
         applyCsvRows(rows, file.name);
-        setStatus("CSV загружен");
-      } catch(e){ setStatus("Ошибка CSV: " + e.message); }
+        setStatus(L("CSV загружен"));
+      } catch(e){ setStatus(L("Ошибка CSV: ") + e.message); }
     };
     reader.readAsText(file, "UTF-8");
   }
@@ -4566,6 +4743,8 @@
     ["docGridOpacity","docGrid.opacity","num"],["docGridCell","docGrid.cellSize","num"],
     ["padChartTop","style.padding.chart.top","num"],["padChartBottom","style.padding.chart.bottom","num"],
     ["padChartLeft","style.padding.chart.left","num"],["padChartRight","style.padding.chart.right","num"],
+    ["padPlotTop","style.padding.plot.top","num"],["padPlotBottom","style.padding.plot.bottom","num"],
+    ["padPlotLeft","style.padding.plot.left","num"],["padPlotRight","style.padding.plot.right","num"],
     ["padTitleTop","style.padding.title.top","num"],["padTitleBetween","style.padding.title.between","num"],
     ["padTitleBottom","style.padding.title.bottom","num"],
     ["padLegendTop","style.padding.legend.top","num"],["padLegendTitleGap","style.padding.legend.titleGap","num"],
@@ -4885,12 +5064,12 @@
     const el = document.getElementById("localFontsStatus");
     if (!el || silent) return;
     if (!count) {
-      el.textContent = "Шрифты в Fonts/ не найдены. Добавьте файлы и выполните: python3 gen-fonts-manifest.py";
+      el.textContent = L("Шрифты в Fonts/ не найдены. Добавьте файлы и выполните: python3 gen-fonts-manifest.py");
       return;
     }
     const names = LOCAL_FONT_OPTIONS.map(([, l]) => l).join(", ");
-    const src = source ? ` (${source})` : "";
-    el.textContent = `Добавлено семейств: ${count}${src}. ${names}`;
+    const src = source ? ` (${L(source)})` : "";
+    el.textContent = L("Добавлено семейств: {count}{src}. {names}", { count, src, names });
   }
   function normalizeFontCss(saved){
     const s = String(saved || "").trim();
@@ -5212,9 +5391,9 @@
     inp.value = h;
     const hex = inp.closest(".color-field")?.querySelector(".color-hex");
     if (hex) hex.value = h.toUpperCase();
-    inp.title = common
+    inp.title = L(common
       ? "Один цвет для всех надписей"
-      : "Сейчас у надписей разные цвета — выберите, чтобы унифицировать";
+      : "Сейчас у надписей разные цвета — выберите, чтобы унифицировать");
   }
   function bindAllTextsFont(){
     const sel = document.getElementById("allTextsFont");
@@ -5248,7 +5427,7 @@
       hex.autocomplete = "off";
       hex.spellcheck = false;
       hex.placeholder = "#RRGGBB";
-      hex.title = "HEX — вставьте цвет из Figma";
+      hex.title = L("HEX — вставьте цвет из Figma");
       field.appendChild(hex);
     }
     inp.dataset.colorCtrl = "1";
@@ -5401,7 +5580,7 @@
   function endMarkerLabelCfg(key, label){
     const b = `style.endMarkers.${key}`;
     return `
-      <p class="panel-sub">${label} — смещение от маркера</p>
+      <p class="panel-sub">${escHtml(L("{label} — смещение от маркера", { label: L(label) }))}</p>
       <div class="row"><label>По горизонтали, px</label><input type="number" data-path="${b}.dx" data-type="num" min="-200" max="200" step="1" /></div>
       <div class="row"><label>По вертикали, px</label><input type="number" data-path="${b}.dy" data-type="num" min="-200" max="200" step="1" /></div>
     `;
@@ -5460,9 +5639,9 @@
     const lx = document.getElementById("fieldXLabel");
     const ly = document.getElementById("fieldYLabel");
     const ls = document.getElementById("fieldSeriesLabel");
-    if (lx) lx.textContent = isHm ? "Ось X / столбцы" : "Ось X / категория";
-    if (ly) ly.textContent = isHm ? "Значение (цвет)" : "Ось Y / значение";
-    if (ls) ls.textContent = isHm ? "Ось Y / строки" : "Ряд / серия (цвет)";
+    if (lx) lx.textContent = L(isHm ? "Ось X / столбцы" : "Ось X / категория");
+    if (ly) ly.textContent = L(isHm ? "Значение (цвет)" : "Ось Y / значение");
+    if (ls) ls.textContent = L(isHm ? "Ось Y / строки" : "Ряд / серия (цвет)");
   }
   function buildHeatmapStopsUI(){
     const list = document.getElementById("heatmapStopsList");
@@ -5499,7 +5678,7 @@
     const rangeEl = document.getElementById("heatmapDataRange");
     if (rangeEl) {
       const { min, max } = heatmapValueExtent(heatmapValueField());
-      rangeEl.textContent = `Диапазон данных: ${min} … ${max}`;
+      rangeEl.textContent = L("Диапазон данных: {min} … {max}", { min, max });
     }
   }
   function syncHeatmapUI(){
@@ -5734,18 +5913,18 @@
     const payload = { app:"make-your-chart-template", version:1, savedAt:new Date().toISOString(),
                       size: state.size, style: state.style };
     downloadBlob(JSON.stringify(payload, null, 2), "chart-style-template.json", "application/json");
-    setStatus("Шаблон сохранён");
+    setStatus(L("Шаблон сохранён"));
   }
   function importTemplate(file){
     const r = new FileReader();
     r.onload = () => {
-      try { applyTemplate(JSON.parse(r.result)); setStatus("Шаблон импортирован: " + file.name); }
-      catch(e){ setStatus("Ошибка шаблона: " + e.message); }
+      try { applyTemplate(JSON.parse(r.result)); setStatus(L("Шаблон импортирован: ") + file.name); }
+      catch(e){ setStatus(L("Ошибка шаблона: ") + e.message); }
     };
     r.readAsText(file);
   }
   // Встроенные шаблоны — доступны всегда, даже при открытии файлом (file://).
-  const TEMPLATE_LEGEND_DEFAULT = { markerShape: "circle", markerFontSize: 20 };
+  const TEMPLATE_LEGEND_DEFAULT = { markerShape: "circle", markerFontSize: LEGEND_LABEL_SIZE };
   const FONT_GOLOS = "'Golos Text', sans-serif";
   const FONT_PLAYFAIR = "'Playfair', serif";
   const TEMPLATE_TEXT_COLOR = "#000000";
@@ -5777,28 +5956,23 @@
     return text;
   }
   const BUILTIN_TEMPLATES = {
-    "grotesk": { name: "Гротеск",
-      texts: { axisTitleX: "", axisTitleY: "" },
-      style: {
+    "grotesk": { name: "Гротеск", style: {
       padding: { chart: { ...CHART_DOC_PADDING } },
-      hideAxisTitles: true,
-      markColor: "#211dc6",
-      barGap: { mode: "gap", unit: "pixels", value: 1, fixedWidth: 24 },
+      markColor: "#000000",
+      barGap: { mode: "gap", unit: "pixels", value: 2, fixedWidth: 24 },
+      scheme: "greys",
       legend: { ...TEMPLATE_LEGEND_DEFAULT },
       text: interTextStyle(),
-      valueLabels: { show: true },
-      plotArea: { borderEnabled: false },
-      axes: {
-        x: { line: { show: true, color: "#000000", width: 1, opacity: 1 }, ticks: { show: false, width: 1, length: 0 },
-             labels: { show: true, padding: 5, step: null, angle: 0 }, grid: { show: false } },
-        y: { line: { show: false }, ticks: { show: false, length: 0 },
-             labels: { show: false, padding: 5, step: null, angle: 0 }, grid: { show: false } }
-      }
+      heatmap: { scheme: "greys" },
+      // Проекции точек остаются акцентными: иначе mergeStyle возьмёт их цвет
+      // из markColor и они станут чёрными, как и сами марки.
+      pointProjections: { x: { color: "#ef4e23" }, y: { color: "#ef4e23" } }
     }},
     "antiqua": { name: "Антиква", style: {
       padding: { chart: { ...CHART_DOC_PADDING } },
       markColor: "#808080",
-      barGap: { mode: "gap", unit: "percent", value: 30, fixedWidth: 24 },
+      barGap: { mode: "fixed", unit: "percent", value: 30, fixedWidth: 10 },
+      scheme: "greys",
       legend: { ...TEMPLATE_LEGEND_DEFAULT },
       text: antiquaTextStyle()
     }}
@@ -5810,12 +5984,15 @@
     return m;
   }
 
+  let lastTemplateFileItems = null;   // для повторной сборки списка при смене языка
   function renderTemplateOptions(fileItems){
+    lastTemplateFileItems = fileItems;
     const sel = $("#templateSelect");
+    const keep = sel.value;
     let html = `<option value="">— выберите шаблон —</option>`;
     html += `<optgroup label="Встроенные">`;
     for (const [key, t] of Object.entries(BUILTIN_TEMPLATES))
-      html += `<option value="b:${key}">${t.name}</option>`;
+      html += `<option value="b:${key}">${escHtml(L(t.name))}</option>`;
     html += `</optgroup>`;
     if (fileItems && fileItems.length) {
       html += `<optgroup label="Из папки templates">`;
@@ -5827,33 +6004,36 @@
       html += `</optgroup>`;
     }
     sel.innerHTML = html;
+    if (keep) sel.value = keep;
   }
 
   async function loadTemplatesManifest(){
     const embedded = embeddedTemplatesManifest();
     if (embedded) {
       renderTemplateOptions(embedded.templates);
-      $("#tplNote").textContent = `Из папки templates: ${embedded.templates.length} (без сервера)`;
+      $("#tplNote").textContent = L("Из папки templates: {n} (без сервера)", { n: embedded.templates.length });
       return;
     }
     renderTemplateOptions(null);
     try {
       const res = await fetch("templates/manifest.json", { cache:"no-store" });
-      if (!res.ok) throw new Error("нет манифеста");
+      if (!res.ok) throw new Error(L("нет манифеста"));
       const data = await res.json();
       const items = Array.isArray(data) ? data : (data.templates || []);
       renderTemplateOptions(items);
-      $("#tplNote").textContent = items.length ? `Плюс из папки templates: ${items.length}` : "Встроенные шаблоны доступны";
+      $("#tplNote").textContent = items.length
+        ? L("Плюс из папки templates: {n}", { n: items.length })
+        : L("Встроенные шаблоны доступны");
     } catch(e){
-      $("#tplNote").textContent = "Добавьте шаблоны в templates/ и выполните gen-templates-manifest. Или «Импорт…».";
+      $("#tplNote").textContent = L("Добавьте шаблоны в templates/ и выполните gen-templates-manifest. Или «Импорт…».");
     }
   }
 
   async function selectTemplate(value){
     if (!value) return;
     if (value.startsWith("b:")) {
-      const t = BUILTIN_TEMPLATES[value.slice(2)];
-      if (t) { applyTemplate(t); setStatus("Шаблон применён: " + t.name); }
+      const builtin = BUILTIN_TEMPLATES[value.slice(2)];
+      if (builtin) { applyTemplate(builtin); setStatus(L("Шаблон применён: ") + L(builtin.name)); }
       return;
     }
     const file = value.replace(/^f:/, "");
@@ -5862,7 +6042,7 @@
     if (fromEmbed) {
       applyTemplate(fromEmbed);
       const name = embedded.templates.find(it => it.file === file)?.name || file;
-      setStatus("Шаблон применён: " + name);
+      setStatus(L("Шаблон применён: ") + name);
       return;
     }
     try {
@@ -5870,14 +6050,14 @@
       const res = await fetch(url, { cache:"no-store" });
       const tpl = await res.json();
       applyTemplate(tpl);
-      setStatus("Шаблон применён: " + file);
-    } catch(e){ setStatus("Не удалось загрузить шаблон: " + e.message); }
+      setStatus(L("Шаблон применён: ") + file);
+    } catch(e){ setStatus(L("Не удалось загрузить шаблон: ") + e.message); }
   }
   // Сброс оформления к значениям по умолчанию (размер — 512×512).
   function resetTemplate(){
     applyTemplate({});
     $("#templateSelect").value = "";
-    setStatus("Оформление сброшено");
+    setStatus(L("Оформление сброшено"));
   }
   function bindTemplateUI(){
     $("#templateSelect").addEventListener("change", e => selectTemplate(e.target.value));
@@ -5912,7 +6092,7 @@
   function panelSectionTitle(section){
     return section.querySelector(".panel-section-head-text")?.textContent?.trim()
       || section.querySelector(".title")?.textContent?.trim()
-      || "Раздел";
+      || L("Раздел");
   }
   function panelGroupCollapseId(group){
     const sec = group.closest(".section");
@@ -6063,7 +6243,7 @@
       if (s.id === "rightPanelJumpSection") return false;
       return s.style.display !== "none" && s.offsetParent !== null;
     });
-    sel.innerHTML = `<option value="">— перейти к разделу —</option>` +
+    sel.innerHTML = `<option value="">${escHtml(L("— перейти к разделу —"))}</option>` +
       sections.map(s => {
         const title = panelSectionTitle(s);
         const id = s.id || (s.id = "rightSec-" + title.replace(/\W+/g, "-").toLowerCase());
@@ -6130,7 +6310,7 @@
       const val = getPath(state, path);
       if (type === "bool") el.checked = !!val;
       else if (el.type === "color") syncColorHexField(el, val);
-      else el.value = val;
+      else el.value = val ?? "";
     }
     syncColorUI();
     $("#dataset").value = state.dataset;
@@ -6170,10 +6350,10 @@
     const lx = document.getElementById("pointProjLabelX");
     const ly = document.getElementById("pointProjLabelY");
     if (isPt) {
-      const px = axisTitleForPointAxis("x") || pointVisualXYFields().x || "нижняя";
-      const py = axisTitleForPointAxis("y") || pointVisualXYFields().y || "левая";
-      if (lx) lx.textContent = `На ось X (${px}) — вертикальные`;
-      if (ly) ly.textContent = `На ось Y (${py}) — горизонтальные`;
+      const px = axisTitleForPointAxis("x") || pointVisualXYFields().x || L("нижняя");
+      const py = axisTitleForPointAxis("y") || pointVisualXYFields().y || L("левая");
+      if (lx) lx.textContent = L("На ось X ({px}) — вертикальные", { px });
+      if (ly) ly.textContent = L("На ось Y ({py}) — горизонтальные", { py });
     }
     const swapEl = document.getElementById("pointSwapAxes");
     if (swapEl) swapEl.checked = !!state.fields.pointSwapAxes;
@@ -6235,7 +6415,6 @@
             if (v === "heatmap") {
               if (prevChartType !== "heatmap") {
                 if (!dataFitsHeatmap()) applyHeatmapSampleData();
-                applyHeatmapAxisDefaults();
                 applyGeneric();
               }
               ensureHeatmapSeriesField();
@@ -6261,7 +6440,7 @@
   function refreshDatasetSelect(){
     const sel = $("#dataset");
     let opts = Object.entries(SAMPLES).map(([k,v]) => `<option value="${k}">${v.name}</option>`).join("");
-    if (state.csvValues?.length) opts += `<option value="__csv__">Мои данные (CSV)</option>`;
+    if (state.csvValues?.length) opts += `<option value="__csv__">${escHtml(L("Мои данные (CSV)"))}</option>`;
     sel.innerHTML = opts;
     sel.value = state.dataset;
   }
@@ -6277,12 +6456,12 @@
     }
     fx.value = state.fields.x; fy.value = state.fields.y;
     if (fs) {
-      fs.innerHTML = `<option value="">— нет —</option>` + optHtml;
+      fs.innerHTML = `<option value="">${escHtml(L("— нет —"))}</option>` + optHtml;
       if (state.fields.series && !cols.includes(state.fields.series)) state.fields.series = "";
       fs.value = state.fields.series || "";
     }
     if (fpl) {
-      fpl.innerHTML = `<option value="">— нет —</option>` + optHtml;
+      fpl.innerHTML = `<option value="">${escHtml(L("— нет —"))}</option>` + optHtml;
       if (state.fields.pointLabel && !cols.includes(state.fields.pointLabel)) state.fields.pointLabel = "";
       fpl.value = state.fields.pointLabel || "";
     }
@@ -6329,8 +6508,32 @@
 
   /* ════════════════════════ МАСШТАБ И ПЕРЕМЕЩЕНИЕ ХОЛСТА ════════════════════════ */
   const ZOOM_MIN = 0.1, ZOOM_MAX = 5, ZOOM_STEP = 0.1;
+  const ZOOM_WHEEL_SENS = 0.0012;
+  const ZOOM_PINCH_SENS = 0.012;
   let zoom = 1, panX = 0, panY = 0;
   let spaceDown = false, dragging = false, dragStart = null;
+
+  function clampZoom(z){
+    return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(z * 100) / 100));
+  }
+  function zoomByWheel(deltaY, pinch){
+    const sens = pinch ? ZOOM_PINCH_SENS : ZOOM_WHEEL_SENS;
+    const next = clampZoom(zoom * Math.exp(-deltaY * sens));
+    if (next === zoom) return;
+    zoom = next;
+    applyTransform();
+  }
+  function beginCanvasPan(content, clientX, clientY){
+    dragging = true;
+    dragStart = { x: clientX - panX, y: clientY - panY };
+    content.classList.add("canvas-pan", "panning");
+  }
+  function endCanvasPan(content){
+    if (!dragging) return;
+    dragging = false;
+    content.classList.remove("panning", "canvas-pan");
+    if (spaceDown) content.classList.add("space-pan");
+  }
 
   function applyWorkspaceBg(){
     const w = state.workspaceBg || defaultState().workspaceBg;
@@ -6408,24 +6611,114 @@
     });
     window.addEventListener("keyup", e => {
       if (e.code === "Space") {
-        spaceDown = false; dragging = false;
-        content.classList.remove("space-pan", "panning");
+        spaceDown = false;
+        content.classList.remove("space-pan");
+        if (!dragging) content.classList.remove("panning", "canvas-pan");
       }
     });
+    content.addEventListener("wheel", e => {
+      if (isTypingTarget(document.activeElement)) return;
+      if (e.target.closest(".zoom-controls")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (Math.abs(e.deltaY) > 0.5) zoomByWheel(e.deltaY, e.ctrlKey);
+      if (Math.abs(e.deltaX) > 0.5) {
+        panX -= e.deltaX;
+        applyTransform();
+      }
+    }, { passive: false, capture: true });
     content.addEventListener("mousedown", e => {
-      if (!spaceDown || e.button !== 0) return;
-      dragging = true; dragStart = { x: e.clientX - panX, y: e.clientY - panY };
-      content.classList.add("panning"); e.preventDefault();
+      const panBtn = (spaceDown && e.button === 0) || e.button === 1;
+      if (!panBtn) return;
+      beginCanvasPan(content, e.clientX, e.clientY);
+      e.preventDefault();
+    });
+    content.addEventListener("auxclick", e => {
+      if (e.button === 1) e.preventDefault();
     });
     window.addEventListener("mousemove", e => {
       if (!dragging) return;
       panX = e.clientX - dragStart.x; panY = e.clientY - dragStart.y;
       applyTransform();
     });
-    window.addEventListener("mouseup", () => {
-      if (dragging) { dragging = false; content.classList.remove("panning"); }
-    });
+    window.addEventListener("mouseup", () => endCanvasPan(content));
     applyTransform();
+  }
+
+  /* ════════════════════════ ЯЗЫК ИНТЕРФЕЙСА ════════════════════════ */
+  function syncLangSwitch(){
+    document.querySelectorAll("#langSwitch button[data-lang]").forEach(btn => {
+      btn.classList.toggle("on", btn.dataset.lang === i18nLang());
+    });
+  }
+  // Термины предустановленных наборов (имена полей и рядов) — вместе с языком.
+  function remapSampleTermsInState(to){
+    const map = v => i18nDataTerm(v, to);
+    const f = state.fields;
+    f.x = map(f.x);
+    f.y = map(f.y);
+    if (f.series) f.series = map(f.series);
+    if (f.pointLabel) f.pointLabel = map(f.pointLabel);
+    for (const key of ["axisTitleX", "axisTitleY"]) {
+      if (state.texts[key]) state.texts[key] = map(state.texts[key]);
+    }
+    for (const key of ["seriesColors", "seriesOpacity"]) {
+      const src = state.style[key] || {};
+      const out = {};
+      for (const k in src) out[map(k)] = src[k];
+      state.style[key] = out;
+    }
+  }
+  function setLanguage(lang){
+    const next = lang === "ru" ? "ru" : "en";
+    if (next === i18nLang()) return;
+    const prev = defaultState();
+    i18nSetLang(next);
+    i18nStoreLang(next);
+    SAMPLES = SAMPLES_BY_LANG[next];
+    const now = defaultState();
+    // Оставшиеся по умолчанию тексты диаграммы переводим вместе с интерфейсом.
+    for (const key of ["title", "subtitle", "footerCopyright", "footerSources"]) {
+      if ((state.texts[key] || "") === (prev.texts[key] || "")) state.texts[key] = now.texts[key];
+    }
+    if (state.dataset !== "__csv__") remapSampleTermsInState(next);
+    i18nApplyDocumentMeta();
+    i18nApplyDom(document.body);
+    syncLangSwitch();
+    renderAppMetaFooter();
+    refreshDatasetSelect();
+    refreshFieldSelects();
+    rebuildLocalizedPanels();
+    applyStateToControls();
+    syncChartTypeUI();
+    refreshRightPanelJump();
+    plotW = plotH = 0;
+    render({ immediate: true });
+  }
+  // Блоки, которые код собирает уже переведёнными: обход DOM их не обновит.
+  function rebuildLocalizedPanels(){
+    buildTextCharUI();
+    buildEndMarkers();
+    renderTemplateOptions(lastTemplateFileItems);
+  }
+  // Язык из открываемого проекта: состояние в нём уже на своём языке, переносить термины не нужно.
+  function applyProjectLanguage(lang){
+    const next = lang === "ru" ? "ru" : "en";
+    if (next === i18nLang()) return;
+    i18nSetLang(next);
+    i18nStoreLang(next);
+    SAMPLES = SAMPLES_BY_LANG[next];
+    i18nApplyDocumentMeta();
+    i18nApplyDom(document.body);
+    rebuildLocalizedPanels();
+    syncLangSwitch();
+    renderAppMetaFooter();
+  }
+  function bindLangSwitch(){
+    document.getElementById("langSwitch")?.addEventListener("click", e => {
+      const btn = e.target.closest("button[data-lang]");
+      if (btn) setLanguage(btn.dataset.lang);
+    });
   }
 
   /* ════════════════════════ ИНИЦИАЛИЗАЦИЯ ════════════════════════ */
@@ -6461,6 +6754,13 @@
     }
     applyStateToControls();
     syncChartTypeUI();
+    // Перевод после сборки панелей; далее новые узлы переводит наблюдатель.
+    i18nApplyDocumentMeta();
+    i18nApplyDom(document.body);
+    i18nObserveDom(document.querySelector(".app"));
+    syncLangSwitch();
+    bindLangSwitch();
+    setStatus(L("Готово"));
     await ensureSpecFonts();
     render();
     if (document.fonts?.ready) {
