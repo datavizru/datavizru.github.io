@@ -573,9 +573,9 @@
     <!-- ░░ КОНТЕНТ ░░ -->
     <main class="content">
       <div class="zoom-controls">
-        <button id="zoomOut" title="Уменьшить (−10%). Колесо мыши или pinch на трекпаде">−</button>
+        <button id="zoomOut" title="Уменьшить (−10%). Масштаб колесом: ⌘/Ctrl + прокрутка или pinch на трекпаде">−</button>
         <span class="zlabel" id="zoomLabel" title="Сбросить до 100%">100%</span>
-        <button id="zoomIn" title="Увеличить (+10%). Колесо мыши или pinch на трекпаде">+</button>
+        <button id="zoomIn" title="Увеличить (+10%). Масштаб колесом: ⌘/Ctrl + прокрутка или pinch на трекпаде">+</button>
         <span class="zsep"></span>
         <button id="zoomReset" title="Сбросить до 100%">⟲</button>
       </div>
@@ -2802,8 +2802,10 @@
     if (cfg.unit === "px") return Math.max(1, v);
     return Math.max(1, size * (v / 100));
   }
+  // Высота строчного блока — как в CSS-потоке превью: точная, без округления
+  // вверх, иначе блоки под заголовком уезжают на доли пикселя.
   function lineBlock(fontSize, text, lh){
-    return Math.ceil(lineHeightPx(fontSize, lh)) * countLines(text);
+    return lineHeightPx(fontSize, lh) * countLines(text);
   }
 
   // Фактическая толщина начертания (число); bold — отдельный переключатель в UI.
@@ -3016,6 +3018,27 @@
       color: withAlpha(T.color, T.opacity),
       lineHeight: lineHeightPx(T.size || 12, T.lineHeight) + "px"
     };
+  }
+  // Восходящая и нисходящая части шрифта в пикселях — те же метрики, по которым
+  // движок верстки строит строку в превью.
+  function textStyleFontMetrics(T){
+    const fam = chartFontFamily(T.font || DEFAULT_CHART_FONT);
+    const w = T.weight != null ? T.weight : regularWeightFor(T.font || DEFAULT_CHART_FONT);
+    _measureCtx.font = `${T.italic ? "italic " : ""}${w} ${T.size || 12}px "${fam}", sans-serif`;
+    const m = _measureCtx.measureText("Hxg");
+    const a = m.fontBoundingBoxAscent, d = m.fontBoundingBoxDescent;
+    if (!isFinite(a) || !isFinite(d) || a <= 0) return null;
+    return { ascent: a, descent: d };
+  }
+  // Базовая линия первой строки текстового блока относительно его верха.
+  // В превью её ставит CSS: полуинтерлиньяж (округляется вниз) плюс восходящая
+  // часть шрифта. Кегль здесь не годится — на нём экспорт уезжал вниз на 1–6 px.
+  function firstBaselineY(T, padTop){
+    const top = Math.max(0, padTop || 0);
+    const m = textStyleFontMetrics(T);
+    if (!m) return top + (T.size || 12);
+    const lead = lineHeightPx(T.size || 12, T.lineHeight) - (m.ascent + m.descent);
+    return top + m.ascent + Math.floor(lead / 2);
   }
   function measureTextBlockHeight(text, T, maxWidth){
     const wrapped = wrapText(text, { font: T.font, size: T.size, weight: tw(T), bold: T.bold, italic: T.italic }, maxWidth);
@@ -3237,9 +3260,10 @@
       const hasLt = !!lt && (isHeatmap(state.chartType) ? state.style.heatmap?.legendTitleShow !== false : true);
       let bodyH = 0;
       if (isHeatmap(state.chartType)) {
-        bodyH = 14 + (T.legendLabel.size || 11) + 4;
+        // Полоса градиента (14 px) + отступ (4 px) + строка подписей min/max.
+        bodyH = 18 + lineHeightPx(T.legendLabel.size || 12, T.legendLabel.lineHeight);
       } else if (seriesField()) {
-        bodyH = measureSeriesLegendBlockHeight(seriesField(), T.legendLabel, frameContentW) + 4;
+        bodyH = measureSeriesLegendBlockHeight(seriesField(), T.legendLabel, frameContentW);
       }
       if (hasLt) bodyH += measureTextBlockHeight(lt, T.legendTitle, frameContentW) + (lp.titleGap || 0);
       legend = (lp.top || 0) + bodyH + (lp.bottom || 0);
@@ -3836,7 +3860,7 @@
     const size = T.size || 12;
     const anchor = svgTextAnchor(T.align);
     const tx = T.align === "center" ? x + width / 2 : T.align === "right" ? x + width : x;
-    const y0 = y + (padTop || 0) + size;
+    const y0 = y + firstBaselineY(T, padTop);
     const fam = svgFontFamilyAttr(T.font);
     const fill = escSvgAttr(withAlpha(T.color, T.opacity));
     const tspans = lines.map((line, i) =>
@@ -3860,7 +3884,7 @@
     const lh = lineHeightPx(T.size || 12, T.lineHeight);
     const size = T.size || 12;
     const fam = svgFontFamilyAttr(T.font);
-    const y0 = y + (padTop || 0) + size;
+    const y0 = y + firstBaselineY(T, padTop);
     let body = "";
     lines.forEach((lineEntries, li) => {
       const lineW = measureLegendLineWidth(lineEntries, T);
@@ -3909,7 +3933,7 @@
     const fill = escSvgAttr(withAlpha(T.color, T.opacity));
     let out = `<defs><linearGradient id="${gradId}" x1="0" y1="0" x2="1" y2="0">${stopsSvg}</linearGradient></defs>`;
     out += `<rect x="${gradX}" y="${gradY}" width="${gradLen}" height="14" fill="url(#${gradId})"/>`;
-    const ly = gradY + 18 + (T.size || 11);
+    const ly = gradY + 18 + firstBaselineY(T, 0);
     out += `<text class="chart-export-text" x="${gradX}" y="${ly}" font-family="${fam}" font-size="${T.size || 11}" fill="${fill}">${escSvgText(String(min))}</text>`;
     out += `<text class="chart-export-text" x="${gradX + gradLen}" y="${ly}" text-anchor="end" font-family="${fam}" font-size="${T.size || 11}" fill="${fill}">${escSvgText(String(max))}</text>`;
     return out;
@@ -4022,11 +4046,10 @@
     const lines = svgChromeTextLines(text, T, width);
     if (!lines.length) return;
     const lh = lineHeightPx(T.size || 12, T.lineHeight);
-    const size = T.size || 12;
     canvasSetTextStyle(ctx, T);
     ctx.textAlign = T.align === "center" ? "center" : T.align === "right" ? "right" : "left";
     const tx = T.align === "center" ? x + width / 2 : T.align === "right" ? x + width : x;
-    let ty = y + (padTop || 0) + size;
+    let ty = y + firstBaselineY(T, padTop);
     lines.forEach(line => {
       ctx.fillText(line, tx, ty);
       ty += lh;
@@ -4050,8 +4073,7 @@
     if (!items.length) return;
     const lines = wrapSeriesLegendItemLines(items, T, width);
     const lh = lineHeightPx(T.size || 12, T.lineHeight);
-    const size = T.size || 12;
-    const y0 = y + (padTop || 0) + size;
+    const y0 = y + firstBaselineY(T, padTop);
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     lines.forEach((lineEntries, li) => {
@@ -4087,7 +4109,7 @@
     ctx.fillStyle = g;
     ctx.fillRect(gradX, gradY, gradLen, 14);
     canvasSetTextStyle(ctx, T);
-    const ly = gradY + 18 + (T.size || 11);
+    const ly = gradY + 18 + firstBaselineY(T, 0);
     ctx.textAlign = "left";
     ctx.fillText(String(min), gradX, ly);
     ctx.textAlign = "right";
@@ -5901,6 +5923,9 @@
     if (tpl.texts) {
       for (const k in tpl.texts) state.texts[k] = tpl.texts[k];
     }
+    if (tpl.docGrid) {
+      state.docGrid = { ...defaultState().docGrid, ...tpl.docGrid };
+    }
     if (state.style.hideAxisTitles) {
       state.texts.axisTitleX = "";
       state.texts.axisTitleY = "";
@@ -5910,8 +5935,9 @@
     ensureChartFontsLoaded().then(() => render({ fontRefresh: true }));
   }
   function saveTemplate(){
+    flushStateFromUI();
     const payload = { app:"make-your-chart-template", version:1, savedAt:new Date().toISOString(),
-                      size: state.size, style: state.style };
+                      size: state.size, style: state.style, docGrid: state.docGrid };
     downloadBlob(JSON.stringify(payload, null, 2), "chart-style-template.json", "application/json");
     setStatus(L("Шаблон сохранён"));
   }
@@ -6523,6 +6549,13 @@
     zoom = next;
     applyTransform();
   }
+  // Zoom колесом: ⌘ на macOS, Ctrl на Windows/Linux; pinch на трекпаде (macOS → ctrlKey).
+  function wheelZoomModifier(e){
+    return e.metaKey || e.ctrlKey;
+  }
+  function wheelPinchZoom(e){
+    return e.ctrlKey && !e.metaKey && /Mac|iPod|iPhone|iPad/.test(navigator.platform || "");
+  }
   function beginCanvasPan(content, clientX, clientY){
     dragging = true;
     dragStart = { x: clientX - panX, y: clientY - panY };
@@ -6621,10 +6654,14 @@
       if (e.target.closest(".zoom-controls")) return;
       e.preventDefault();
       e.stopPropagation();
-      if (Math.abs(e.deltaY) > 0.5) zoomByWheel(e.deltaY, e.ctrlKey);
-      if (Math.abs(e.deltaX) > 0.5) {
-        panX -= e.deltaX;
-        applyTransform();
+      if (Math.abs(e.deltaY) <= 0.5 && Math.abs(e.deltaX) <= 0.5) return;
+      if (wheelZoomModifier(e)) {
+        zoomByWheel(e.deltaY, wheelPinchZoom(e));
+      } else {
+        let moved = false;
+        if (Math.abs(e.deltaX) > 0.5) { panX -= e.deltaX; moved = true; }
+        if (Math.abs(e.deltaY) > 0.5) { panY -= e.deltaY; moved = true; }
+        if (moved) applyTransform();
       }
     }, { passive: false, capture: true });
     content.addEventListener("mousedown", e => {

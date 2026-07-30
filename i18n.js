@@ -125,8 +125,8 @@ const I18N_UI = {
   "Проект": "Project",
 
   /* ── Масштаб холста ── */
-  "Уменьшить (−10%). Колесо мыши или pinch на трекпаде": "Zoom out (−10%). Mouse wheel or trackpad pinch",
-  "Увеличить (+10%). Колесо мыши или pinch на трекпаде": "Zoom in (+10%). Mouse wheel or trackpad pinch",
+  "Уменьшить (−10%). Масштаб колесом: ⌘/Ctrl + прокрутка или pinch на трекпаде": "Zoom out (−10%). Wheel zoom: ⌘/Ctrl + scroll or trackpad pinch",
+  "Увеличить (+10%). Масштаб колесом: ⌘/Ctrl + прокрутка или pinch на трекпаде": "Zoom in (+10%). Wheel zoom: ⌘/Ctrl + scroll or trackpad pinch",
   "Сбросить до 100%": "Reset to 100%",
 
   /* ── Правая панель: навигация и шаблоны ── */
