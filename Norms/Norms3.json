@@ -1,7 +1,7 @@
 {
   "app": "make-your-chart-template",
   "version": 1,
-  "savedAt": "2026-07-30T12:38:21.855Z",
+  "savedAt": "2026-07-30T12:43:09.931Z",
   "size": {
     "width": 640,
     "height": 640
@@ -474,5 +474,11 @@
         "bottom": 7
       }
     }
+  },
+  "docGrid": {
+    "show": true,
+    "color": "#c8c8c3",
+    "opacity": 0.45,
+    "cellSize": 10
   }
 }
