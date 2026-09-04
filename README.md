@@ -169,7 +169,7 @@ node gen-tasks-examples.mjs    # → Examples/Tasks/ (the shipped copy lives in 
 
 ## License and feedback
 
-[MIT License](LICENSE). Author: **Alexey Novichkov**. Current version: **0.0.6** (alpha).
+[MIT License](LICENSE). Author: **Alexey Novichkov**. Current version: **0.1.0** (beta).
 
 Third-party fonts in `Fonts/` and fonts loaded from Google Fonts are governed by their own licenses.
 
@@ -336,7 +336,7 @@ node gen-tasks-examples.mjs    # → Examples/Tasks/ (готовый набор 
 
 ## Лицензия и обратная связь
 
-[MIT License](LICENSE). Автор: **Алексей Новичков**. Текущая версия: **0.0.6** (alpha).
+[MIT License](LICENSE). Автор: **Алексей Новичков**. Текущая версия: **0.1.0** (beta).
 
 Права на сторонние шрифты в `Fonts/` и шрифты из Google Fonts регулируются их собственными лицензиями.
 

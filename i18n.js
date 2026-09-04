@@ -111,7 +111,9 @@ const I18N_UI = {
   "Футер · источники": "Footer · sources",
   "Подзаголовок диаграммы": "Chart subtitle",
   "Источник: тестовые данные": "Source: sample data",
-  "© Визуализируй свои данные. 2026": "© Visualize Your Data. 2026",
+  "© Визуализируй свои данные. 2026 · GitHub: {githubUrl} · {bugLabel}: {issuesUrl}":
+    "© Visualize Your Data. 2026 · GitHub: {githubUrl} · {bugLabel}: {issuesUrl}",
+  "Сообщить о баге": "Report a bug",
 
   /* ── Спецсимволы в текстах ── */
   "перенос строки": "line break",
@@ -410,8 +412,8 @@ const I18N_UI = {
   "нет манифеста": "no manifest",
 
   /* ── Подпись в футере страницы ── */
-  "© 2026 · Алексей Новичков · v{v} (alpha) · MIT · {github} · Счастье для всех, даром, и пусть никто не уйдет обиженный!":
-    "© 2026 · Aleksei Novichkov · v{v} (alpha) · MIT · {github} · Happiness for everyone, free of charge, and let no one be left behind!"
+  "© 2026 · Алексей Новичков · v{v} (beta) · MIT · {github} · {bugReport} · Счастье для всех, даром, и пусть никто не уйдет обиженный!":
+    "© 2026 · Aleksei Novichkov · v{v} (beta) · MIT · {github} · {bugReport} · Happiness for everyone, free of charge, and let no one be left behind!"
 };
 
 /* Блоки с внутренней разметкой (<code>) переводятся целиком по data-i18n-html. */
