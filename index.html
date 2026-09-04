@@ -3069,6 +3069,9 @@
   function textAlignCss(align){
     return align === "center" ? "center" : align === "right" ? "right" : "left";
   }
+  function chromeBlockFlexAlign(align){
+    return align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
+  }
   function chromeCssFont(T){
     const fam = chartFontFamily(T.font || DEFAULT_CHART_FONT);
     const w = T.weight != null ? T.weight : regularWeightFor(T.font || DEFAULT_CHART_FONT);
@@ -3246,11 +3249,13 @@
     const grad = heatmapGradientCss(valField);
     const { min, max } = heatmapScaleExtent(valField);
     const T = state.style.text.legendLabel;
+    const blockW = `width:${gradLen}px;max-width:100%;`;
     const labels = `<span style="font-size:${T.size}px;color:${withAlpha(T.color, T.opacity)};">${escHtml(String(min))}</span>`
       + `<span style="flex:1;"></span>`
       + `<span style="font-size:${T.size}px;color:${withAlpha(T.color, T.opacity)};">${escHtml(String(max))}</span>`;
-    return `<div class="chart-legend-typo"><div class="chart-legend-hm-gradient" style="width:${gradLen}px;max-width:100%;background:${grad};"></div>`
-      + `<div style="display:flex;justify-content:space-between;margin-top:4px;width:${gradLen}px;max-width:100%;">${labels}</div></div>`;
+    return `<div class="chart-legend-typo" style="display:flex;flex-direction:column;align-items:${chromeBlockFlexAlign(T.align)};">`
+      + `<div class="chart-legend-hm-gradient" style="${blockW}background:${grad};"></div>`
+      + `<div style="display:flex;justify-content:space-between;margin-top:4px;${blockW}">${labels}</div></div>`;
   }
   function forceChartFrameReflow(){
     const frame = document.getElementById("chartFrame");
