@@ -370,7 +370,6 @@
       display:block; max-width:100%; max-height:100%;
     }
     .chart-chrome__inner { width:100%; box-sizing:border-box; }
-    .chart-chrome--footer a { color:inherit; text-decoration:underline; }
     .chart-legend-typo { white-space:normal; word-break:break-word; }
     .chart-legend-body { white-space:normal; }
     .chart-legend-line { display:block; }
@@ -928,17 +927,7 @@
       { v: APP_VERSION, github: gh, bugReport: bug });
   }
   function appFooterCopyrightLine(){
-    return L("© Визуализируй свои данные. 2026 · GitHub: {githubUrl} · {bugLabel}: {issuesUrl}",
-      { githubUrl: APP_GITHUB_URL, bugLabel: L("Сообщить о баге"), issuesUrl: APP_ISSUES_URL });
-  }
-  function linkifyAppFooterLinks(html){
-    let safe = String(html);
-    for (const url of [APP_ISSUES_URL, APP_GITHUB_URL]) {
-      if (safe.includes(url)) {
-        safe = safe.split(url).join(`<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
-      }
-    }
-    return safe;
+    return L("© Визуализируй свои данные. 2026");
   }
   function renderAppMetaFooter(){
     const el = document.getElementById("appMeta");
@@ -3343,7 +3332,7 @@
     setChromeBlock($("#chromeComment"), commentTxt ? escHtml(commentTxt).replace(/\n/g, "<br>") : "",
       p.comment.top, p.comment.bottom, T.comment);
     const footHtml = footLines.length
-      ? footLines.map(l => linkifyAppFooterLinks(escHtml(l))).join("<br>")
+      ? footLines.map(l => escHtml(l)).join("<br>")
       : "";
     setChromeBlock($("#chromeFooter"), footHtml, p.footer.top, p.footer.bottom, T.footer);
 
@@ -6799,8 +6788,7 @@
     buildTextStyles();
     const foot = state.texts.footerCopyright?.trim() || "";
     const legacyFooters = ["© 2026 Ваша компания", /^© \d{4} Алексей Новичков/i, /· v[\d.]+\s*·\s*MIT/i,
-      "© Визуализируй свои данные. 2026", "© Visualize Your Data. 2026",
-      /^© (Визуализируй свои данные|Visualize Your Data)\. 2026 · GitHub: https:\/\/github\.com\/datavizru\/datavizru\.github\.io$/];
+      /^© (Визуализируй свои данные|Visualize Your Data)\. 2026 · GitHub:/];
     if (!foot || legacyFooters.some(x => typeof x === "string" ? foot === x : x.test(foot))) {
       state.texts.footerCopyright = appFooterCopyrightLine();
     }

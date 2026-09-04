@@ -111,8 +111,7 @@ const I18N_UI = {
   "Футер · источники": "Footer · sources",
   "Подзаголовок диаграммы": "Chart subtitle",
   "Источник: тестовые данные": "Source: sample data",
-  "© Визуализируй свои данные. 2026 · GitHub: {githubUrl} · {bugLabel}: {issuesUrl}":
-    "© Visualize Your Data. 2026 · GitHub: {githubUrl} · {bugLabel}: {issuesUrl}",
+  "© Визуализируй свои данные. 2026": "© Visualize Your Data. 2026",
   "Сообщить о баге": "Report a bug",
 
   /* ── Спецсимволы в текстах ── */
