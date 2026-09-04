@@ -36,6 +36,14 @@ const I18N_UI = {
   "все": "all",
   "— нет —": "— none —",
 
+  /* ── Мобильная заглушка ── */
+  "Мобильная версия пока не поддерживается": "Mobile version is not supported yet",
+  "Редактор рассчитан на большой экран. Откройте его на компьютере — мобильная версия появится позже.":
+    "The editor is designed for a large screen. Open it on a desktop computer — a mobile version will come later.",
+  "Чтобы ознакомиться с проектом уже сейчас, загляните в репозиторий на GitHub.":
+    "To explore the project now, visit the GitHub repository.",
+  "Репозиторий на GitHub": "GitHub repository",
+
   /* ── Тип диаграммы ── */
   "Тип диаграммы": "Chart type",
   "Вид графика": "Chart kind",

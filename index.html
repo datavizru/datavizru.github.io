@@ -425,9 +425,69 @@
     .file-name { font-size:11px; color:var(--muted); margin-top:6px; word-break:break-all; }
 
     @media (max-width:1080px){ :root{ --side-w:248px; } }
+
+    /* ── Мобильная заглушка ── */
+    .mobile-gate {
+      display:none; position:fixed; inset:0; z-index:10000;
+      background:var(--canvas); padding:24px 20px; overflow-y:auto;
+      align-items:center; justify-content:center;
+    }
+    .mobile-gate__card {
+      width:100%; max-width:420px; background:var(--bg);
+      border:1px solid var(--border); border-radius:12px;
+      padding:28px 22px; box-shadow:0 8px 32px rgba(16,24,40,.08);
+    }
+    .mobile-gate__head {
+      display:flex; align-items:center; gap:12px; margin-bottom:18px;
+    }
+    .mobile-gate__head .logo {
+      width:32px; height:32px; flex:none; display:block; border-radius:8px;
+    }
+    .mobile-gate__title {
+      margin:0; font-size:16px; font-weight:600; letter-spacing:-0.01em; line-height:1.25;
+    }
+    .mobile-gate__lead {
+      margin:0 0 12px; font-size:15px; font-weight:600; line-height:1.45;
+    }
+    .mobile-gate__text {
+      margin:0 0 10px; font-size:14px; line-height:1.55; color:var(--muted);
+    }
+    .mobile-gate__btn {
+      display:flex; align-items:center; justify-content:center;
+      width:100%; margin-top:8px; padding:0 12px; height:44px;
+      border:1px solid #000; border-radius:0;
+      background:#000; color:#fff;
+      font-size:14px; font-weight:500; font-family:inherit;
+      text-align:center; text-decoration:none;
+      transition:background .12s, border-color .12s;
+    }
+    .mobile-gate__btn:hover { background:#222; border-color:#222; color:#fff; }
+    .mobile-gate__lang {
+      margin-top:18px; width:fit-content;
+    }
+    @media (max-width:900px){
+      .mobile-gate { display:flex; }
+      .app { display:none !important; }
+    }
   </style>
 </head>
 <body>
+  <div class="mobile-gate" id="mobileGate" aria-live="polite">
+    <div class="mobile-gate__card">
+      <div class="mobile-gate__head">
+        <img class="logo" src="./logo.svg" width="32" height="32" alt="" />
+        <h1 class="mobile-gate__title">Визуализируй свои данные</h1>
+      </div>
+      <p class="mobile-gate__lead">Мобильная версия пока не поддерживается</p>
+      <p class="mobile-gate__text">Редактор рассчитан на большой экран. Откройте его на компьютере — мобильная версия появится позже.</p>
+      <p class="mobile-gate__text">Чтобы ознакомиться с проектом уже сейчас, загляните в репозиторий на GitHub.</p>
+      <a class="mobile-gate__btn" href="https://github.com/datavizru/datavizru.github.io" target="_blank" rel="noopener noreferrer">Репозиторий на GitHub</a>
+      <div class="lang-switch mobile-gate__lang" id="langSwitchMobile" title="Язык интерфейса">
+        <button type="button" data-lang="en">ENG</button>
+        <button type="button" data-lang="ru">RUS</button>
+      </div>
+    </div>
+  </div>
   <div class="app">
 
     <!-- ░░ ХЕДЕР ░░ -->
@@ -6686,7 +6746,7 @@
 
   /* ════════════════════════ ЯЗЫК ИНТЕРФЕЙСА ════════════════════════ */
   function syncLangSwitch(){
-    document.querySelectorAll("#langSwitch button[data-lang]").forEach(btn => {
+    document.querySelectorAll(".lang-switch button[data-lang]").forEach(btn => {
       btn.classList.toggle("on", btn.dataset.lang === i18nLang());
     });
   }
@@ -6724,6 +6784,7 @@
     i18nApplyDocumentMeta();
     i18nApplyDom(document.body);
     syncLangSwitch();
+    if (isMobileViewport()) return;
     renderAppMetaFooter();
     refreshDatasetSelect();
     refreshFieldSelects();
@@ -6754,14 +6815,24 @@
     renderAppMetaFooter();
   }
   function bindLangSwitch(){
-    document.getElementById("langSwitch")?.addEventListener("click", e => {
-      const btn = e.target.closest("button[data-lang]");
-      if (btn) setLanguage(btn.dataset.lang);
+    document.querySelectorAll(".lang-switch").forEach(sw => {
+      sw.addEventListener("click", e => {
+        const btn = e.target.closest("button[data-lang]");
+        if (btn) setLanguage(btn.dataset.lang);
+      });
     });
+  }
+  function isMobileViewport(){
+    return window.matchMedia("(max-width: 900px)").matches;
   }
 
   /* ════════════════════════ ИНИЦИАЛИЗАЦИЯ ════════════════════════ */
   async function init(){
+    i18nApplyDocumentMeta();
+    i18nApplyDom(document.body);
+    syncLangSwitch();
+    bindLangSwitch();
+    if (isMobileViewport()) return;
     buildSchemeSelect();
     buildHeatmapSchemeSelect();
     bindHeatmapUI();
@@ -6795,11 +6866,9 @@
     applyStateToControls();
     syncChartTypeUI();
     // Перевод после сборки панелей; далее новые узлы переводит наблюдатель.
-    i18nApplyDocumentMeta();
     i18nApplyDom(document.body);
     i18nObserveDom(document.querySelector(".app"));
     syncLangSwitch();
-    bindLangSwitch();
     setStatus(L("Готово"));
     await ensureSpecFonts();
     render();
