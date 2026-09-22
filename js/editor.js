@@ -2732,6 +2732,8 @@
     const fontRefresh = !!opts.fontRefresh;
     const run = async () => {
       if (gen !== renderGen) return;
+      // Hidden mobile editor has no measurable plot area.
+      if (document.querySelector(".content")?.getClientRects().length === 0) return;
       try {
         applyDocGrid();
         await ensureSpecFonts();
@@ -5805,6 +5807,10 @@
     setupSidePanelCollapse();
     syncRightPanelStickyScrollMargin();
     bindZoom();
+    const mobileLayout = window.matchMedia("(max-width: 900px), (max-width: 1100px) and (pointer: coarse)");
+    mobileLayout.addEventListener("change", () => {
+      if (!mobileLayout.matches) render({ immediate: true });
+    });
     bindPlotResizeObserver();
     bindLocalFontsUI();
     bindAxisTitlesUI();

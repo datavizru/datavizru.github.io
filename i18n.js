@@ -12,6 +12,22 @@ const I18N_DEFAULT_LANG = "en";
 /* Надписи интерфейса: разметка, генерируемые панели, статусы, подсказки.
    {name} в статусах — подстановка через t(key, vars). */
 const I18N_UI = {
+  /* Mobile introduction */
+  "Данные → диаграмма → история": "Data → chart → story",
+  "Ваши данные. Ваше оформление.": "Your data. Your design.",
+  "Создавайте диаграммы для статей, отчётов и презентаций прямо в браузере. Загрузите CSV, настройте оформление и сохраните результат в PNG или SVG.": "Create charts for articles, reports and presentations right in your browser. Import a CSV, customize the design and export to PNG or SVG.",
+  "Редактор работает только на компьютере": "The editor is desktop-only",
+  "Откройте этот сайт на ноутбуке или настольном компьютере, чтобы создавать и редактировать диаграммы.": "Open this site on a laptop or desktop computer to create and edit charts.",
+  "Редактор диаграмм: русская версия интерфейса": "Chart editor with the Russian interface",
+  "Редактор диаграмм: английская версия интерфейса": "Chart editor with the English interface",
+  "Так выглядит редактор на компьютере": "A look at the desktop editor",
+  "От таблицы к диаграмме": "From table to chart",
+  "Столбцы, линии, области, точки и тепловые карты — выбирайте подходящий способ показать данные.": "Bars, lines, areas, scatter plots and heatmaps — choose the right way to show your data.",
+  "Оформление под вашу задачу": "Design for your needs",
+  "Настраивайте шрифты, цвета, оси, подписи и размеры. Сохраняйте проекты, чтобы продолжить позже.": "Customize fonts, colors, axes, labels and dimensions. Save your projects to pick up where you left off.",
+  "О проекте на GitHub": "About the project on GitHub",
+  "Бесплатный проект с открытым исходным кодом · MIT": "Free and open source · MIT",
+
   "Числовой формат": "Number format",
   "Разряды на осях": "Axis thousands separator",
   "Разряды в подписях значений": "Value label thousands separator",
