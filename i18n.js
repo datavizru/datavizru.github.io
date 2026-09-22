@@ -12,6 +12,19 @@ const I18N_DEFAULT_LANG = "en";
 /* Надписи интерфейса: разметка, генерируемые панели, статусы, подсказки.
    {name} в статусах — подстановка через t(key, vars). */
 const I18N_UI = {
+  "Числовой формат": "Number format",
+  "Разряды на осях": "Axis thousands separator",
+  "Разряды в подписях значений": "Value label thousands separator",
+  "Дробная часть на осях": "Axis decimal separator",
+  "Дробная часть в подписях значений": "Value label decimal separator",
+  "Без разделителя (12345)": "None (12345)",
+  "Авто (по языку интерфейса)": "Auto (interface language)",
+  "Пробел (12 345)": "Space (12 345)",
+  "Неразрывный пробел": "Non-breaking space",
+  "Узкий неразрывный пробел": "Narrow non-breaking space",
+  "Запятая (12,345)": "Comma (12,345)",
+  "Точка (12.345)": "Period (12.345)",
+
   /* ── Шапка и общее ── */
   "Визуализируй свои данные": "Visualize Your Data",
   "движок:": "engine:",

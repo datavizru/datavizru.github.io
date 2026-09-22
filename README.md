@@ -94,7 +94,7 @@ You need a modern browser (Chrome, Firefox, Safari, Edge) and an internet connec
 
 **Value labels**
 - Position for bars (outside/inside the tip, center, base), pixel offsets, marker with optional stroke.
-- Number format: decimal separator, thousands grouping, prefix and suffix.
+- Number format: independent decimal and thousands separators for axes and value labels in **Text → Number format**. Choose no grouping, spaces (regular, non-breaking, narrow), commas or periods. Auto follows the interface language: English uses `12,345.67`, Russian uses `12 345,67`. Prefix and suffix remain in the value-label panel.
 - For scatter plots: name, series, X and Y on separate lines, with per-line styling.
 
 **Color**
@@ -111,7 +111,11 @@ You need a modern browser (Chrome, Firefox, Safari, Edge) and an internet connec
 
 ```
 datavizru.github.io/
-├── index.html                  # the whole application: markup, styles, logic
+├── index.html                  # editor markup and script loading
+├── css/editor.css              # editor styles
+├── js/editor.js                # chart rendering, state, controls and export
+├── js/csv.js                   # CSV parser, independent of editor state
+├── tests/                      # CSV regression tests (node --test)
 ├── i18n.js                     # RU→EN dictionary and language switching
 ├── logo.svg
 ├── Examples/                   # sample CSV files
@@ -153,6 +157,24 @@ node gen-examples-csv.mjs      # → Examples/
 node gen-tasks-examples.mjs    # → Examples/Tasks/ (the shipped copy lives in Tasks/)
 ```
 
+## Development checks
+
+The preview uses SVG for sharp zooming. PNG export still renders separately at 2×/4×.
+For an in-browser export regression check, serve the repository and open
+`tests/renderer-check.html`, then click **Compare Canvas and SVG exports**.
+It compares SVG content and PNG pixels for bar, line and heatmap charts, including
+100% Canvas versus 200% SVG preview zoom. All comparisons should match.
+
+
+Run `node --test` (Node.js 18+) to check CSV import, numeric categories, bar sizing, number formatting and project compatibility. No dependencies need to be installed.
+Styles live in `css/editor.css`; application logic lives in `js/editor.js`.
+`js/csv.js` exposes `CsvParser.create({ read, translate })`: the editor supplies Vega's
+reader and a translator, then passes the current CSV settings to `parse(text, options)`.
+The parser falls back to its built-in reader if Vega cannot read the input.
+The scripts are classic scripts loaded in order, with `csv.js` before `editor.js`;
+keep this order to preserve direct `file://` use without a build step.
+Asset paths for fonts and templates remain relative to `index.html`.
+
 ## Publishing your own copy on GitHub Pages
 
 1. Push the repository to GitHub.
@@ -169,7 +191,7 @@ node gen-tasks-examples.mjs    # → Examples/Tasks/ (the shipped copy lives in 
 
 ## License and feedback
 
-[MIT License](LICENSE). Author: **Alexey Novichkov**. Current version: **0.1.0** (beta).
+[MIT License](LICENSE). Author: **Alexey Novichkov**. Current version: **0.1.1** (beta).
 
 Third-party fonts in `Fonts/` and fonts loaded from Google Fonts are governed by their own licenses.
 
@@ -278,7 +300,11 @@ npx --yes serve -p 8080
 
 ```
 datavizru.github.io/
-├── index.html                  # всё приложение: разметка, стили, логика
+├── index.html                  # разметка редактора и подключение скриптов
+├── css/editor.css              # стили редактора
+├── js/editor.js                # отрисовка, состояние, контролы и экспорт
+├── js/csv.js                   # CSV-парсер, независимый от состояния редактора
+├── tests/                      # регрессионные проверки CSV (node --test)
 ├── i18n.js                     # словарь RU→EN и переключение языка
 ├── logo.svg
 ├── Examples/                   # примеры CSV
@@ -320,6 +346,26 @@ node gen-examples-csv.mjs      # → Examples/
 node gen-tasks-examples.mjs    # → Examples/Tasks/ (готовый набор лежит в Tasks/)
 ```
 
+В левой панели **Текст → Числовой формат** можно независимо настроить разделители
+дробной части и разрядов для осей и подписей значений. Доступны отсутствие разделителя,
+обычный, неразрывный и узкий неразрывный пробелы, запятая и точка.
+Режим «Авто» следует языку интерфейса: ENG — `12,345.67`, RUS — `12 345,67`.
+В этом режиме дробный разделитель выбирается автоматически.
+Числовые категории столбчатых и леденцовых диаграмм размещаются равномерно в порядке данных;
+настройки зазоров работают и для годов. У линейных, площадных и точечных диаграмм
+числовые координаты сохраняют непрерывную шкалу.
+
+## Проверки при разработке
+
+Запустите `node --test` (Node.js 18+) для проверки импорта CSV, числовых категорий, толщины столбцов, формата чисел и совместимости проектов. Установка зависимостей не нужна.
+Стили находятся в `css/editor.css`, логика редактора — в `js/editor.js`.
+`js/csv.js` предоставляет `CsvParser.create({ read, translate })`: редактор передаёт
+функцию чтения Vega и переводчик, затем текущие настройки CSV в `parse(text, options)`.
+При ошибке чтения Vega парсер использует встроенный обработчик.
+Обычные скрипты подключаются по порядку: `csv.js` перед `editor.js`.
+Этот порядок сохраняет открытие через `file://` без сборки.
+Пути к шрифтам и шаблонам по-прежнему отсчитываются от `index.html`.
+
 ## Публикация своей копии на GitHub Pages
 
 1. Отправьте репозиторий на GitHub.
@@ -336,7 +382,7 @@ node gen-tasks-examples.mjs    # → Examples/Tasks/ (готовый набор 
 
 ## Лицензия и обратная связь
 
-[MIT License](LICENSE). Автор: **Алексей Новичков**. Текущая версия: **0.1.0** (beta).
+[MIT License](LICENSE). Автор: **Алексей Новичков**. Текущая версия: **0.1.1** (beta).
 
 Права на сторонние шрифты в `Fonts/` и шрифты из Google Fonts регулируются их собственными лицензиями.
 

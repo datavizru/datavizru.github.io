@@ -1,0 +1,71 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Renderer export regression check</title>
+<button id="run">Compare Canvas and SVG exports</button>
+<pre id="result">Ready</pre>
+<div id="images"></div>
+<iframe id="editor" src="../index.html" style="width:1400px;height:900px"></iframe>
+<script>
+const frame = document.getElementById('editor');
+document.getElementById('run').onclick = async () => {
+  const result = document.getElementById('result');
+  document.getElementById('run').disabled = true;
+  document.getElementById('images').replaceChildren();
+  result.textContent = 'Running';
+  try {
+    const report = await frame.contentWindow.eval(`(async () => {
+      await ensureSpecFonts();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const originalState = cloneState(state);
+      const originalZoom = zoom;
+      const originalEmbed = vegaEmbed;
+      let testRenderer = 'canvas';
+      vegaEmbed = (host, spec, opts) => originalEmbed(host, spec, {...opts, renderer:testRenderer});
+      const results = [];
+      try {
+      const captures = [];
+      for (const fixture of ['bar', 'heatmap', 'line']) {
+        state = defaultState();
+        if (fixture === 'heatmap') {
+          state.dataset = 'heatmap';
+        } else if (fixture === 'line') {
+          state.dataset = 'multi';
+        }
+        if (!SAMPLES[state.dataset]) throw new Error('Unknown dataset: ' + state.dataset);
+        state.fields = autoMapFields(Object.keys(currentValues()[0]));
+        state.chartType = fixture;
+        state.style.valueLabels.show = true;
+        applyStateToControls();
+        renderChartChrome();
+        const modes = {};
+        for (const renderer of ['canvas', 'svg']) {
+          testRenderer = renderer;
+          setZoom(renderer === "svg" ? 2 : 1);
+          const svg = await buildExportFrameSvg();
+          const png2 = (await rasterizeChartToPng(2)).canvas;
+          const png4 = (await rasterizeChartToPng(4)).canvas;
+          modes[renderer] = {svg, png2, png4, preview: !!document.querySelector("#viz " + renderer)};
+        }
+        const normalize = svg => svg.replace(/clip\\d+/g, 'clipID');
+        const comparePixels = (a, b) => {
+          const x = a.getContext('2d').getImageData(0,0,a.width,a.height).data;
+          const y = b.getContext('2d').getImageData(0,0,b.width,b.height).data;
+          let changed = 0;
+          for(let i=0;i<x.length;i++) if(x[i]!==y[i]) changed++;
+          return {width:a.width,height:a.height,changedChannels:changed};
+        };
+        const svgExport = await embedFontsInExportSvg(modes.svg.svg);
+        results.push({fixture, previewSvgAt200: modes.svg.preview, previewCanvasAt100: modes.canvas.preview, svgEqual:normalize(modes.canvas.svg)===normalize(modes.svg.svg),
+          svgSize: /width="512" height="512"/.test(modes.svg.svg), embeddedFonts:svgExport.embedded,
+          png2:comparePixels(modes.canvas.png2,modes.svg.png2), png4:comparePixels(modes.canvas.png4,modes.svg.png4)});
+        if(fixture==='bar') captures.push(modes.svg.png2.toDataURL());
+      }
+      return {results,captures};
+      } finally { vegaEmbed = originalEmbed; state = originalState; setZoom(originalZoom); applyStateToControls(); render({immediate:true}); }
+    })()`);
+    result.textContent = JSON.stringify(report.results, null, 2);
+    for(const src of report.captures) { const img=new Image(); img.src=src; img.width=512; document.getElementById('images').append(img); }
+  } catch(e) { result.textContent = e.stack; }
+  finally { document.getElementById('run').disabled = false; }
+};
+</script>
