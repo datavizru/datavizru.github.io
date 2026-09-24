@@ -346,6 +346,7 @@ const I18N_UI = {
   "У вершины снаружи": "Outside the end",
   "У вершины внутри": "Inside the end",
   "У основания": "At the base",
+  "У основания внутри": "Inside the base",
   "Сдвиг по горизонтали, px": "Horizontal offset, px",
   "Сдвиг по вертикали, px": "Vertical offset, px",
   "Числовой формат значений": "Number format",

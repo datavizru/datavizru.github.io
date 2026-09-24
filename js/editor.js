@@ -1527,6 +1527,7 @@
     const p = normalizeBarLblPos(pos), g = VL_EDGE_GAP, s = shift;
     if (p === "top_in")  return { yKey: "top", baseline: "top",    align: "center", dx: s.dx, dy: g + s.dy };
     if (p === "center")  return { yKey: "mid", baseline: "middle", align: "center", dx: s.dx, dy: s.dy };
+    if (p === "base_in") return { yKey: "bot", baseline: "bottom", align: "center", dx: s.dx, dy: -g + s.dy };
     if (p === "base")    return { yKey: "bot", baseline: "top",    align: "center", dx: s.dx, dy: g + s.dy };
     return { yKey: "top", baseline: "bottom", align: "center", dx: s.dx, dy: -g + s.dy };
   }
@@ -1535,6 +1536,7 @@
     const p = normalizeBarLblPos(pos), g = VL_EDGE_GAP, s = shift;
     if (p === "top_in")  return { xKey: "top", align: "right",  baseline: "middle", dx: -g + s.dx, dy: s.dy };
     if (p === "center")  return { xKey: "mid", align: "center", baseline: "middle", dx: s.dx, dy: s.dy };
+    if (p === "base_in") return { xKey: "bot", align: "left", baseline: "middle", dx: g + s.dx, dy: s.dy };
     if (p === "base")    return { xKey: "bot", align: "left",   baseline: "middle", dx: g + s.dx, dy: s.dy };
     return { xKey: "top", align: "left",  baseline: "middle", dx: g + s.dx, dy: s.dy };
   }
@@ -1564,13 +1566,13 @@
     return horizontal ? { right: pad } : { top: pad };
   }
   function encYFromVertKey(cfg, yField, stacked){
-    if (cfg.yKey === "mid") return { field: "__stkMid", type: "quantitative" };
+    if (cfg.yKey === "mid") return { field: stacked ? "__stkMid" : "__yLbl", type: "quantitative" };
     if (cfg.yKey === "top") return { field: stacked ? "__stk1" : yField, type: "quantitative" };
     if (stacked) return { field: "__stk0", type: "quantitative" };
     return { datum: 0 };
   }
   function encXFromHorizKey(cfg, yField, stacked){
-    if (cfg.xKey === "mid") return { field: "__stkMid", type: "quantitative" };
+    if (cfg.xKey === "mid") return { field: stacked ? "__stkMid" : "__xLbl", type: "quantitative" };
     if (cfg.xKey === "top") return { field: stacked ? "__stk1" : yField, type: "quantitative" };
     if (stacked) return { field: "__stk0", type: "quantitative" };
     return { datum: 0 };
@@ -1648,7 +1650,7 @@
       const tr = [];
       if (cfg.yKey === "mid") tr.push({ calculate: `${vegaDatumRef(y)} / 2`, as: "__yLbl" });
       enc.y = encYFromVertKey(cfg, y, false);
-      const fmtExpr = cfg.yKey === "mid" ? vegaDatumRef("__yLbl") : vegaDatumRef(y);
+      const fmtExpr = vegaDatumRef(y);
       layer.transform = tr;
       layers.push(fmtValLayer(layer, fmtExpr));
     } else if (t === "barStack" || t === "barStackNorm") {
@@ -1662,7 +1664,7 @@
       const tr = [];
       if (cfg.xKey === "mid") tr.push({ calculate: `${vegaDatumRef(y)} / 2`, as: "__xLbl" });
       enc.x = encXFromHorizKey(cfg, y, false);
-      const fmtExpr = cfg.xKey === "mid" ? vegaDatumRef("__xLbl") : vegaDatumRef(y);
+      const fmtExpr = vegaDatumRef(y);
       layer.transform = tr;
       layers.push(fmtValLayer(layer, fmtExpr));
     } else if (t === "barhStack" || t === "barhStackNorm") {
@@ -1678,7 +1680,7 @@
       const tr = [];
       if (cfg.yKey === "mid") tr.push({ calculate: `${vegaDatumRef(y)} / 2`, as: "__yLbl" });
       enc.y = encYFromVertKey(cfg, y, false);
-      const fmtExpr = cfg.yKey === "mid" ? vegaDatumRef("__yLbl") : vegaDatumRef(y);
+      const fmtExpr = vegaDatumRef(y);
       layer.transform = tr;
       layers.push(fmtValLayer(layer, fmtExpr));
     } else if (t === "heatmap") {
@@ -1704,7 +1706,7 @@
       const tr = [];
       if (cfg.xKey === "mid") tr.push({ calculate: `${vegaDatumRef(y)} / 2`, as: "__xLbl" });
       enc.x = encXFromHorizKey(cfg, y, false);
-      const fmtExpr = cfg.xKey === "mid" ? vegaDatumRef("__xLbl") : vegaDatumRef(y);
+      const fmtExpr = vegaDatumRef(y);
       layer.transform = tr;
       layers.push(fmtValLayer(layer, fmtExpr));
     } else if (isLineFamily(t)) {

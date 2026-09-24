@@ -100,6 +100,42 @@ test('old project formats migrate and new formats survive saving/loading', () =>
   assert.equal(restored.valueLabels.numberFormat.separator, 'none');
 });
 
+test('centered bar value labels display the original value', () => {
+  const run = withData();
+  for (const type of ['bar', 'barh', 'lollipop', 'lollipopH']) {
+    run(`(state.chartType = '${type}')`);
+    run('(state.style.valueLabels.show = true)');
+    run('(state.style.valueLabels.position = "center")');
+    const layer = run('valueLabelLayers()[0]');
+    const channel = type === 'barh' || type === 'lollipopH' ? 'x' : 'y';
+    const position = layer.transform.find(t => t.as === layer.encoding[channel].field);
+    assert.ok(position, `${type}: label coordinate must refer to a calculated field`);
+    for (const datum of run('currentValues()')) {
+      assert.equal(vm.runInNewContext(position.calculate, { datum }), datum['Значение'] / 2);
+    }
+    assert.equal(layer.encoding.text.field, '__vlFmt');
+    assert.match(layer.transform.at(-1).calculate, /datum\["Значение"\]/);
+    assert.doesNotMatch(layer.transform.at(-1).calculate, /__yLbl|__xLbl/);
+  }
+});
+
+test('inside-base labels sit inside each bar or stacked segment and retain offsets', () => {
+  const run = withData();
+  run('(state.style.valueLabels = {...state.style.valueLabels, show:true, position:"base_in", offsetX:2, offsetY:1})');
+  for (const type of ['bar', 'barh', 'lollipop', 'lollipopH', 'barStack', 'barhStack', 'barStackNorm', 'barhStackNorm']) {
+    run(`(state.chartType = '${type}')`);
+    const horizontal = type.startsWith('barh') || type === 'lollipopH';
+    const layer = run('valueLabelLayers()[0]');
+    const coordinate = layer.encoding[horizontal ? 'x' : 'y'];
+    if (type.includes('Stack')) assert.equal(coordinate.field, '__stk0');
+    else assert.equal(coordinate.datum, 0);
+    assert.equal(layer.mark.align, horizontal ? 'left' : 'center');
+    assert.equal(layer.mark.baseline, horizontal ? 'middle' : 'bottom');
+    assert.equal(layer.mark.dx, horizontal ? 6 : 2);
+    assert.equal(layer.mark.dy, horizontal ? 1 : -3);
+  }
+});
+
 
 test('automatic formats follow the interface language for axes and values', () => {
   const run = editor();
