@@ -1,4 +1,4 @@
-  const APP_VERSION = "0.1.1";
+  const APP_VERSION = "0.1.2";
   const APP_GITHUB_URL = "https://github.com/datavizru/datavizru.github.io";
   const APP_ISSUES_URL = APP_GITHUB_URL + "/issues";
   i18nSetLang(i18nStoredLang() || I18N_DEFAULT_LANG);
@@ -1340,6 +1340,15 @@
   function seriesOrder(series){
     return axisCategories(series);
   }
+  function seriesOrderIndexTransform(series){
+    return {
+      calculate: `indexof(${JSON.stringify(seriesOrder(series))}, ${vegaDatumRef(series)})`,
+      as: "__seriesOrder"
+    };
+  }
+  function stackOrderEncoding(){
+    return { field: "__seriesOrder", type: "quantitative", sort: "descending" };
+  }
   // Цветовая шкала рядов: палитра-схема или свои цвета по каждому ряду.
   function seriesScale(series){
     const s = state.style;
@@ -1465,8 +1474,8 @@
       enc.color = { field: series, type: "nominal", scale: seriesScale(series), sort: null, legend: null };
       if (t === "bar" || t === "lollipop") enc.xOffset = { field: series, sort: null };
       else if (t === "barh" || t === "lollipopH") enc.yOffset = { field: series, sort: null };
-      // Порядок слоёв накопления = как у Vega-Lite (descending по полю ряда).
-      if (stackOn) enc.order = { field: series, type: "nominal", sort: "descending" };
+      // Порядок слоёв накопления = первая встреча серии в данных, как в легенде и цветах.
+      if (stackOn) enc.order = stackOrderEncoding();
     }
     // Зазор между столбиками/линейками (paddingInner) или фиксированная ширина (mark.width).
     if (isBarChart(t) && !isLollipop(t)) {
@@ -1581,8 +1590,9 @@
   function stackSegmentTransforms(catField, valField, seriesName, stackOffset){
     const stackTr = { stack: valField, groupby: [catField], as: ["__stk0", "__stk1"] };
     if (stackOffset && stackOffset !== "zero") stackTr.offset = stackOffset;
-    if (seriesName) stackTr.sort = [{ field: seriesName, order: "descending" }];
-    return [stackTr];
+    if (!seriesName) return [stackTr];
+    stackTr.sort = [{ field: "__seriesOrder", order: "descending" }];
+    return [seriesOrderIndexTransform(seriesName), stackTr];
   }
 
   // Подписи на накопленных сегментах: stack только по категории (ось X / Y), не по ряду.
@@ -2475,6 +2485,9 @@
       plotH = m.plotH;
     }
 
+    if (isBarStack(state.chartType)) ensureStackedBarSeries();
+    const series = seriesField();
+    const stackOn = series && (isBarStack(state.chartType) || state.chartType === "area");
     const projLayers = pointProjectionLayers();
     const labelLayers = [...valueLabelLayers(), ...endMarkerLayers()];
     const chartLayer = {
@@ -2482,6 +2495,7 @@
       height: Math.max(MIN_CHART_HEIGHT, plotH),
       data: { values: currentValues() }
     };
+    if (stackOn) chartLayer.transform = [seriesOrderIndexTransform(series)];
     const chartMarks = isLollipop(state.chartType)
       ? lollipopChartLayers()
       : [{ mark: markDef(), encoding: encodingDef() }];

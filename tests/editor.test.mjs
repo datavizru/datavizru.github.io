@@ -136,6 +136,35 @@ test('inside-base labels sit inside each bar or stacked segment and retain offse
   }
 });
 
+test('stacked series order follows first appearance in the data', () => {
+  const run = editor();
+  run(`(() => {
+    state.csvValues = parseCsvText('Категория,Серия,Значение\\nA,Бета,1\\nA,Альфа,2\\nA,Гамма,3\\nB,Альфа,4').rows;
+    state.dataset = '__csv__';
+    state.fields = {x:'Категория', y:'Значение', series:'Серия'};
+    state.chartType = 'barStack';
+    state.style.valueLabels.show = true;
+    plotW = 400; plotH = 300; frameContentW = 400;
+    return true;
+  })()`);
+  const expected = ['Бета', 'Альфа', 'Гамма'];
+  assert.deepEqual(run('seriesOrder(state.fields.series)'), expected);
+  assert.deepEqual(run('buildSpec().transform'), [{
+    calculate: 'indexof(["Бета","Альфа","Гамма"], datum["Серия"])',
+    as: '__seriesOrder'
+  }]);
+  assert.deepEqual(run('encodingDef().order'), {
+    field: '__seriesOrder',
+    type: 'quantitative',
+    sort: 'descending'
+  });
+
+  const layer = run('valueLabelLayers()[0]');
+  assert.equal(layer.transform[0].as, '__seriesOrder');
+  assert.match(layer.transform[0].calculate, /indexof/);
+  assert.deepEqual(layer.transform[1].sort, [{ field: '__seriesOrder', order: 'descending' }]);
+});
+
 
 test('automatic formats follow the interface language for axes and values', () => {
   const run = editor();
