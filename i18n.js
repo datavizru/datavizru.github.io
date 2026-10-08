@@ -12,6 +12,9 @@ const I18N_DEFAULT_LANG = "en";
 /* Надписи интерфейса: разметка, генерируемые панели, статусы, подсказки.
    {name} в статусах — подстановка через t(key, vars). */
 const I18N_UI = {
+  "Обводка форм": "Shape outline",
+  "Толщина обводки, px": "Outline width, px",
+  "Цвет обводки": "Outline color",
   /* Mobile introduction */
   "Данные → диаграмма → история": "Data → chart → story",
   "Ваши данные. Ваше оформление.": "Your data. Your design.",

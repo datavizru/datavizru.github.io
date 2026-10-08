@@ -187,3 +187,39 @@ test('automatic formats follow the interface language for axes and values', () =
     assert.equal(locales.chart.thousands, '');
   }
 });
+
+for (const type of ['bar', 'barh', 'barStack', 'barhStack', 'barStackNorm', 'barhStackNorm', 'point', 'area', 'heatmap']) {
+  test(`${type}: shape outline toggles independently of fill`, () => {
+    const run = withData();
+    run(`(state.chartType = '${type}')`);
+    const initial = run('markDef()');
+    assert.equal(initial.stroke, null);
+    run('(state.style.markStroke = {show:true, width:3.5, color:"#123456"})');
+    const outlined = run('markDef()');
+    assert.equal(outlined.stroke, '#123456');
+    assert.equal(outlined.strokeWidth, 3.5);
+    assert.equal(outlined.color, initial.color);
+    run('(state.style.markStroke.show = false)');
+    assert.equal(run('markDef().strokeWidth'), 0);
+  });
+}
+for (const type of ['lollipop', 'lollipopH']) {
+  test(`${type}: outline affects the head and preserves stem thickness`, () => {
+    const run = withData();
+    run(`(state.chartType = '${type}')`);
+    run('(state.style.markStroke = {show:true, width:4, color:"#abcdef"})');
+    const layers = run('lollipopChartLayers()');
+    assert.equal(layers.find(l => l.mark.type === 'point').mark.stroke, '#abcdef');
+    assert.equal(layers.find(l => l.mark.type === 'point').mark.strokeWidth, 4);
+    assert.equal(layers.find(l => l.mark.type === 'rule').mark.strokeWidth, 2);
+  });
+}
+test('outline survives style migration and old projects default to no outline', () => {
+  const run = editor();
+  assert.equal(run('mergeStyle(defaultState().style, {}).markStroke.show'), false);
+  run('(state.style.markStroke = {show:true, width:2.5, color:"#654321"})');
+  assert.deepEqual(run('migrateStyle(JSON.parse(JSON.stringify(state.style))).markStroke'), {show:true,width:2.5,color:'#654321'});
+  assert.equal(run('migrateStyle({markColor:"#ffffff"}).markStroke.show'), false);
+  run('(state.style.markStroke.width = -5)');
+  assert.equal(run('markStrokeDef().strokeWidth'), 0);
+});

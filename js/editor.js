@@ -172,6 +172,7 @@
     style: {
       axisNumberFormat: { decimal: ",", separator: "auto" },
       markColor: "#ef4e23", backgroundColor: "#ffffff", scheme: "viridis",
+      markStroke: { show: false, width: 1, color: "#000000" },
       strokeWidth: 2, pointSize: 70, lollipopStemWidth: 2, lollipopHeadDiameter: 10,
       areaOpacity: 0.45, innerRadius: 0,
       showLegend: true, showPoints: false,
@@ -470,6 +471,7 @@
   function mergeStyle(base, loaded){
     loaded = loaded || {};
     const out = { ...base, ...loaded };
+    out.markStroke = { ...base.markStroke, ...(loaded.markStroke || {}) };
     out.padding = mergePadding(base.padding, loaded.padding);
     out.valueLabels = { ...base.valueLabels, ...(loaded.valueLabels || {}) };
     const vl = out.valueLabels;
@@ -577,6 +579,7 @@
 
     const out = mergeStyle(base, {
       markColor: loaded.markColor, backgroundColor: loaded.backgroundColor, scheme: loaded.scheme,
+      markStroke: loaded.markStroke,
       strokeWidth: loaded.strokeWidth, pointSize: loaded.pointSize,
       lollipopStemWidth: loaded.lollipopStemWidth,
       lollipopHeadDiameter: loaded.lollipopHeadDiameter, lollipopHeadSize: loaded.lollipopHeadSize,
@@ -971,16 +974,30 @@
     return sc;
   }
 
+  function markStrokeDef(){
+    const outline = state.style.markStroke || {};
+    const width = Number(outline.width ?? 1);
+    return {
+      stroke: outline.show ? (outline.color || "#000000") : null,
+      strokeWidth: outline.show && Number.isFinite(width) ? Math.max(0, Math.min(20, width)) : 0
+    };
+  }
+  function syncMarkStrokeUI(){
+    const enabled = !!state.style.markStroke?.show;
+    document.querySelectorAll("[data-path='style.markStroke.width'], [data-path='style.markStroke.color']")
+      .forEach(el => { el.disabled = !enabled; });
+  }
+
   function markDef(){
     const s = state.style, t = state.chartType, mo = s.markOpacity;
     const barW = barFixedMarkWidth();
     if (t==="bar" || t==="barStack" || t==="barStackNorm") {
-      const m = { type:"bar", color:s.markColor, fillOpacity:mo, tooltip:true };
+      const m = { type:"bar", ...markStrokeDef(), color:s.markColor, fillOpacity:mo, tooltip:true };
       if (barW != null) m.width = barW;
       return withPlotClip(m);
     }
     if (t==="barh" || t==="barhStack" || t==="barhStackNorm") {
-      const m = { type:"bar", orient:"horizontal", color:s.markColor, fillOpacity:mo, tooltip:true };
+      const m = { type:"bar", ...markStrokeDef(), orient:"horizontal", color:s.markColor, fillOpacity:mo, tooltip:true };
       if (barW != null) m.height = barW;
       return withPlotClip(m);
     }
@@ -990,10 +1007,10 @@
       else if (t === "lineStepAfter") m.interpolate = "step-after";
       return withPlotClip(m);
     }
-    if (t==="area")  return withPlotClip({ type:"area", color:s.markColor, fillOpacity:s.areaOpacity, line:{color:s.markColor, strokeWidth:s.strokeWidth, opacity:mo}, tooltip:true });
-    if (t==="point") return withPlotClip({ type:"point", filled:true, color:s.markColor, size:s.pointSize, strokeWidth:s.strokeWidth, fillOpacity:mo, tooltip:true });
-    if (isLollipop(t)) return withPlotClip({ type:"point", filled:true, color:s.markColor, size: lollipopHeadVegaSize() || lollipopHeadAreaFromDiameter(10), tooltip:true });
-    if (isHeatmap(t)) return { type:"rect", opacity: mo, tooltip:true };
+    if (t==="area")  return withPlotClip({ type:"area", ...markStrokeDef(), color:s.markColor, fillOpacity:s.areaOpacity, line:{color:s.markColor, strokeWidth:s.strokeWidth, opacity:mo}, tooltip:true });
+    if (t==="point") return withPlotClip({ type:"point", filled:true, color:s.markColor, size:s.pointSize, ...markStrokeDef(), fillOpacity:mo, tooltip:true });
+    if (isLollipop(t)) return withPlotClip({ type:"point", ...markStrokeDef(), filled:true, color:s.markColor, size: lollipopHeadVegaSize() || lollipopHeadAreaFromDiameter(10), tooltip:true });
+    if (isHeatmap(t)) return { type:"rect", ...markStrokeDef(), opacity: mo, tooltip:true };
   }
 
   function lollipopStemWidth(){
@@ -1059,7 +1076,7 @@
     if (headD > 0) {
       layers.push({
         mark: withPlotClip({
-          type: "point", filled: true, size: headVegaSize, opacity: mo, tooltip: true,
+          type: "point", ...markStrokeDef(), filled: true, size: headVegaSize, opacity: mo, tooltip: true,
           ...(colorEnc ? {} : { color: s.markColor, fill: withAlpha(s.markColor, mo) })
         }),
         encoding: headEnc
@@ -4892,6 +4909,7 @@
         else if (type === "numOrNull") { v = el.value.trim() === "" ? null : parseFloat(el.value); if (v != null && isNaN(v)) return; }
         else v = el.value;
         setPath(state, path, v);
+        if (path === "style.markStroke.show") syncMarkStrokeUI();
         if (path.startsWith("style.axisNumberFormat.") || path.startsWith("style.valueLabels.numberFormat.")) syncNumberFormatControls();
         const fm = path.match(/^style\.text\.([^.]+)\.font$/);
         if (fm) {
@@ -5392,6 +5410,7 @@
     syncValueLabelsPointHint();
     buildTextStyles();
     applyGeneric();
+    syncMarkStrokeUI();
     refreshFontSelects();
     syncAllTextsFontSelect();
     syncAllTextsColorInput();
@@ -5457,6 +5476,8 @@
     if (el("barGapRow")) el("barGapRow").style.display = showBarSize ? "block" : "none";
     syncBarSizeUI();
     if (el("lollipopShapeRows")) el("lollipopShapeRows").style.display = isLp ? "block" : "none";
+    if (el("markStrokeRows")) el("markStrokeRows").style.display = isLine ? "none" : "block";
+    syncMarkStrokeUI();
     if (el("strokeWidthRow")) el("strokeWidthRow").style.display = (isLine || isArea) ? "flex" : "none";
     if (el("pointSizeRow")) el("pointSizeRow").style.display = isPt ? "flex" : "none";
     if (el("areaOpacityRow")) el("areaOpacityRow").style.display = isArea ? "flex" : "none";

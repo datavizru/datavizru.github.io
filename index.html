@@ -480,6 +480,11 @@
           <div class="row"><label>Толщина ножки, px</label><input type="number" id="lollipopStemWidth" min="0" max="20" step="0.5" title="0 — ножка скрыта" /></div>
           <div class="row"><label>Диаметр окружности, px</label><input type="number" id="lollipopHeadDiameter" min="0" max="200" step="1" title="0 — головка скрыта" /></div>
         </div>
+        <div id="markStrokeRows">
+          <div class="row"><label>Обводка форм</label><span class="switch"><input type="checkbox" data-path="style.markStroke.show" data-type="bool" aria-label="Обводка форм" /><span class="track"></span></span></div>
+          <div class="row"><label>Толщина обводки, px</label><input type="number" data-path="style.markStroke.width" data-type="num" min="0" max="20" step="0.5" aria-label="Толщина обводки, px" /></div>
+          <div class="row"><label>Цвет обводки</label><input type="color" data-path="style.markStroke.color" data-type="text" aria-label="Цвет обводки" /></div>
+        </div>
         <div class="row" id="strokeWidthRow"><label>Толщина линий</label><input type="number" id="strokeWidth" min="0" max="20" step="0.5" /></div>
         <div class="row" id="pointSizeRow"><label>Размер точек</label><input type="number" id="pointSize" min="4" max="600" step="2" /></div>
         <div class="row" id="areaOpacityRow"><label>Прозрачность области</label><input type="number" id="areaOpacity" min="0" max="1" step="0.05" /></div>
